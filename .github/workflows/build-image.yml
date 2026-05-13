@@ -1,11 +1,12 @@
 name: Build openupgrade image
 
 # Builds an Odoo 19 image with the aggregated OpenUpgrade tree baked in
-# and pushes to Google Artifact Registry (GAR). Mirrors the pattern used
-# by ledoent's openobserve and erp builds: Workload Identity Federation —
-# no stored secrets.
+# and pushes to the ledoent Zot registry at registry.hz.ledoweb.com.
 #
-# Image: europe-west3-docker.pkg.dev/kendall-ledo/docker/openupgrade
+# Auth: basic-auth via the `robot-ci` Zot user.
+#   Secrets: ZOT_USERNAME (= robot-ci), ZOT_PASSWORD (set on this repo).
+#
+# Image: registry.hz.ledoweb.com/openupgrade/openupgrade
 # Consumed by: openupgrade-lab/docker-compose.yml (odoo-19 service)
 
 on:
@@ -19,14 +20,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GAR_HOST: europe-west3-docker.pkg.dev
-  GAR_IMAGE: europe-west3-docker.pkg.dev/kendall-ledo/docker/openupgrade
+  ZOT_HOST: registry.hz.ledoweb.com
+  ZOT_IMAGE: registry.hz.ledoweb.com/openupgrade/openupgrade
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -34,19 +34,11 @@ jobs:
           ref: aggregated
           fetch-depth: 1
 
-      - id: auth
-        name: Authenticate to Google Cloud (WIF)
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/852639431500/locations/global/workloadIdentityPools/github/providers/ledoent
-          service_account: ci-github@kendall-ledo.iam.gserviceaccount.com
-          token_format: access_token
-
       - uses: docker/login-action@v3
         with:
-          registry: ${{ env.GAR_HOST }}
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+          registry: ${{ env.ZOT_HOST }}
+          username: ${{ secrets.ZOT_USERNAME }}
+          password: ${{ secrets.ZOT_PASSWORD }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -57,7 +49,7 @@ jobs:
           file: ./Dockerfile.openupgrade
           push: true
           tags: |
-            ${{ env.GAR_IMAGE }}:latest
-            ${{ env.GAR_IMAGE }}:${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.GAR_IMAGE }}:buildcache
-          cache-to: type=registry,ref=${{ env.GAR_IMAGE }}:buildcache,mode=max
+            ${{ env.ZOT_IMAGE }}:latest
+            ${{ env.ZOT_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.ZOT_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.ZOT_IMAGE }}:buildcache,mode=max
