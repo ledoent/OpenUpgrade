@@ -13,6 +13,8 @@ on:
   push:
     branches:
       - aggregated
+  repository_dispatch:
+    types: [aggregated-updated]
   workflow_dispatch:
 
 concurrency:
