@@ -22,6 +22,11 @@ jobs:
       - name: Install git-aggregator
         run: pip install git-aggregator==4.1
 
+      - name: Configure git identity (gitaggregate needs this before merging)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Checkout fork (no working tree needed; gitaggregate clones fresh)
         uses: actions/checkout@v4
         with:
@@ -48,12 +53,6 @@ jobs:
 
       - name: Run gitaggregate
         run: gitaggregate -c aggregate.yml
-
-      - name: Configure git identity
-        working-directory: openupgrade
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Force-push aggregated
         working-directory: openupgrade
