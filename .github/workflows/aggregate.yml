@@ -55,10 +55,28 @@ jobs:
         run: gitaggregate -c aggregate.yml
 
       - name: Force-push aggregated
+        id: push
         working-directory: openupgrade
         env:
           PUSH_TOKEN: ${{ secrets.AGGREGATE_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           git remote set-url ledoent "https://x-access-token:${PUSH_TOKEN}@github.com/ledoent/OpenUpgrade.git"
           git push --force ledoent HEAD:refs/heads/aggregated
-          echo "Aggregated head: $(git rev-parse HEAD)"
+          sha=$(git rev-parse HEAD)
+          echo "Aggregated head: $sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger build-image workflow
+        # GITHUB_TOKEN-driven branch pushes don't fire downstream workflows
+        # (loop protection). Use repository_dispatch with a PAT so build-image
+        # can react. Falls back to no-op if AGGREGATE_PUSH_TOKEN is unset.
+        if: ${{ secrets.AGGREGATE_PUSH_TOKEN != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.AGGREGATE_PUSH_TOKEN }}
+        run: |
+          gh api \
+            -X POST \
+            "/repos/${{ github.repository }}/dispatches" \
+            -f event_type=aggregated-updated \
+            -f "client_payload[sha]=${{ steps.push.outputs.sha }}"
+          echo "Fired repository_dispatch event_type=aggregated-updated"
