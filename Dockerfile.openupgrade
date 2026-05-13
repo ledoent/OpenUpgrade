@@ -1,0 +1,29 @@
+## Image: registry.ledoweb.com/openupgrade
+##
+## Built by .github/workflows/build-image.yml on every push to `aggregated`.
+## Contains:
+##   - Odoo 19.0 base
+##   - Python deps the openupgrade-lab uses (s3fs, redis, sentry-sdk, etc.)
+##   - The full `aggregated` checkout of this repo as /opt/openupgrade
+## The lab's docker-compose mounts the openupgradelib source over the
+## pip-installed lib so it can hot-swap during development.
+
+FROM odoo:19.0
+
+USER root
+
+RUN pip install --no-cache-dir --break-system-packages \
+    fsspec>=2025.3.0 \
+    s3fs \
+    packaging \
+    python-json-logger \
+    redis \
+    sentry-sdk \
+    python-slugify \
+    plaid-python \
+    cssselect \
+    "git+https://github.com/OCA/openupgradelib@master"
+
+COPY --chown=odoo:odoo . /opt/openupgrade
+
+USER odoo
