@@ -7,6 +7,9 @@ def fix_template_lang(env):
     fields.
     The templates are not marked as noupdate, so this change is not caught by
     upgrade_analysis
+
+    Only reset rows whose value still references the removed
+    ``_get_mail_partner`` helper, so a customised lang is not clobbered.
     """
     env.cr.execute(
         """
@@ -20,6 +23,7 @@ def fix_template_lang(env):
             'mail_template_loyalty_card'
         )
         and mail_template.id=imd.res_id
+        and mail_template.lang like '%_get_mail_partner%'
         """
     )
 
