@@ -70,10 +70,14 @@ jobs:
         # GITHUB_TOKEN-driven branch pushes don't fire downstream workflows
         # (loop protection). Use repository_dispatch with a PAT so build-image
         # can react. Falls back to no-op if AGGREGATE_PUSH_TOKEN is unset.
-        if: ${{ secrets.AGGREGATE_PUSH_TOKEN != '' }}
         env:
           GH_TOKEN: ${{ secrets.AGGREGATE_PUSH_TOKEN }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "AGGREGATE_PUSH_TOKEN not set; skipping repository_dispatch."
+            echo "Run \`gh workflow run build-image.yml --ref aggregated\` manually."
+            exit 0
+          fi
           gh api \
             -X POST \
             "/repos/${{ github.repository }}/dispatches" \
