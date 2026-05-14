@@ -12,6 +12,11 @@ FROM odoo:19.0
 
 USER root
 
+# git needed for the openupgradelib install (no pinned PyPI release yet for 19.0).
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir --break-system-packages \
     fsspec>=2025.3.0 \
     s3fs \
