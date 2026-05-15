@@ -49,6 +49,11 @@ jobs:
             merges:
               - ledoent ledoent
               - ledoent 19.0-fix-user-groups-id-rename
+              - ledoent 19.0-fix-hr-null-write-date                # OCA/OpenUpgrade#5628
+              - ledoent 19.0-fix-loyalty-stale-mail-template-fields  # OCA/OpenUpgrade#5629
+              - ledoent 19.0-fix-hr-obsolete-fields-cleanup        # OCA/OpenUpgrade#5630
+              - ledoent 19.0-fix-partner-autocomplete-cleanup      # OCA/OpenUpgrade#5631
+              - ledoent 19.0-fix-l10n-fr-cleanup                   # OCA/OpenUpgrade#5632
           YAML
 
       - name: Run gitaggregate
