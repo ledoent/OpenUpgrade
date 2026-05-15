@@ -49,6 +49,14 @@ jobs:
             merges:
               - ledoent ledoent
               - ledoent 19.0-fix-user-groups-id-rename
+              # 19.0-fix-rollup is a conflict-resolved combination of the five
+              # OCA/OpenUpgrade PRs #5628-5632 (cherry-picked onto origin/19.0
+              # in dependency order). Listing them individually here fails
+              # because #5628 and #5630 both touch hr/19.0.1.1/pre-migration.py
+              # with non-overlapping additions that gitaggregate's straight
+              # `git pull --no-rebase` can't auto-merge. When any OCA PR
+              # changes, rebase the rollup branch.
+              - ledoent 19.0-fix-rollup
           YAML
 
       - name: Run gitaggregate
