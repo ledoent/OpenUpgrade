@@ -106,6 +106,26 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: openupgrade
+      - name: Clone OCA modules at 18.0 (source) + 19.0 (target)
+        run: |
+          # The seed DB has OCA modules (account_asset_management, rma,
+          # mis_builder, etc.) marked installed. Odoo's registry load
+          # needs their manifests in addons-path or it errors with
+          # "Some modules are not loaded". Clone at BOTH 18.0 (so the
+          # source DB module records match a real install) AND 19.0
+          # (so the target migration finds the upgraded modules).
+          REPOS_OCA="account-financial-reporting account-financial-tools \
+                     account-reconcile bank-statement-import mis-builder \
+                     reporting-engine rma server-tools server-ux"
+          mkdir -p oca-18 oca-19
+          for repo in $REPOS_OCA; do
+            GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch 18.0 \
+              "https://github.com/OCA/$repo.git" "oca-18/$repo" 2>&1 | tail -1 || \
+              echo "  WARN $repo @18.0 unavailable"
+            GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch 19.0 \
+              "https://github.com/OCA/$repo.git" "oca-19/$repo" 2>&1 | tail -1 || \
+              echo "  WARN $repo @19.0 unavailable"
+          done
       - name: Configuration
         run: |
           sudo apt update
@@ -141,9 +161,15 @@ jobs:
           pip install phonenumbers
       - name: Test data
         run: |
+          # Pass OCA-18 addons-path so the 18.0 odoo-bin can load the
+          # registry with all installed modules (incl OCA ones present
+          # in the seed DB). Without this odoo-bin shell fails at
+          # registry load before any data snippet runs.
+          OCA_18_PATHS=$(ls -d $GITHUB_WORKSPACE/oca-18/* 2>/dev/null | tr '\n' ',')
+          OLD_ADDONS="odoo-old/addons,odoo-old/odoo/addons,${OCA_18_PATHS%,}"
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
              for snippet in openupgrade/openupgrade_scripts/scripts/*/tests/data*.py; do
-               odoo-old/odoo-bin shell -d $DB < $snippet
+               odoo-old/odoo-bin shell --addons-path="$OLD_ADDONS" -d $DB < $snippet
              done
           fi
       - name: OpenUpgrade test (real SMB + OCA)
@@ -177,10 +203,15 @@ jobs:
           echo Set the modules as not installable if they are not in the following list : $MODULES_OLD
           echo Running $REQUEST
           psql $DB -c "$REQUEST"
+          # OCA modules at 19.0 take precedence (target version);
+          # 18.0 clones are referenced only for the Test data step
+          # via odoo-old in the next section. Glob each OCA repo as
+          # its own addons-path entry.
           ADDONS_PATHS="\
               $GITHUB_WORKSPACE/odoo/addons \
               $GITHUB_WORKSPACE/odoo/odoo/addons \
-              $GITHUB_WORKSPACE/openupgrade"
+              $GITHUB_WORKSPACE/openupgrade \
+              $(ls -d $GITHUB_WORKSPACE/oca-19/* 2>/dev/null | tr '\n' ' ')"
           echo Execution of Openupgrade with the update of the following modules : $MODULES_NEW
           $ODOO \
               --addons-path=`echo $ADDONS_PATHS | awk -v OFS="," '$1=$1'` \
