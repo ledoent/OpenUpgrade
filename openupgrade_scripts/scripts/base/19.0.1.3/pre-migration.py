@@ -176,3 +176,48 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     openupgrade.rename_xmlids(env.cr, _merged_xmlids, allow_merge=True)
     openupgrade.rename_fields(env, _renamed_fields)
+    _fix_user_groups_id_references(env)
+
+
+def _fix_user_groups_id_references(env):
+    """rename_fields() renames the field column on res_users and quoted
+    references in ir.filters.domain, but it does not process ir.rule
+    domain_force, nor does it match unquoted dotted references like
+    ``user.groups_id.ids`` in Python-evaluated domain expressions.
+
+    Concretely, an ir.rule with
+        domain_force = "[('groups_id', 'in', user.groups_id.ids)]"
+    has its LHS migrated to 'group_ids' but the RHS is left untouched,
+    so any view referencing the rule crashes at runtime with
+    ``AttributeError: 'res.users' object has no attribute 'groups_id'``.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_rule
+        SET domain_force = regexp_replace(
+            domain_force, '\muser\.groups_id\M', 'user.group_ids', 'g'
+        )
+        WHERE domain_force ~ '\muser\.groups_id\M'
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_filters
+        SET domain = regexp_replace(
+            domain, '\muser\.groups_id\M', 'user.group_ids', 'g'
+        )
+        WHERE domain ~ '\muser\.groups_id\M'
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_act_server
+        SET code = regexp_replace(
+            code, '\muser\.groups_id\M', 'user.group_ids', 'g'
+        )
+        WHERE code ~ '\muser\.groups_id\M'
+        """,
+    )
