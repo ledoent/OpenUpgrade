@@ -167,9 +167,21 @@ jobs:
           # registry load before any data snippet runs.
           OCA_18_PATHS=$(ls -d $GITHUB_WORKSPACE/oca-18/* 2>/dev/null | tr '\n' ',')
           OLD_ADDONS="odoo-old/addons,odoo-old/odoo/addons,${OCA_18_PATHS%,}"
+          # Filter data snippets to modules actually installed in the seed.
+          # The realistic SMB seed has 137 modules, not the full 500+ —
+          # data fixtures that env.ref records from uninstalled modules
+          # (like hr_expense) raise ValueError before any useful work.
+          INSTALLED=$(psql -At -d $DB -c \
+              "SELECT name FROM ir_module_module WHERE state='installed'")
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
              for snippet in openupgrade/openupgrade_scripts/scripts/*/tests/data*.py; do
-               odoo-old/odoo-bin shell --addons-path="$OLD_ADDONS" -d $DB < $snippet
+               module=$(echo "$snippet" | sed -E 's|.*/scripts/([^/]+)/tests/.*|\1|')
+               if echo "$INSTALLED" | grep -qx "$module"; then
+                   echo "==> $module: running $(basename $snippet)"
+                   odoo-old/odoo-bin shell --addons-path="$OLD_ADDONS" -d $DB < $snippet
+               else
+                   echo "==> $module: SKIP (not installed in this seed)"
+               fi
              done
           fi
       - name: OpenUpgrade test (real SMB + OCA)
