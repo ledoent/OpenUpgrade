@@ -37,17 +37,31 @@ count = 1**.
 
 ## Active TODO
 
-### 1. Multi-company seed — **DONE 2026-05-16**
-- Phase A: `seed_18_woodbimble` built on Hetzner (CE-all, 631 modules installed, demo data on). ~20 min.
-- Phase B: `scripts/seed-multicompany-orm.py` ran: Wood Manufacturing Co. parent, Wood Co. – Showroom branch (`parent_id=1`), Bimble Design Services Co. separate entity with `generic_coa` installed (8 journals). 171 partners shared via `company_id=NULL`. Admin `allowed_company_ids = [1, 119, 120]`.
-- Phase C: `18.0-ledoent-mc.psql` (19 MB) uploaded to fork release. Existing assets backed up at `lab/backups/release-assets-2026-05-16/`.
-- Phase D: `.github/workflows/test-migration-multicompany.yml` live; first run triggered on `ledoent` branch push.
+### 1. Realistic multi-company SMB seed — **DONE 2026-05-16**
 
-### 1b. Multi-company LARGE seed — **DRAFTED 2026-05-16**
-- `scripts/seed-multicompany-large.py` ready: 2-level branch nesting (Wood → US East → NJ Warehouse), per-branch `account.move` history, 3 intercompany draft invoices, products pinned per-branch, cross-company `res.partner.bank` rows.
-- `.github/workflows/test-migration-multicompany-large.yml` wired with `workflow_dispatch` only — manual on-demand testing.
-- Not yet run / dumped — runs against `seed_18_woodbimble` (after the `-mc` Phase B). Produces `18.0-ledoent-mc-large.psql`.
-- **Next**: run the script on Hetzner; dump + upload; use to retest PR #5612 against the multi-company branch surface.
+Earlier in the day we built `seed_18_woodbimble` (bloated, 631 modules / 115 demo companies / 1965 picking types) and its LARGE variant. Those revealed the install-all-modules approach deforms the seed: the auto-generated route/rule/picking-type explosion has nothing to do with realistic prod shape.
+
+Pivot to **targeted-modules-only `seed_18_woodbimble_real`**:
+
+- `scripts/install-targeted-modules.sh` — installs 25 curated CE modules (sale/purchase/stock/mrp/account/POS/HR + l10n_us). Result: 2 companies, 24 picking types, 11 routes, 51 chart accounts, 37 locations.
+- `seed-multicompany-orm.py` — Wood + Showroom branch + Bimble. Bimble gets its own `generic_coa` install (8 journals).
+- `seed-stock-topology.py` — Wood = 3-step receipt + 2-step ship; Showroom = 1-step; transit locations.
+- `seed-operations-volume.py` — 96 SOs / 72 POs / 38 MOs / 129 pickings on Wood; 30 SOs / 24 pickings on Showroom; 1,647 mail.message total.
+- `clone-oca-18.sh` — 20 OCA repos cloned at 18.0 into `/tmp/erp-src/` (skips removed `odoo-cloud-platform`).
+- `seed-oca-assets-rma.py` — 25 fixed assets + 150 depreciation lines + 3 RMA cases on Wood; `mis_builder` + `account_reconcile_oca` + `account_lock_date_update` installed.
+
+**Dumps live on fork release**:
+- `18.0-ledoent-real.psql` (6.5 MB) — CE-only realistic SMB.
+- `18.0-ledoent-real-oca.psql` (7.3 MB) — same + OCA stack.
+
+**Retired (kept on release as historical baselines, no longer in CI)**:
+- `18.0-ledoent-mc.psql`, `18.0-ledoent-mc-large.psql` — bloated 115-locale demos. Workflows `test-migration-multicompany.yml` + `test-migration-multicompany-large.yml` deleted from `ledoent` branch.
+
+**Active CI shape**:
+- Auto (push): `test-migration.yml` (OCA baseline) + `test-migration-enriched.yml` (single-company edge cases on `18.0-ledoent.psql`).
+- Manual (workflow_dispatch): `test-migration-real-oca.yml` against `18.0-ledoent-real-oca.psql`. Use before Ledo prod migration commitment or for OCA PR reviews where multi-company / asset / RMA depth matters.
+
+**Honest caveat**: `_real-oca` has FEWER modules installed (137 vs 631 in the bloated seed). Migrations whose pre/post scripts ONLY fire on modules like `l10n_fr`, `l10n_in`, `event_*`, `website_*` won't be exercised on `_real-oca`. For upstream-PR-breadth coverage, `test-migration-enriched.yml` against `18.0-ledoent.psql` still carries the load (single-company but module-broad).
 
 ### 2. Stale fork-test branches — rebase candidates (low priority hygiene)
 8 fork-test branches are `behind=5–6` vs `ledoent/aggregated` because they
