@@ -43,7 +43,10 @@ jobs:
       OPENUPGRADE_USE_DEMO: "yes"
     services:
       postgres:
-        image: postgres:14.0
+        # PG16 to match the lab's local postgres used by build-fork-seed.sh.
+        # PG14 in OCA's test-migration.yml can't restore custom-format dumps
+        # written by PG16 (file header version 1.15 vs max-supported 1.14).
+        image: postgres:16
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
