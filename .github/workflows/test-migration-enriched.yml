@@ -43,7 +43,10 @@ jobs:
       OPENUPGRADE_USE_DEMO: "yes"
     services:
       postgres:
-        image: postgres:14.0
+        # PG16 to match the lab's local postgres used by build-fork-seed.sh.
+        # PG14 in OCA's test-migration.yml can't restore custom-format dumps
+        # written by PG16 (file header version 1.15 vs max-supported 1.14).
+        image: postgres:16
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
@@ -57,6 +60,15 @@ jobs:
           python-version: '3.10'
       - name: Sleep for 10 seconds
         run: sleep 10s
+      - name: Install postgresql-client-16
+        run: |
+          # Ubuntu 22.04 ships pg_restore v14 — can't read PG16 custom-format
+          # dumps from the lab's local postgres:16. Install matching client.
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore (enriched seed)
