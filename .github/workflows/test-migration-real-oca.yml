@@ -1,20 +1,31 @@
 # MANUAL-ONLY variant of test-migration.yml. Runs the migration against
-# the woodbimble + volume seed produced by:
-#   1. scripts/install-all-modules.sh seed_18_woodbimble (CE-all)
-#   2. scripts/seed-multicompany-orm.py (3 companies + 1 branch)
-#   3. scripts/seed-multicompany-large.py (deeper nesting, per-branch
-#      moves, intercompany invoices, cross-company partner banks)
+# the realistic SMB + OCA-stacked seed produced by:
+#   1. scripts/install-targeted-modules.sh seed_18_woodbimble_real
+#      (25 curated CE modules — sale/purchase/stock/mrp/account/POS/HR + l10n_us)
+#   2. scripts/seed-multicompany-orm.py (Wood + Showroom branch + Bimble)
+#   3. scripts/seed-stock-topology.py (3-step receipt + 2-step ship on Wood,
+#      1-step on Showroom, transit locations)
+#   4. scripts/seed-operations-volume.py (96 SOs + 72 POs + 38 MOs + chatter)
+#   5. scripts/clone-oca-18.sh + odoo -i for OCA modules
+#   6. scripts/seed-oca-assets-rma.py (25 fixed assets + 150 depreciation
+#      lines + RMA cases on Wood; mis_builder + account_reconcile_oca
+#      + account_lock_date_update installed)
+#
+# Result: 18.0-ledoent-real-oca.psql (7.3 MB dump, ~50 MB restored).
+# 137 modules — what real Ledo SMB customers run, not the 631-module
+# CE-all/115-locale-demo bloat the previous mc workflow used.
 #
 # Workflow_dispatch only — no push trigger. Use on-demand:
-#   gh workflow run test-migration-multicompany-large.yml \
+#   gh workflow run test-migration-real-oca.yml \
 #     --repo ledoent/OpenUpgrade --ref <branch>
 #
-# Not in auto-CI because the deeper seed costs ~5 min more per run
-# and most pushes don't need it. Auto-CI still has test-migration.yml
-# (baseline), test-migration-enriched.yml (edge), and
-# test-migration-multicompany.yml (structural multi-company).
+# Auto-CI still runs test-migration.yml (OCA baseline) +
+# test-migration-enriched.yml (single-company edge cases). This one
+# is the prod-confidence signal — run before any Ledo prod migration
+# commitment or any OCA PR review where multi-company / asset
+# depreciation / RMA / multi-step warehouse depth matters.
 
-name: Test OpenUpgrade migration (multi-company LARGE — manual)
+name: Test OpenUpgrade migration (real SMB + OCA — manual)
 
 on:
   workflow_dispatch:
@@ -37,7 +48,7 @@ jobs:
       DB_USERNAME: "odoo"
       # Enriched seed lives on ledoent/OpenUpgrade `databases` release.
       DOWNLOADS: https://github.com/ledoent/OpenUpgrade/releases/download/databases
-      SEED_NAME: 18.0-ledoent-mc-large.psql
+      SEED_NAME: 18.0-ledoent-real-oca.psql
       ODOO: "./odoo/odoo-bin"
       PGHOST: "localhost"
       PGPASSWORD: "odoo"
@@ -73,7 +84,7 @@ jobs:
           echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
       - name: DB Creation
         run: createdb $DB
-      - name: DB Restore (multi-company LARGE seed)
+      - name: DB Restore (real SMB + OCA seed)
         run: |
           wget -q -O- $DOWNLOADS/$SEED_NAME | pg_restore -d $DB --no-owner
           psql $DB -c "UPDATE ir_module_module SET demo=False"
@@ -135,7 +146,7 @@ jobs:
                odoo-old/odoo-bin shell -d $DB < $snippet
              done
           fi
-      - name: OpenUpgrade test (multi-company LARGE)
+      - name: OpenUpgrade test (real SMB + OCA)
         id: run_migration
         run: |
           # select modules and perform the upgrade
