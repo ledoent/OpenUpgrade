@@ -37,11 +37,17 @@ count = 1**.
 
 ## Active TODO
 
-### 1. Multi-company seed — Phase A in flight on Hetzner
-- Hetzner runner installing `seed_18_woodbimble` (CE-only, `-i base` then full uninstalled-CSV pass). ~5–10 min from kick-off.
-- Phase B: `scripts/seed-multicompany-orm.py` runs `account.chart.template.try_loading` for Bimble + creates Wood Co. — Showroom branch.
-- Phase C: `pg_dump -Fc` → upload to fork release as `18.0-ledoent-mc.psql`.
-- Phase D: chrome-devtools verification on the runner's port.
+### 1. Multi-company seed — **DONE 2026-05-16**
+- Phase A: `seed_18_woodbimble` built on Hetzner (CE-all, 631 modules installed, demo data on). ~20 min.
+- Phase B: `scripts/seed-multicompany-orm.py` ran: Wood Manufacturing Co. parent, Wood Co. – Showroom branch (`parent_id=1`), Bimble Design Services Co. separate entity with `generic_coa` installed (8 journals). 171 partners shared via `company_id=NULL`. Admin `allowed_company_ids = [1, 119, 120]`.
+- Phase C: `18.0-ledoent-mc.psql` (19 MB) uploaded to fork release. Existing assets backed up at `lab/backups/release-assets-2026-05-16/`.
+- Phase D: `.github/workflows/test-migration-multicompany.yml` live; first run triggered on `ledoent` branch push.
+
+### 1b. Multi-company LARGE seed — **DRAFTED 2026-05-16**
+- `scripts/seed-multicompany-large.py` ready: 2-level branch nesting (Wood → US East → NJ Warehouse), per-branch `account.move` history, 3 intercompany draft invoices, products pinned per-branch, cross-company `res.partner.bank` rows.
+- `.github/workflows/test-migration-multicompany-large.yml` wired with `workflow_dispatch` only — manual on-demand testing.
+- Not yet run / dumped — runs against `seed_18_woodbimble` (after the `-mc` Phase B). Produces `18.0-ledoent-mc-large.psql`.
+- **Next**: run the script on Hetzner; dump + upload; use to retest PR #5612 against the multi-company branch surface.
 
 ### 2. Stale fork-test branches — rebase candidates (low priority hygiene)
 8 fork-test branches are `behind=5–6` vs `ledoent/aggregated` because they
@@ -122,11 +128,19 @@ Don't duplicate — review and watch that PR instead.
 | #5636 | `[19.0][MIG] event_*`: 5 simple submodules | draft | Validated on fork CI; held |
 | #5637 | `[19.0][MIG] event`: slots + question m2m promotion | draft | Validated on fork CI; held |
 
-### Authored by others — review when bandwidth allows
-- **#5612 hbrunn — `hr_recruitment`** — overlaps the only non-l10n
-  unclaimed module on our list. Review for correctness + adopt if good.
+### Third-party open 19.0 PRs (as of 2026-05-16)
 
-(Refresh by running `gh pr list --repo OCA/OpenUpgrade --state open --search "[19.0][MIG] in:title"`.)
+The OCA upstream queue is quiet. **One** third-party 19.0 PR open:
+
+| # | Author | Title | Updated | Status |
+|---|---|---|---|---|
+| #5612 | hbrunn | `[19.0][MIG] hr_recruitment` | 2026-05-08 | Reviewed by us 2026-05-16; OCA CI red on stale `lift_constraints(cascade)` API; fork CI **green** on current openupgradelib master (hbrunn's own openupgradelib PR #446 added cascade support post-PR). PR needs only a rebase to re-trigger OCA CI. Multi-company branch traversal in `candidate_properties_definition` merge is a real flag worth raising. |
+
+Refresh by running:
+```bash
+gh pr list --repo OCA/OpenUpgrade --state open --search "19.0 in:title" \
+  --json number,title,author,updatedAt
+```
 
 ## CI infra reference
 
