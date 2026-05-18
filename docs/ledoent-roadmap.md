@@ -5,8 +5,32 @@ Captures fork-only validation work, OCA review backlog, and the
 multi-tier seed plan. See `docsource/contributing.rst` for the upstream-
 facing contribution guide.
 
-**Last update**: 2026-05-16. Refresh after each major batch or weekly,
-whichever comes first.
+**Last update**: 2026-05-18 — scope trimmed. Seed Tier plans and
+prod-readiness calibration migrated out of this doc into the lab
+repo (see cross-links below). What remains here is what this fork
+*alone* is the source of truth for: CI status, coverage map,
+fork-test branch hygiene, unclaimed-module triage, and OCA PR
+review backlog.
+
+Refresh after each major batch or weekly, whichever comes first.
+
+## Where related tracking lives (NOT in this doc)
+
+The OpenUpgrade fork should diverge from upstream for **code
+reasons** only. Tracking docs that don't justify a code commit
+inflate rebase pain, couple Ledo's cadence to OpenUpgrade-the-
+project, and noise up every fork-vs-upstream diff. Migrated to:
+
+* **Seed composition + Tier 0/1/2/3** —
+  `openupgrade-lab/docs/seed-plan.md`
+* **Prod-migration readiness (Kencove-scale calibration)** —
+  `openupgrade-lab/docs/prod-readiness-plan.md`
+* **Agent-clerks regression harness roadmap** —
+  `odoo-agent-clerks/ROADMAP.md`
+* **Migration gotchas catalog** —
+  `openupgrade-lab/docs/migration-gotchas.md`
+* **Why this trim happened + remaining cleanup phases** —
+  `openupgrade-lab/docs/fork-roadmap-cleanup-plan.md`
 
 ## Status snapshot
 
@@ -35,35 +59,10 @@ whichever comes first.
 `CLAUDE.local.md` "skip non-US l10n_*" rule). **Functional unclaimed
 count = 1**.
 
-## Active TODO
+## Fork hygiene TODO
 
-### 1. Realistic multi-company SMB seed — **DONE 2026-05-16**
+### Stale fork-test branches — rebase candidates (low priority)
 
-Earlier in the day we built `seed_18_woodbimble` (bloated, 631 modules / 115 demo companies / 1965 picking types) and its LARGE variant. Those revealed the install-all-modules approach deforms the seed: the auto-generated route/rule/picking-type explosion has nothing to do with realistic prod shape.
-
-Pivot to **targeted-modules-only `seed_18_woodbimble_real`**:
-
-- `scripts/install-targeted-modules.sh` — installs 25 curated CE modules (sale/purchase/stock/mrp/account/POS/HR + l10n_us). Result: 2 companies, 24 picking types, 11 routes, 51 chart accounts, 37 locations.
-- `seed-multicompany-orm.py` — Wood + Showroom branch + Bimble. Bimble gets its own `generic_coa` install (8 journals).
-- `seed-stock-topology.py` — Wood = 3-step receipt + 2-step ship; Showroom = 1-step; transit locations.
-- `seed-operations-volume.py` — 96 SOs / 72 POs / 38 MOs / 129 pickings on Wood; 30 SOs / 24 pickings on Showroom; 1,647 mail.message total.
-- `clone-oca-18.sh` — 20 OCA repos cloned at 18.0 into `/tmp/erp-src/` (skips removed `odoo-cloud-platform`).
-- `seed-oca-assets-rma.py` — 25 fixed assets + 150 depreciation lines + 3 RMA cases on Wood; `mis_builder` + `account_reconcile_oca` + `account_lock_date_update` installed.
-
-**Dumps live on fork release**:
-- `18.0-ledoent-real.psql` (6.5 MB) — CE-only realistic SMB.
-- `18.0-ledoent-real-oca.psql` (7.3 MB) — same + OCA stack.
-
-**Retired (kept on release as historical baselines, no longer in CI)**:
-- `18.0-ledoent-mc.psql`, `18.0-ledoent-mc-large.psql` — bloated 115-locale demos. Workflows `test-migration-multicompany.yml` + `test-migration-multicompany-large.yml` deleted from `ledoent` branch.
-
-**Active CI shape**:
-- Auto (push): `test-migration.yml` (OCA baseline) + `test-migration-enriched.yml` (single-company edge cases on `18.0-ledoent.psql`).
-- Manual (workflow_dispatch): `test-migration-real-oca.yml` against `18.0-ledoent-real-oca.psql`. Use before Ledo prod migration commitment or for OCA PR reviews where multi-company / asset / RMA depth matters.
-
-**Honest caveat**: `_real-oca` has FEWER modules installed (137 vs 631 in the bloated seed). Migrations whose pre/post scripts ONLY fire on modules like `l10n_fr`, `l10n_in`, `event_*`, `website_*` won't be exercised on `_real-oca`. For upstream-PR-breadth coverage, `test-migration-enriched.yml` against `18.0-ledoent.psql` still carries the load (single-company but module-broad).
-
-### 2. Stale fork-test branches — rebase candidates (low priority hygiene)
 8 fork-test branches are `behind=5–6` vs `ledoent/aggregated` because they
 predate the rollup merges. Code under test unaffected. Rebase for fresh
 CI confidence only:
@@ -75,24 +74,6 @@ CI confidence only:
 - `19.0-mig-test-hr-trivial`
 - `19.0-mig-test-payment-gateways`
 - `19.0-mig-test-project-suite`
-
-### 3. OCA-stacked seed (Tier 2) — planned, not started
-Build `seed_18_woodbimble_oca` with the Ledo prod OCA stack
-(account-financial-reporting, account-financial-tools, account-reconcile,
-bank-statement-import, mis-builder, reporting-engine, server-tools,
-server-ux, web, social, sale-workflow, e-commerce, dms, knowledge,
-spreadsheet, storage, connector-telephony, odoo-cloud-platform, server-env,
-calendar). Tracks Ledo prod surface area for migration validation.
-
-- New script: `scripts/clone-oca-18.sh` (or aggregator config `repos-oca-18.yaml`).
-- New CI: `test-migration-enriched-oca.yml`, fork-only.
-- New release asset: `18.0-ledoent-mc-oca.psql`.
-- Defer until CE-only seed proven through Phase D.
-
-### 4. Mass real-prod calibration (Kencove-scale)
-After both seeds prove out, dry-run on a sanitized Kencove 30 GB snapshot
-via the runner. Goal: success-probability calibration before any real
-prod migration commitment.
 
 ## Unclaimed upstream — review list
 
