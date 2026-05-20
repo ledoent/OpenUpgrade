@@ -1,0 +1,60 @@
+name: Build openupgrade odoo-18 image
+
+# Builds the Odoo 18.0 image with sentry-sdk baked in and pushes to the
+# ledoent Zot registry at registry.hz.ledoweb.com. Companion to
+# build-image.yml (which builds the 19-side openupgrade image).
+#
+# Auth: basic-auth via the `robot-ci` Zot user.
+#   Secrets: ZOT_USERNAME (= robot-ci), ZOT_PASSWORD (set on this repo).
+#
+# Image: registry.hz.ledoweb.com/openupgrade/odoo-18
+# Consumed by: ledoent/infra openupgrade-lab/odoo-18.yaml
+
+on:
+  push:
+    branches:
+      - aggregated
+    paths:
+      - "Dockerfile.odoo-18"
+      - ".github/workflows/build-image-18.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-image-18-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ZOT_HOST: registry.hz.ledoweb.com
+  ZOT_IMAGE: registry.hz.ledoweb.com/openupgrade/odoo-18
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: aggregated
+          fetch-depth: 1
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ZOT_HOST }}
+          username: ${{ secrets.ZOT_USERNAME }}
+          password: ${{ secrets.ZOT_PASSWORD }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push (amd64 only — cluster is amd64; M-series uses Rosetta)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.odoo-18
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.ZOT_IMAGE }}:latest
+            ${{ env.ZOT_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ env.ZOT_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.ZOT_IMAGE }}:buildcache,mode=max

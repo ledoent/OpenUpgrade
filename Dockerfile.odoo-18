@@ -1,0 +1,20 @@
+## Image: registry.hz.ledoweb.com/openupgrade/odoo-18
+##
+## Built by .github/workflows/build-image-18.yml on push to `aggregated`.
+## Companion to Dockerfile.openupgrade (which builds the 19-side image).
+## Sole purpose is to bake `sentry-sdk` into the stock `odoo:18.0` image
+## so OCA's `server-tools/sentry` addon can post_load successfully when
+## the openupgrade-lab Odoo 18 deployment activates it via
+## `server_wide_modules = base,sentry` in odoo.conf.
+
+FROM odoo:18.0
+
+USER root
+
+# sentry-sdk is the only addition. Kept minimal so this image stays close
+# to the stock Odoo 18.0 baseline — the migration source side shouldn't
+# pull in 19-side openupgrade tooling.
+RUN pip install --no-cache-dir --break-system-packages \
+    sentry-sdk
+
+USER odoo
