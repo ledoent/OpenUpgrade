@@ -3,6 +3,7 @@
 import os
 
 import odoo
+from odoo import tools
 from odoo.modules.module_graph import ModuleGraph
 
 
