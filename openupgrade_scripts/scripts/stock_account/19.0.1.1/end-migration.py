@@ -45,15 +45,26 @@ def update_from_coa_generic(env, spec):
 
         company_data = {}
         for model_name, field_names in spec.items():
-            company_data[model_name] = {
-                record_id: {
+            company_data[model_name] = {}
+            for record_id, record_data in template_data[model_name].items():
+                if not any(record_data.get(key) for key in field_names):
+                    continue
+                existing = ref_or_id(record_id, model_name)
+                if not existing:
+                    # update_from_coa_generic forwards localisation defaults
+                    # onto records the template already established for this
+                    # company. Skip xml_ids that resolve to an empty
+                    # recordset — the spec only carries the target fields,
+                    # so attempting to create from it would crash on any
+                    # NOT NULL column (e.g. account.account#account_type).
+                    continue
+                record_spec = {
                     key: value
                     for key, value in record_data.items()
-                    if key in field_names and not ref_or_id(record_id, model_name)[key]
+                    if key in field_names and not existing[key]
                 }
-                for record_id, record_data in template_data[model_name].items()
-                if any(record_data.get(key) for key in field_names)
-            }
+                if record_spec:
+                    company_data[model_name][record_id] = record_spec
         AccountChartTemplate._load_data(company_data)
 
 
