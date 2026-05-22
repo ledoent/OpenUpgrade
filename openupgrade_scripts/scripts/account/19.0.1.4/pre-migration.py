@@ -114,6 +114,23 @@ def account_report(env):
     )
 
 
+def remap_account_report_line_xmlids(env):
+    """Drop l10n_* xml_ids whose model changed from
+    account.report.line to account.report.expression in 19.0. Cascade FK
+    on account_report_expression.report_line_id auto-cleans children; the
+    l10n module update reinstalls under the correct model.
+    """
+    env.cr.execute(
+        "DELETE FROM account_report_line WHERE id IN "
+        "(SELECT res_id FROM ir_model_data "
+        " WHERE model='account.report.line' AND module LIKE 'l10n_%%')"
+    )
+    env.cr.execute(
+        "DELETE FROM ir_model_data "
+        "WHERE model='account.report.line' AND module LIKE 'l10n_%%'"
+    )
+
+
 def account_report_expression(env):
     """
     Map account.report.expression#date_scope value 'previous_tax_period' to
@@ -140,4 +157,5 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     account_journal_invoice_reference_type(env)
     account_report(env)
+    remap_account_report_line_xmlids(env)
     account_report_expression(env)
