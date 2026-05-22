@@ -180,3 +180,41 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     openupgrade.rename_xmlids(env.cr, _merged_xmlids, allow_merge=True)
     openupgrade.rename_fields(env, _renamed_fields)
+    _strip_removed_search_view_attrs(env)
+
+
+def _strip_removed_search_view_attrs(env):
+    """Strip 19.0 RNG-removed attrs (`expand=` on <group>/<field>,
+    `string="Group By"` on <group>) from stored search-view arch_db.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_ui_view v
+           SET arch_db = sub.new_arch
+          FROM (
+            SELECT id,
+                   jsonb_object_agg(
+                       lang,
+                       to_jsonb(
+                           regexp_replace(
+                               regexp_replace(content,
+                                   '(<(?:group|field)[^>]*?)\s+expand="[^"]*"',
+                                   '\1', 'g'),
+                               '(<group[^>]*?)\s+string="Group By"',
+                               '\1', 'g'
+                           )
+                       )
+                   ) AS new_arch
+              FROM (
+                SELECT v2.id, je.key AS lang, je.value #>> '{}' AS content
+                  FROM ir_ui_view v2, jsonb_each(v2.arch_db) je
+                 WHERE v2.type='search'
+                   AND (v2.arch_db::text LIKE '%%expand=%%'
+                        OR v2.arch_db::text LIKE '%%string="Group By"%%')
+              ) flat
+             GROUP BY id
+          ) sub
+         WHERE v.id = sub.id
+        """,
+    )
