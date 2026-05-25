@@ -1,0 +1,11 @@
+---Models in module 'l10n_us'---
+---Fields in module 'l10n_us'---
+l10n_us      / res.partner.bank         / aba_routing (char)            : DEL
+
+# DONE: preserved in pre-migration as openupgrade_legacy_19_0_aba_routing for database_cleanup.
+
+l10n_us      / res.partner.bank         / l10n_us_bank_account_type (selection): NEW required, selection_keys: ['checking', 'savings'], hasdefault: default
+
+# NOTHING TO DO: Odoo's update_db creates the column and applies the default ('checking') to existing rows.
+
+---XML records in module 'l10n_us'---
