@@ -1,0 +1,48 @@
+---Models in module 'l10n_it_edi'---
+---Fields in module 'l10n_it_edi'---
+l10n_it_edi  / account.move             / l10n_it_edi_attachment_name (char): NEW
+
+# NOTHING TO DO: optional char on account.move; Odoo's update_db handles.
+
+l10n_it_edi  / res.company              / l10n_it_edi_purchase_journal_id (many2one): NEW relation: account.journal, hasdefault: compute
+
+# NOTHING TO DO: NEW computed m2o on res.company; the field has hasdefault=compute so Odoo's _recompute_field machinery populates it after install.
+
+l10n_it_edi  / res.company              / l10n_it_edi_register (boolean): NEW hasdefault: default
+
+# NOTHING TO DO: NEW boolean on res.company with manifest default; Odoo's update_db handles.
+
+l10n_it_edi  / res.partner              / invoice_edi_format (False)    : selection_keys added: [pint_sg] (most likely nothing to do)
+
+# NOTHING TO DO: pure selection-keys widening; Odoo's update_db handles.
+
+---XML records in module 'l10n_it_edi'---
+
+# DONE (partial): the 23 xmlid renames in this version of the analysis are from
+# l10n_it_edi_ndd to l10n_it_edi (the `ndd` doc-types module is being folded
+# into l10n_it_edi). Handled in pre-migration.py via openupgrade.rename_xmlids
+# — 1 ir.model.access + 22 l10n_it.document.type records. Without this, the
+# legacy ir_model_data rows would be orphaned and customer-attached references
+# (e.g. invoices linked to specific document-type ids) would dangle.
+
+# DEFERRED — the OTHER 10 xmlid moves in this analysis are
+# l10n_it_edi_withholding → l10n_it (the withholding-tax module folded into
+# l10n_it). Those need a sibling pre-migration in l10n_it/19.0.0.9/ which is
+# out of scope for this PR — see openupgrade/TODO.md §4.3 for the follow-up.
+
+NEW ir.model.access: l10n_it_edi.access_l10n_it_document_type [renamed from l10n_it_edi_ndd module]
+DEL ir.model.access: l10n_it_edi_ndd.access_l10n_it_document_type [renamed to l10n_it_edi module]
+
+# Handled by rename_xmlids tuple in pre-migration.py.
+
+NEW ir.ui.view: l10n_it_edi.account_view_tax_form_l10n_it_edi_extended
+NEW ir.ui.view: l10n_it_edi.address_form_fields
+NEW ir.ui.view: l10n_it_edi.l10n_it_document_type_form
+NEW ir.ui.view: l10n_it_edi.l10n_it_document_type_tree
+NEW ir.ui.view: l10n_it_edi.view_account_journal_form_l10n_it
+DEL ir.ui.view: l10n_it_edi_ndd.account_invoice_form_l10n_it
+
+# NOTHING TO DO: new view records load via standard module-data XML;
+# the old view in l10n_it_edi_ndd is removed by the standard module-upgrade flow.
+
+(22 l10n_it.document.type NEW + DEL pairs handled by rename_xmlids)
