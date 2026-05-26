@@ -1,0 +1,40 @@
+---Models in module 'l10n_it'---
+---Fields in module 'l10n_it'---
+l10n_it      / account.tax              / l10n_it_law_reference (char)  : DEL
+
+# NOTHING TO DO: legacy law-reference char on account.tax; the 19.0 chart
+# template doesn't re-create it and the value is purely informational
+# (operator-set descriptive text). Standard module-upgrade flow handles
+# the column drop — if a customer wants to preserve the value before
+# database_cleanup removes it, they can do so as a separate one-time
+# script.
+
+---XML records in module 'l10n_it'---
+
+# DONE — the 10 xmlid renames from l10n_it_edi_withholding to l10n_it
+# (withholding-tax module folded into the base l10n_it module). Handled
+# in pre-migration.py via openupgrade.rename_xmlids. Without this,
+# customer references to the previous tax-report records (e.g. tag_ids
+# on account.tax pointing at the withholding line definitions) would be
+# orphaned when Odoo's 19.0 install creates fresh ir_model_data rows
+# pointing at new res_ids.
+
+NEW account.report:            l10n_it.withh_tax_report_it [renamed from l10n_it_edi_withholding module]
+NEW account.report.column:     l10n_it.withh_tax_report_balance [renamed from l10n_it_edi_withholding module]
+NEW account.report.expression: l10n_it.enasarco_purchase_tax_report_it_line_tag [renamed from l10n_it_edi_withholding module]
+NEW account.report.expression: l10n_it.enasarco_sale_tax_report_it_line_tag [renamed from l10n_it_edi_withholding module]
+NEW account.report.expression: l10n_it.withh_purchase_tax_report_it_line_tag [renamed from l10n_it_edi_withholding module]
+NEW account.report.expression: l10n_it.withh_sale_tax_report_it_line_tag [renamed from l10n_it_edi_withholding module]
+NEW account.report.line:       l10n_it.enasarco_purchase_tax_report_it_line [renamed from l10n_it_edi_withholding module]
+NEW account.report.line:       l10n_it.enasarco_sale_tax_report_it_line [renamed from l10n_it_edi_withholding module]
+NEW account.report.line:       l10n_it.withh_purchase_tax_report_it_line [renamed from l10n_it_edi_withholding module]
+NEW account.report.line:       l10n_it.withh_sale_tax_report_it_line [renamed from l10n_it_edi_withholding module]
+
+# NOTHING TO DO — broader tax-report refactor. The rest of this analysis
+# file documents a substantial 19.0 restructuring of the IT VAT tax
+# report under l10n_it's own xmlids: ~50 NEW account.report.expression /
+# account.report.line records, ~110 DEL of the previous report rows.
+# All of these are standard module-data XML — the NEW records install,
+# the DEL records are removed by Odoo's standard module-upgrade flow.
+# No customer data references the lines directly (they're report-shape
+# definitions, not data rows). No migration logic needed.
