@@ -1,0 +1,14 @@
+---Models in module 'l10n_ph'---
+---Fields in module 'l10n_ph'---
+l10n_ph      / res.partner              / l10n_ph_rdo (char)            : NEW
+
+# NOTHING TO DO: optional char on res.partner; Odoo's update_db adds the column with NULL on existing rows.
+
+---XML records in module 'l10n_ph'---
+
+# NOTHING TO DO: this version refactors the 2550Q tax report extensively
+# (12 account.account.tag DEL, 2 account.report.column NEW + 2 DEL, 48 NEW
+# + 39 DEL account.report.expression, 49 NEW + 28 DEL account.report.line,
+# and 7 NEW ir.actions.report / ir.ui.view records). All of those are
+# standard module-data XML — the new records install, the DEL'd ones are
+# removed by the standard module-upgrade flow. No data migration needed.
