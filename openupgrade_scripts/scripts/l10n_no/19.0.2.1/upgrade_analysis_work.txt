@@ -1,0 +1,14 @@
+---Models in module 'l10n_no'---
+---Fields in module 'l10n_no'---
+l10n_no      / account.journal          / invoice_reference_model (False): selection_keys added: [number] (most likely nothing to do)
+
+# NOTHING TO DO: pure selection-keys widening on an existing column; Odoo's update_db handles it.
+
+l10n_no      / account.tax              / l10n_no_standard_code (char)  : NEW
+
+# DONE: added in pre-migration as a NULL column so the 19.0 account chart_template loader (account.tax.mapped) doesn't crash with UndefinedColumn before the l10n_no install step runs.
+
+---XML records in module 'l10n_no'---
+NEW ir.ui.view: l10n_no.account_tax_form_inherit_l10n_no
+
+# NOTHING TO DO: standard view record loaded during install.
