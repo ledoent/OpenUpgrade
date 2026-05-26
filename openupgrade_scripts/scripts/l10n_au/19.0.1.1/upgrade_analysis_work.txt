@@ -1,0 +1,13 @@
+---Models in module 'l10n_au'---
+---Fields in module 'l10n_au'---
+l10n_au      / res.company              / l10n_au_is_gst_registered (boolean): NEW
+
+# NOTHING TO DO: Odoo's update_db adds the column with NULL on existing rows; the field has no required-without-default constraint.
+
+l10n_au      / res.company              / l10n_au_trading_name (char)   : NEW
+
+# NOTHING TO DO: optional char, NULL on existing rows after update_db.
+
+---XML records in module 'l10n_au'---
+
+# NOTHING TO DO: NEW account.report / account.report.column / account.report.expression / account.report.line / account.tax.group records and the audit-report views are standard module-data XML loaded during install.
