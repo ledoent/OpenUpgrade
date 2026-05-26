@@ -1,0 +1,17 @@
+---Models in module 'l10n_gcc_invoice'---
+---Fields in module 'l10n_gcc_invoice'---
+l10n_gcc_invoice / res.company              / l10n_gcc_dual_language_invoice (boolean): NEW
+
+# NOTHING TO DO: optional boolean on res.company; Odoo's update_db adds the column with NULL on existing rows.
+
+---XML records in module 'l10n_gcc_invoice'---
+NEW ir.ui.view: l10n_gcc_invoice.l10n_gcc_document_tax_totals
+NEW ir.ui.view: l10n_gcc_invoice.l10n_gcc_document_tax_totals_company_currency_template
+NEW ir.ui.view: l10n_gcc_invoice.l10n_gcc_report_invoice_document
+NEW ir.ui.view: l10n_gcc_invoice.res_config_settings_view_form_inherit_l10n_gcc_invoice
+
+# NOTHING TO DO: standard new module-data XML loaded during install.
+
+DEL ir.ui.view: l10n_gcc_invoice.arabic_english_invoice
+
+# NOTHING TO DO: standard module-upgrade flow removes the old view.
