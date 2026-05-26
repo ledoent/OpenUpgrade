@@ -1,0 +1,10 @@
+---Models in module 'l10n_din5008'---
+---Fields in module 'l10n_din5008'---
+l10n_din5008 / res.company              / has_position_column (boolean) : NEW
+
+# NOTHING TO DO: optional boolean on res.company; Odoo's update_db adds the column with NULL on existing rows.
+
+---XML records in module 'l10n_din5008'---
+NEW ir.ui.view: l10n_din5008.res_config_settings_view_form
+
+# NOTHING TO DO: standard view record loaded during install.
