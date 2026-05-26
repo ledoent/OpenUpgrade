@@ -1,0 +1,126 @@
+---Models in module 'l10n_in_ewaybill'---
+model l10n.in.ewaybill (moved from l10n_in_ewaybill_stock)
+model l10n.in.ewaybill.cancel (moved from l10n_in_ewaybill_stock) [transient]
+
+# DONE: model ownership transfer via update_module_moved_models in
+# pre-migration. The SQL table name (l10n_in_ewaybill) is unchanged
+# pre/post; only the ir.model + ir.model.fields `module` columns get
+# rewritten from l10n_in_ewaybill_stock to l10n_in_ewaybill.
+
+---Fields in module 'l10n_in_ewaybill'---
+l10n_in_edi_ewaybill / account.move             / l10n_in_distance (integer)    : DEL
+l10n_in_edi_ewaybill / account.move             / l10n_in_mode (selection)      : DEL selection_keys: ['0', '1', '2', '3', '4']
+l10n_in_edi_ewaybill / account.move             / l10n_in_transportation_doc_date (date): DEL
+l10n_in_edi_ewaybill / account.move             / l10n_in_transportation_doc_no (char): DEL
+l10n_in_edi_ewaybill / account.move             / l10n_in_transporter_id (many2one): DEL relation: res.partner
+l10n_in_edi_ewaybill / account.move             / l10n_in_type_id (many2one)    : DEL relation: l10n.in.ewaybill.type
+l10n_in_edi_ewaybill / account.move             / l10n_in_vehicle_no (char)     : DEL
+l10n_in_edi_ewaybill / account.move             / l10n_in_vehicle_type (selection): DEL selection_keys: ['O', 'R']
+
+# DONE — these 8 fields used to live on account.move in 18.0 but in
+# 19.0 the same data lives on l10n.in.ewaybill rows linked via the NEW
+# account.move.l10n_in_ewaybill_ids o2m. Migration is handled in two
+# steps:
+#
+#  - pre-migration.py renames the eight columns to openupgrade_legacy_19_0_*
+#    so Odoo's update_db doesn't drop them on install.
+#  - post-migration.py inserts one l10n.in.ewaybill row per account.move
+#    that had non-NULL ewaybill data, copying the eight transport fields
+#    across. New rows enter state='pending' (the 19.0 default).
+#
+# Type coercion: the 18.0 selection l10n_in_mode had keys '0'/'1'/'2'/
+# '3'/'4'; the 19.0 l10n.in.ewaybill.mode drops '0'. The post-migration
+# coerces '0'-valued rows to NULL so the operator can mark them after
+# the fact. All other selection keys overlap cleanly between versions.
+
+l10n_in_edi_ewaybill / res.company              / l10n_in_edi_ewaybill_auth_validity (datetime): DEL
+l10n_in_edi_ewaybill / res.company              / l10n_in_edi_ewaybill_password (char): DEL
+l10n_in_edi_ewaybill / res.company              / l10n_in_edi_ewaybill_username (char): DEL
+l10n_in_ewaybill / res.company              / l10n_in_ewaybill_auth_validity (datetime): NEW
+l10n_in_ewaybill / res.company              / l10n_in_ewaybill_password (char): NEW
+l10n_in_ewaybill / res.company              / l10n_in_ewaybill_username (char): NEW
+
+# DONE: three credentials column renames handled by rename_fields in
+# pre-migration. The 18.0 column names (l10n_in_edi_ewaybill_*) match
+# the 19.0 names except for the dropped `_edi_` segment. The values
+# (auth token / password / username) are operator-configured and worth
+# preserving.
+
+l10n_in_ewaybill / res.company              / l10n_in_ewaybill_feature (boolean): NEW
+
+# NOTHING TO DO: optional NEW boolean (feature flag) on res.company; Odoo's update_db handles.
+
+l10n_in_ewaybill / account.move             / l10n_in_ewaybill_ids (one2many): NEW relation: l10n.in.ewaybill
+
+# NOTHING TO DO: reverse-side of the model move; no scalar column.
+
+l10n_in_ewaybill / l10n.in.ewaybill         / account_move_id (many2one)    : NEW relation: account.move
+
+# NOTHING TO DO: NEW forward FK on the moved model; Odoo's update_db creates the integer column with NULL.
+
+l10n_in_ewaybill / l10n.in.ewaybill         / attachment_file (binary)      : NEW attachment: True
+
+# NOTHING TO DO: binary attachment; stored via ir.attachment.
+
+# (60+ "previously in module l10n_in_ewaybill_stock" lines — these are
+# the model's existing fields whose ownership transfers via
+# update_module_moved_models above. No per-field work needed.)
+
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / company_id (many2one)         : is now stored
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / company_id (many2one)         : not related anymore
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / company_id (many2one)         : now a function
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / document_date (datetime)      : not related anymore
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / document_date (datetime)      : now a function
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / document_number (char)        : not related anymore
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / document_number (char)        : now a function
+
+# NOTHING TO DO: company_id was a related field in 18.0 (computed
+# from a parent record); in 19.0 it's a stored computed function.
+# Odoo's _recompute_field machinery populates it after install.
+# document_date / document_number similarly transition from related to
+# function — no schema impact, Odoo recomputes.
+
+l10n_in_ewaybill_stock / l10n.in.ewaybill         / state (selection)             : selection_keys removed: [challan]
+
+# NOTHING TO DO: the 'challan' state was internal-only and would not
+# have been used by any production ewaybill records. Standard
+# selection-keys narrowing.
+
+---XML records in module 'l10n_in_ewaybill'---
+
+# DONE — 6 xmlid renames from l10n_in_ewaybill_stock to l10n_in_ewaybill
+# handled by rename_xmlids in pre-migration (action, report, 2 access
+# rules, ir.rule, paperformat). The 8 l10n.in.ewaybill.type renames from
+# l10n_in_edi_ewaybill to l10n_in_ewaybill are AUTOMATIC (apriori's
+# update_module_names handles the module rename).
+
+NEW ir.actions.act_window: l10n_in_ewaybill.l10n_in_ewaybill_form_action [renamed from l10n_in_ewaybill_stock module]
+NEW ir.actions.report: l10n_in_ewaybill.action_report_ewaybill [renamed from l10n_in_ewaybill_stock module]
+NEW ir.model.access: l10n_in_ewaybill.access_l10n_in_ewaybill [renamed from l10n_in_ewaybill_stock module]
+NEW ir.model.access: l10n_in_ewaybill.access_l10n_in_ewaybill_cancel [renamed from l10n_in_ewaybill_stock module]
+NEW ir.rule: l10n_in_ewaybill.l10n_in_ewaybill_comp_rule [renamed from l10n_in_ewaybill_stock module] (noupdate)
+NEW report.paperformat: l10n_in_ewaybill.paperformat_ewaybill [renamed from l10n_in_ewaybill_stock module]
+
+# NEW records that have no rename source — install via standard module-data XML:
+NEW ir.model.access: l10n_in_ewaybill.view_l10n_in_ewaybill
+NEW ir.model.access: l10n_in_ewaybill.access_l10n_in_ewaybill_type [renamed from l10n_in_edi_ewaybill module]
+NEW ir.ui.view: l10n_in_ewaybill.invoice_form_inherit_l10n_in_ewaybill
+NEW ir.ui.view: l10n_in_ewaybill.l10n_in_ewaybill_form_view
+NEW ir.ui.view: l10n_in_ewaybill.l10n_in_ewaybill_report_invoice_document_inherit
+NEW ir.ui.view: l10n_in_ewaybill.report_ewaybill
+NEW ir.ui.view: l10n_in_ewaybill.res_config_settings_view_form_inherit_l10n_in_edi_ewaybill
+NEW ir.ui.view: l10n_in_ewaybill.view_ewaybill_cancel_form
+NEW ir.ui.view: l10n_in_ewaybill.view_invoice_list_inherit_l10n_in_ewaybill
+
+# NOTHING TO DO: NEW view records install via standard module-data XML.
+
+DEL account.edi.format: l10n_in_edi_ewaybill.edi_in_ewaybill_json_1_03
+DEL ir.ui.view: l10n_in_edi_ewaybill.invoice_form_inherit_l10n_in_edi_ewaybill
+DEL ir.ui.view: l10n_in_edi_ewaybill.l10n_in_einvoice_report_invoice_document_inherit
+DEL ir.ui.view: l10n_in_edi_ewaybill.res_config_settings_view_form_inherit_l10n_in_edi_ewaybill
+
+# NOTHING TO DO: legacy account.edi.format + three view records removed
+# by the standard module-upgrade flow (apriori-rewritten module name +
+# Odoo's noupdate flow handle these).
+
+(8 l10n.in.ewaybill.type NEW/DEL pairs from l10n_in_edi_ewaybill — handled by apriori's module rename; no per-record rename_xmlids needed.)
