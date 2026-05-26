@@ -1,0 +1,43 @@
+---Models in module 'l10n_sa_edi'---
+---Fields in module 'l10n_sa_edi'---
+l10n_sa_edi  / account.journal          / l10n_sa_serial_number (char)  : DEL
+
+# DONE: preserved in pre-migration as openupgrade_legacy_19_0_l10n_sa_serial_number so database_cleanup can prompt the operator (the field carried a non-trivial customer-configured value — the journal's ZATCA serial).
+
+l10n_sa_edi  / account.move             / l10n_sa_edi_chain_head_id (many2one): NEW relation: account.move
+
+# NOTHING TO DO: self-referential FK on account.move; Odoo's update_db creates the integer column with NULL on existing rows.
+
+l10n_sa_edi  / res.company              / l10n_sa_edi_is_production (boolean): NEW
+
+# NOTHING TO DO: optional boolean on res.company; Odoo's update_db adds the column with NULL on existing rows.
+
+l10n_sa_edi  / res.partner              / l10n_sa_additional_identification_number (char): DEL
+l10n_sa_edi  / res.partner              / l10n_sa_additional_identification_scheme (selection): DEL selection_keys: ['700', 'CRN', 'GCC', 'IQA', 'MLS', 'MOM', 'NAT', 'OTH', 'PAS', 'SAG', 'TIN']
+l10n_sa_edi  / res.partner              / l10n_sa_edi_additional_identification_number (char): NEW
+l10n_sa_edi  / res.partner              / l10n_sa_edi_additional_identification_scheme (selection): NEW selection_keys: ['700', 'CRN', 'GCC', 'IQA', 'MLS', 'MOM', 'NAT', 'OTH', 'PAS', 'SAG', 'TIN'], hasdefault: default
+
+# DONE: rename_fields in pre-migration. Both fields keep the same type
+# and selection_keys; only the prefix changes from `l10n_sa_` to
+# `l10n_sa_edi_` to match the (now sole) owning module. Without this,
+# the 18.0 values (partner identification scheme + number) would be
+# dropped by update_db.
+
+---XML records in module 'l10n_sa_edi'---
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_bold
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_boxed
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_bubble
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_folder
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_standard
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_striped
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_external_layout_wave
+NEW ir.ui.view: l10n_sa_edi.l10n_sa_edi_report_invoice_document
+NEW ir.ui.view: l10n_sa_edi.view_account_form_inherit
+DEL ir.ui.view: l10n_sa_edi.arabic_english_invoice
+DEL ir.ui.view: l10n_sa_edi.ubl_21_AddressType_zatca
+DEL ir.ui.view: l10n_sa_edi.ubl_21_CreditNoteLineType_zatca
+DEL ir.ui.view: l10n_sa_edi.ubl_21_CreditNoteType_zatca
+DEL ir.ui.view: l10n_sa_edi.ubl_21_DebitNoteLineType_zatca
+DEL ir.ui.view: l10n_sa_edi.ubl_21_DebitNoteType_zatca
+
+# NOTHING TO DO: 9 NEW + 6 DEL view records replace the 18.0 UBL 2.1 template tree with a new layered-template structure. Standard module-upgrade flow handles both directions.
