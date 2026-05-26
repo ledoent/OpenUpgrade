@@ -1,0 +1,107 @@
+---Models in module 'l10n_in'---
+obsolete model l10n_in.withhold.wizard.line [transient]
+
+# NOTHING TO DO: transient model; no table to migrate.
+
+new model l10n_in.pan.entity
+
+# NOTHING TO DO: Category B — new-model creation is handled by Odoo's update_db during the l10n_in install step. FK integer columns on res.company / res.partner pointing at it are added in pre-migration so registry load doesn't fail.
+
+---Fields in module 'l10n_in'---
+l10n_in      / account.account          / l10n_in_tcs_feature_enabled (boolean): NEW isfunction: function, stored
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / account.account          / l10n_in_tds_feature_enabled (boolean): NEW isfunction: function, stored
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / account.move.line        / l10n_in_gstr_section (selection): NEW selection_keys: [...]
+
+# DONE: add_fields in pre-migration (column type varchar).
+
+l10n_in      / account.tax              / l10n_in_is_lut (boolean)      : NEW
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / account.tax              / l10n_in_tax_type (selection)  : is now stored
+l10n_in      / account.tax              / l10n_in_tax_type (selection)  : not a function anymore
+l10n_in      / account.tax              / l10n_in_tax_type (selection)  : selection_keys added: [exempt, gst, nil_rated, non_gst, tcs, tds_purchase, tds_sale], removed: [cess, cgst, igst, sgst]
+
+# DONE: add_fields in pre-migration creates the stored column. Selection-keys widen + drop legacy values; Odoo's update_db reconciles existing rows whose value was in the removed set (operator manually re-classifies cess/cgst/igst/sgst rows post-migration if needed).
+
+l10n_in      / l10n_in.pan.entity       / activity_ids (one2many)       : NEW relation: mail.activity
+l10n_in      / l10n_in.pan.entity       / message_follower_ids (one2many): NEW relation: mail.followers
+l10n_in      / l10n_in.pan.entity       / message_ids (one2many)        : NEW relation: mail.message
+l10n_in      / l10n_in.pan.entity       / msme_number (char)            : NEW
+l10n_in      / l10n_in.pan.entity       / msme_type (selection)         : NEW selection_keys: [...]
+l10n_in      / l10n_in.pan.entity       / name (char)                   : NEW required
+l10n_in      / l10n_in.pan.entity       / partner_ids (one2many)        : NEW relation: res.partner
+l10n_in      / l10n_in.pan.entity       / rating_ids (one2many)         : NEW relation: rating.rating
+l10n_in      / l10n_in.pan.entity       / tds_certificate (binary)      : NEW attachment: True
+l10n_in      / l10n_in.pan.entity       / tds_certificate_filename (char): NEW
+l10n_in      / l10n_in.pan.entity       / tds_deduction (selection)     : NEW selection_keys: [...], hasdefault: default
+l10n_in      / l10n_in.pan.entity       / type (selection)              : NEW selection_keys: [...], isfunction: function, stored
+l10n_in      / l10n_in.pan.entity       / website_message_ids (one2many): NEW relation: mail.message
+
+# NOTHING TO DO: fields on the new l10n_in.pan.entity model; created by Odoo's update_db during install.
+
+l10n_in      / l10n_in.section.alert    / tax_report_line_id (many2one) : NEW relation: account.report.line
+
+# NOTHING TO DO: new m2o on l10n_in.section.alert; Odoo's update_db creates the integer column with NULL.
+
+l10n_in      / res.company              / l10n_in_gstin_status_feature (boolean): NEW
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / res.company              / l10n_in_is_gst_registered (boolean): NEW isfunction: function, stored
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / res.company              / l10n_in_pan (char)            : DEL
+l10n_in      / res.partner              / l10n_in_pan (char)            : DEL
+
+# NOTHING TO DO: the 18.0 PAN values move into the new l10n_in.pan.entity m2o (l10n_in_pan_entity_id) — OpenUpgrade preserves the old columns as legacy automatically since the new field name differs.
+
+l10n_in      / res.company              / l10n_in_pan_entity_id (many2one): NEW relation: l10n_in.pan.entity, isrelated: related, stored
+
+# DONE: add_fields in pre-migration (integer FK).
+
+l10n_in      / res.company              / l10n_in_pan_type (char)       : not a function anymore
+l10n_in      / res.company              / l10n_in_pan_type (char)       : now related
+l10n_in      / res.company              / l10n_in_pan_type (char)       : selection_keys is now 'function' ('False')
+l10n_in      / res.company              / l10n_in_pan_type (char)       : type is now 'selection' ('char')
+
+# NOTHING TO DO: column type change from char to selection on an existing field; Odoo's update_db handles the type coercion (Postgres accepts varchar widening). Field becomes a related-stored derivative of the new pan.entity m2o.
+
+l10n_in      / res.company              / l10n_in_tcs_feature (boolean) : NEW isfunction: function, stored
+l10n_in      / res.company              / l10n_in_tds_feature (boolean) : NEW isfunction: function, stored
+
+# DONE: add_fields in pre-migration.
+
+l10n_in      / res.partner              / l10n_in_pan_entity_id (many2one): NEW relation: l10n_in.pan.entity
+
+# DONE: add_fields in pre-migration (integer FK).
+
+l10n_in      / res.partner              / l10n_in_tan (char)            : NEW
+
+# DONE: add_fields in pre-migration.
+
+l10n_in_withholding / account.payment          / l10n_in_total_withholding_amount (float): not related anymore
+l10n_in_withholding / account.payment          / l10n_in_total_withholding_amount (float): now a function
+l10n_in_withholding / account.payment          / l10n_in_withhold_move_ids (one2many): is now stored
+l10n_in_withholding / account.payment          / l10n_in_withhold_move_ids (one2many): not related anymore
+
+# NOTHING TO DO: implementation-detail changes (related -> function, stored promotion on a o2m); Odoo's update_db + the related o2m relation table handle these transparently.
+
+l10n_in_withholding / account.tax              / l10n_in_tds_tax_type (selection): DEL selection_keys: ['purchase', 'sale']
+
+# NOTHING TO DO: field DEL on account.tax; OpenUpgrade preserves the column as legacy automatically (database_cleanup prompts later if customers want to drop).
+
+l10n_in_withholding_payment / account.payment          / l10n_in_withhold_move_ids (False): DEL mode: modify
+
+# NOTHING TO DO: mode-modify DEL — this version of the field is replaced by the l10n_in_withholding owner's variant above; standard module-upgrade flow handles.
+
+---XML records in module 'l10n_in'---
+
+# NOTHING TO DO: all XML records install via standard module-data XML during the l10n_in install step.
