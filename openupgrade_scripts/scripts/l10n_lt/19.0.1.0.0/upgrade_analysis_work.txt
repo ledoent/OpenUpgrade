@@ -1,0 +1,9 @@
+---Models in module 'l10n_lt'---
+---Fields in module 'l10n_lt'---
+l10n_lt      / account.tax              / l10n_lt_tax_code (char)       : NEW
+
+# DONE: added in pre-migration as a NULL column so the 19.0 account chart_template loader (account.tax.mapped) doesn't crash with UndefinedColumn before the l10n_lt install step runs.
+
+---XML records in module 'l10n_lt'---
+
+# NOTHING TO DO: new account.report / account.report.column / account.report.expression / account.report.line records are standard module-data XML loaded during install.
