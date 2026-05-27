@@ -1,8 +1,11 @@
 ---Models in module 'hr_presence'---
+# NOTHING TO DO
 
 ---Fields in module 'hr_presence'---
+# NOTHING TO DO
 
 ---XML records in module 'hr_presence'---
 DEL ir.ui.view: hr_presence.hr_employee_view_tree
+# NOTHING TO DO: Odoo's -u all cleanup removes orphan views.
 
-# NOTHING TO DO
+# DONE: noupdate_changes.xml loaded in post-migration.

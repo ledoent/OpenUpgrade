@@ -1,6 +1,8 @@
 ---Models in module 'hr_fleet'---
+# NOTHING TO DO
 
 ---Fields in module 'hr_fleet'---
+# NOTHING TO DO
 
 ---XML records in module 'hr_fleet'---
 DEL ir.rule: hr_fleet.fleet_rule_contract_visibility_user (noupdate)
@@ -8,5 +10,4 @@ DEL ir.rule: hr_fleet.fleet_rule_odometer_visibility_user (noupdate)
 DEL ir.rule: hr_fleet.fleet_rule_service_visibility_user (noupdate)
 DEL ir.rule: hr_fleet.fleet_rule_vehicle_visibility_user (noupdate)
 DEL ir.ui.view: hr_fleet.res_users_view_form_preferences
-
-# NOTHING TO DO
+# DONE: delete_records_safely_by_xml_id in pre-migration.

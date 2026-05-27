@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
 <odoo>
-  <!--
   <record id="mail_template_applicant_interview_invite" model="mail.template">
     <field name="body_html" type="html">
       <div style="margin: 0px; padding: 0px; font-size: 13px;">
@@ -25,5 +24,4 @@
     <field name="lang"/>
     <field name="use_default_to" eval="True"/>
   </record>
-  -->
 </odoo>

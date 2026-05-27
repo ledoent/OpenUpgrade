@@ -23,5 +23,6 @@ NEW ir.ui.view: hr_timesheet.view_calendar_account_analytic_line
 NEW ir.ui.view: hr_timesheet.view_calendar_account_analytic_line_multi_create
 NEW ir.ui.view: hr_timesheet.view_calendar_account_analytic_line_my_timesheets
 NEW res.groups.privilege: hr_timesheet.res_groups_privilege_timesheets (noupdate)
-
 # NOTHING TO DO
+
+# DONE: noupdate_changes.xml loaded in post-migration.
