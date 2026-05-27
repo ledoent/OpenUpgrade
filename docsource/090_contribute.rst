@@ -77,19 +77,26 @@ Examples: all the noupdate=0 new and del ir* records, or the NEW and DEL lines f
   .. code-block:: shell
 
       git add .
-      git commit -am "[ADD] account"
+      git commit -am "[MIG] account"
       git push MY_REMOTE 16.0-mig-account
 
 
   **Note:**
 
-    * For a fix of an existing migration scripts, use ``[FIX]``
+    * For a first-pass migration script for a module version, use ``[MIG]``.
+      This is the dominant prefix on recent branches (e.g. ``[MIG] account``,
+      ``[MIG] hr_recruitment``).
 
-    * For an improvement of an existing migration scripts, use ``[IMP]``
+    * For a fix of an existing migration script, use ``[FIX]``.
 
-    * For old versions when OpenUpgrade was a fork (in V13 and before),
-      use "[OU-ADD]" / "[OU-FIX]" and "[OU-IMP]" to distinguish Odoo team commits
-      and Openupgraders commits.
+    * For an improvement of an existing migration script, use ``[IMP]``.
+
+    * For changes to the OpenUpgrade framework, infrastructure, or
+      cross-cutting helpers (rather than a per-module migration script),
+      use ``[OU-ADD]`` / ``[OU-FIX]`` / ``[OU-IMP]``. These prefixes
+      originated in the V13-and-earlier era when OpenUpgrade shipped
+      patched copies of Odoo source files, and they remain in use today
+      for framework-level changes.
 
   * Propose your changes to the community for review, opening a Pull Request on github.
 
