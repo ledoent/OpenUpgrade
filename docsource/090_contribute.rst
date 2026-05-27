@@ -58,8 +58,32 @@ For example, the sale_stock migration script may fail, if the stock migration sc
     * ``TODO``: This shouldn't be usually done.
 
 **Note:**
-You can reorder lines and group them together for including all of them in a "logical" block for putting only one comment.
-Examples: all the noupdate=0 new and del ir* records, or the NEW and DEL lines for a field that is renamed.
+Place each marker **inline, on its own line, immediately following the
+specific analysis line it annotates**. Don't consolidate multiple adjacent
+analysis lines under a single grouped comment, even when the lines are
+conceptually related — each gets its own one-line marker.
+
+Empty section headers (e.g. ``---Models in module 'X'---`` with no
+content below) still receive a single marker.
+
+Markers are terse — typically ``# DONE: <one-line summary>`` or
+``# NOTHING TO DO``. The "why" belongs in the commit message body or
+PR description, not in the work file.
+
+Example:
+
+.. code-block:: text
+
+    ---Fields in module 'X'---
+    X / account.tax / l10n_in_is_lut (boolean): NEW
+    # DONE: add_fields in pre-migration.
+    X / account.tax / l10n_in_tax_type (selection): is now stored
+    # DONE: add_fields in pre-migration; map_values for legacy selection set.
+    X / res.partner / l10n_in_pan (char): DEL
+    # NOTHING TO DO: new field name differs; update_db preserves old column as legacy.
+
+    ---XML records in module 'X'---
+    # NOTHING TO DO
 
   * Write ``pre-migration.py`` and / or ``post-migration.py`` scripts in the same folder.
 
