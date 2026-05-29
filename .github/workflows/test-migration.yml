@@ -104,6 +104,10 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
+          # this is for website (geoip2), cloud_storage_google/google_gmail
+          # (google-auth) and auth_ldap (python-ldap) — addons marked in
+          # docsource get pulled into --update and load their python deps.
+          pip install geoip2 google-auth python-ldap
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
