@@ -13,6 +13,10 @@ on:
     branches:
       - "19.0"
       - "19.0-ocabot-*"
+      - "19.0-mig-*"
+      - "19.0-fix-*"
+      - "aggregated"
+      - "ledoent"
 
 jobs:
   test:
@@ -23,7 +27,9 @@ jobs:
       DB_PASSWORD: "odoo"
       DB_PORT: 5432
       DB_USERNAME: "odoo"
-      DOWNLOADS: https://github.com/${{github.repository}}/releases/download/databases
+      # Test databases live only on OCA upstream; forks reuse them so we
+      # don't have to mirror multi-GB psql dumps.
+      DOWNLOADS: https://github.com/OCA/OpenUpgrade/releases/download/databases
       ODOO: "./odoo/odoo-bin"
       PGHOST: "localhost"
       PGPASSWORD: "odoo"
@@ -45,6 +51,8 @@ jobs:
           python-version: '3.10'
       - name: Sleep for 10 seconds
         run: sleep 10s
+      - name: Install PostgreSQL client and wget
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client wget
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore
@@ -72,14 +80,29 @@ jobs:
       - name: Configuration
         run: |
           sudo apt update
-          sudo apt install \
+          # The 'oca forks' self-hosted runner pool is leaner than GitHub's
+          # hosted ubuntu-22.04 image (which OCA upstream uses and which ships
+          # the build toolchain preinstalled). Install the full toolchain so
+          # every sdist in odoo/requirements.txt compiles: build-essential +
+          # python3-dev cover gcc/g++/make/Python.h; the lib*-dev headers cover
+          # psycopg2 (libpq), python-ldap (libldap2/libsasl2), lxml (libxml2/
+          # libxslt1), cryptography (libffi/libssl), Pillow (libjpeg/zlib),
+          # PyYAML (libyaml).
+          sudo apt install -y \
+              build-essential \
+              python3-dev \
               expect \
               expect-dev \
               libevent-dev \
+              libffi-dev \
+              libjpeg-dev \
               libldap2-dev \
+              libpq-dev \
               libsasl2-dev \
+              libssl-dev \
               libxml2-dev \
               libxslt1-dev \
+              libyaml-dev \
               nodejs \
               python3-lxml \
               python3-passlib \
@@ -88,7 +111,8 @@ jobs:
               python3-simplejson \
               python3-werkzeug \
               python3-yaml \
-              unixodbc-dev
+              unixodbc-dev \
+              zlib1g-dev
       - name: Requirements Installation
         run: |
           sed -i -E "s/(gevent==)21\.8\.0( ; sys_platform != 'win32' and python_version == '3.10')/\122.10.2\2/;s/(greenlet==)1.1.2( ; sys_platform != 'win32' and python_version == '3.10')/\12.0.2\2/" odoo/requirements.txt
@@ -102,6 +126,11 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
+          # this is for website, which is marked Done and declares geoip2.
+          # (Only geoip2: google-auth / python-ldap pull a newer cryptography
+          # that breaks the runner's pre-installed pyOpenSSL — add those only
+          # when cloud_storage_google / google_gmail / auth_ldap get marked.)
+          pip install geoip2
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then

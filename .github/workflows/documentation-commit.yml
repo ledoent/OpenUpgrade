@@ -8,10 +8,15 @@ name: Build and commit documentation
 
 on:
   push:
+    branches: ["19.0"]
     paths: ["docsource/modules180-190.rst"]
 
 jobs:
   documentation-commit:
+    # Docs publishing only makes sense on OCA upstream (default branch
+    # publishes to https://oca.github.io/OpenUpgrade/). Forks don't have
+    # a `documentation` branch — checkout would fail. Restrict to OCA.
+    if: ${{ github.repository_owner == 'OCA' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out OpenUpgrade Documentation
