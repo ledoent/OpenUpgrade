@@ -1,0 +1,12 @@
+---Models in module 'l10n_pk'---
+---Fields in module 'l10n_pk'---
+---XML records in module 'l10n_pk'---
+# NOTHING TO DO: the seven res.country.state records (state_pk_ajk/ba/gb/is/kp/pb/sd)
+# moved from l10n_pk to base; standard ir.model.data re-homing on base update keeps them.
+DEL res.country.state: l10n_pk.state_pk_ajk [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_ba [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_gb [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_is [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_kp [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_pb [renamed to base module]
+DEL res.country.state: l10n_pk.state_pk_sd [renamed to base module]
