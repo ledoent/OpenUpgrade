@@ -1,14 +1,18 @@
-# This workflow will install Python dependencies, run tests and lint with a
-# single version of Python. For more information see:
-# https://help.github.com/actions/language-and-framework-guides\
-# /using-python-with-github-actions
+# Fork-only variant of test-migration.yml that exercises the migration
+# against the enriched 18.0 seed (OCA's 18.0.psql + populate-factory
+# volume + curated edge cases from scripts/seed-edge-cases.py in the
+# lab repo). Built and uploaded by scripts/build-fork-seed.sh.
+#
+# Catches migration regressions on edge-case data that OCA's vanilla
+# demo seed doesn't contain — VATEX_ legacy codes, crm.stage with
+# team_id set, archived parents, etc.
+#
+# Runs in parallel with `test-migration.yml` so a green build means
+# both the upstream baseline AND our enriched seed migrate cleanly.
 
-name: Test OpenUpgrade migration
+name: Test OpenUpgrade migration (enriched seed)
 
 on:
-  pull_request:
-    branches:
-      - "19.0*"
   push:
     branches:
       - "19.0"
@@ -20,6 +24,8 @@ on:
 
 jobs:
   test:
+    # Fork-only: OCA upstream doesn't have our enriched seed.
+    if: ${{ github.repository_owner == 'ledoent' }}
     runs-on: ubuntu-22.04
     env:
       DB: "openupgrade"
@@ -27,9 +33,9 @@ jobs:
       DB_PASSWORD: "odoo"
       DB_PORT: 5432
       DB_USERNAME: "odoo"
-      # Test databases live only on OCA upstream; forks reuse them so we
-      # don't have to mirror multi-GB psql dumps.
-      DOWNLOADS: https://github.com/OCA/OpenUpgrade/releases/download/databases
+      # Enriched seed lives on ledoent/OpenUpgrade `databases` release.
+      DOWNLOADS: https://github.com/ledoent/OpenUpgrade/releases/download/databases
+      SEED_NAME: 18.0-ledoent.psql
       ODOO: "./odoo/odoo-bin"
       PGHOST: "localhost"
       PGPASSWORD: "odoo"
@@ -37,7 +43,10 @@ jobs:
       OPENUPGRADE_USE_DEMO: "yes"
     services:
       postgres:
-        image: postgres:14.0
+        # PG16 to match the lab's local postgres used by build-fork-seed.sh.
+        # PG14 in OCA's test-migration.yml can't restore custom-format dumps
+        # written by PG16 (file header version 1.15 vs max-supported 1.14).
+        image: postgres:16
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
@@ -51,13 +60,20 @@ jobs:
           python-version: '3.10'
       - name: Sleep for 10 seconds
         run: sleep 10s
-      - name: Install PostgreSQL client and wget
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client wget
+      - name: Install postgresql-client-16
+        run: |
+          # Ubuntu 22.04 ships pg_restore v14 — can't read PG16 custom-format
+          # dumps from the lab's local postgres:16. Install matching client.
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
       - name: DB Creation
         run: createdb $DB
-      - name: DB Restore
+      - name: DB Restore (enriched seed)
         run: |
-          wget -q -O- $DOWNLOADS/18.0.psql | pg_restore -d $DB --no-owner
+          wget -q -O- $DOWNLOADS/$SEED_NAME | pg_restore -d $DB --no-owner
           psql $DB -c "UPDATE ir_module_module SET demo=False"
       - name: Check out Odoo
         uses: actions/checkout@v4
@@ -80,29 +96,14 @@ jobs:
       - name: Configuration
         run: |
           sudo apt update
-          # The 'oca forks' self-hosted runner pool is leaner than GitHub's
-          # hosted ubuntu-22.04 image (which OCA upstream uses and which ships
-          # the build toolchain preinstalled). Install the full toolchain so
-          # every sdist in odoo/requirements.txt compiles: build-essential +
-          # python3-dev cover gcc/g++/make/Python.h; the lib*-dev headers cover
-          # psycopg2 (libpq), python-ldap (libldap2/libsasl2), lxml (libxml2/
-          # libxslt1), cryptography (libffi/libssl), Pillow (libjpeg/zlib),
-          # PyYAML (libyaml).
-          sudo apt install -y \
-              build-essential \
-              python3-dev \
+          sudo apt install \
               expect \
               expect-dev \
               libevent-dev \
-              libffi-dev \
-              libjpeg-dev \
               libldap2-dev \
-              libpq-dev \
               libsasl2-dev \
-              libssl-dev \
               libxml2-dev \
               libxslt1-dev \
-              libyaml-dev \
               nodejs \
               python3-lxml \
               python3-passlib \
@@ -111,8 +112,7 @@ jobs:
               python3-simplejson \
               python3-werkzeug \
               python3-yaml \
-              unixodbc-dev \
-              zlib1g-dev
+              unixodbc-dev
       - name: Requirements Installation
         run: |
           sed -i -E "s/(gevent==)21\.8\.0( ; sys_platform != 'win32' and python_version == '3.10')/\122.10.2\2/;s/(greenlet==)1.1.2( ; sys_platform != 'win32' and python_version == '3.10')/\12.0.2\2/" odoo/requirements.txt
@@ -126,11 +126,6 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
-          # this is for website, which is marked Done and declares geoip2.
-          # (Only geoip2: google-auth / python-ldap pull a newer cryptography
-          # that breaks the runner's pre-installed pyOpenSSL — add those only
-          # when cloud_storage_google / google_gmail / auth_ldap get marked.)
-          pip install geoip2
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
@@ -138,7 +133,7 @@ jobs:
                odoo-old/odoo-bin shell -d $DB < $snippet
              done
           fi
-      - name: OpenUpgrade test
+      - name: OpenUpgrade test (enriched)
         id: run_migration
         run: |
           # select modules and perform the upgrade
@@ -174,10 +169,6 @@ jobs:
               $GITHUB_WORKSPACE/odoo/odoo/addons \
               $GITHUB_WORKSPACE/openupgrade"
           echo Execution of Openupgrade with the update of the following modules : $MODULES_NEW
-          # Silence redundant logs from unlinking records (1 line is enough)
-          # to prevent log overflow
-          coverage run \
-              --source=$GITHUB_WORKSPACE/openupgrade/openupgrade_scripts/scripts \
           $ODOO \
               --addons-path=`echo $ADDONS_PATHS | awk -v OFS="," '$1=$1'` \
               --database=$DB \
@@ -192,11 +183,3 @@ jobs:
               --stop-after-init \
               --without-demo=$MODULES_NEW \
               --update=$MODULES_NEW
-      - name: Generate coverage.xml
-        if: ${{ steps.run_migration.outputs.modules_new != '' }}
-        run: coverage xml
-      - uses: codecov/codecov-action@v4
-        if: ${{ steps.run_migration.outputs.modules_new != '' }}
-        with:
-          files: coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
