@@ -51,6 +51,10 @@ jobs:
           ref: main
           path: lab
           fetch-depth: 1
+          # openupgrade-lab is private; the default GITHUB_TOKEN is scoped to THIS
+          # repo only and gets "Repository not found". AGGREGATE_PUSH_TOKEN is a PAT
+          # with cross-repo read (already used for the push + dispatch steps).
+          token: ${{ secrets.AGGREGATE_PUSH_TOKEN }}
 
       - name: Extract the ./openupgrade block into the aggregate config
         # gitaggregate wants a single-repo config; pull just the ./openupgrade
