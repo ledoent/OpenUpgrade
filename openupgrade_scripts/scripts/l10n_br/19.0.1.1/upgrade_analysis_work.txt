@@ -1,0 +1,17 @@
+---Models in module 'l10n_br'---
+---Fields in module 'l10n_br'---
+l10n_br      / res.company              / l10n_br_cpf_code (char)       : DEL
+
+# NOTHING TO DO: field removed, no data to preserve
+
+l10n_br      / res.company              / l10n_br_ie_code (char)        : not stored anymore
+l10n_br      / res.company              / l10n_br_ie_code (char)        : now related
+l10n_br      / res.company              / l10n_br_im_code (char)        : not stored anymore
+l10n_br      / res.company              / l10n_br_im_code (char)        : now related
+
+# NOTHING TO DO: fields became related/non-stored; ORM drops the column, value is recomputed from the related source
+
+---XML records in module 'l10n_br'---
+NEW ir.ui.view: l10n_br.address_form_fields
+
+# NOTHING TO DO
