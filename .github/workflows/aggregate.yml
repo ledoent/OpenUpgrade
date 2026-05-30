@@ -1,9 +1,22 @@
 name: Aggregate fork branches
 
+# Builds the throwaway `aggregated` branch = OCA/19.0 + every branch in the
+# merge manifest, then force-pushes it. The build image and the lab's
+# `make migrate` consume `aggregated`.
+#
+# SINGLE SOURCE OF TRUTH for the merge list: ledoent/openupgrade-lab `repos.yaml`
+# (the `./openupgrade` block). It is NOT duplicated here — this workflow checks
+# out the lab repo and reads it. The OpenUpgrade fork's working/migration
+# branches stay clean of aggregation config (they are based on pristine
+# OCA/19.0 and are upstream-ready). To change which branches aggregate, edit
+# `repos.yaml` in the lab repo (and run `make check-fork-model`). See
+# `docs/fork-aggregation-model.md` in the lab repo.
+
 on:
   push:
     branches:
       - ledoent
+      - "19.0-mig-*"
       - "19.0-fix-*"
   workflow_dispatch:
 
@@ -27,37 +40,30 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Checkout fork (no working tree needed; gitaggregate clones fresh)
+      - name: Checkout lab repo (single source of the merge manifest)
+        # The aggregate merge list lives ONLY in the lab repo's repos.yaml so the
+        # OpenUpgrade fork's working/migration branches stay clean of any
+        # aggregation config (they are based on pristine OCA/19.0). This workflow
+        # reads that committed repos.yaml — it does not carry its own copy.
         uses: actions/checkout@v4
         with:
-          ref: ledoent
-          path: fork-meta
+          repository: ledoent/openupgrade-lab
+          ref: main
+          path: lab
           fetch-depth: 1
 
-      - name: Write aggregate config
-        # gitaggregate clones into ./openupgrade so the lab's repos.yaml layout is reproduced.
-        # `target ledoent aggregated` is what gets pushed back.
+      - name: Extract the ./openupgrade block into the aggregate config
+        # gitaggregate wants a single-repo config; pull just the ./openupgrade
+        # top-level key out of the lab's multi-repo repos.yaml.
         run: |
-          cat > aggregate.yml <<'YAML'
-          ./openupgrade:
-            defaults:
-              depth: 500
-            remotes:
-              origin: https://github.com/OCA/OpenUpgrade.git
-              ledoent: https://github.com/ledoent/OpenUpgrade.git
-            target: ledoent aggregated
-            merges:
-              - ledoent ledoent
-              - ledoent 19.0-fix-user-groups-id-rename
-              # 19.0-fix-rollup is a conflict-resolved combination of the five
-              # OCA/OpenUpgrade PRs #5628-5632 (cherry-picked onto origin/19.0
-              # in dependency order). Listing them individually here fails
-              # because #5628 and #5630 both touch hr/19.0.1.1/pre-migration.py
-              # with non-overlapping additions that gitaggregate's straight
-              # `git pull --no-rebase` can't auto-merge. When any OCA PR
-              # changes, rebase the rollup branch.
-              - ledoent 19.0-fix-rollup
-          YAML
+          python3 - <<'PY'
+          import yaml
+          full = yaml.safe_load(open("lab/repos.yaml"))
+          block = full["./openupgrade"]
+          yaml.safe_dump({"./openupgrade": block}, open("aggregate.yml", "w"),
+                         default_flow_style=False, sort_keys=False)
+          print(open("aggregate.yml").read())
+          PY
 
       - name: Run gitaggregate
         run: gitaggregate -c aggregate.yml
