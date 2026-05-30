@@ -64,7 +64,10 @@ analysis lines under a single grouped comment, even when the lines are
 conceptually related — each gets its own one-line marker.
 
 Empty section headers (e.g. ``---Models in module 'X'---`` with no
-content below) still receive a single marker.
+analysis lines below) get **no** marker — leave them blank. Only
+sections with content are annotated; a whole module with nothing to do
+is recorded in the coverage matrix (column 2), not by marking an empty
+work-file section.
 
 Markers are terse — typically ``# DONE: <one-line summary>`` or
 ``# NOTHING TO DO``. The "why" belongs in the commit message body or
