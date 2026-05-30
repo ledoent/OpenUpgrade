@@ -1,0 +1,7 @@
+---Models in module 'l10n_fi'---
+---Fields in module 'l10n_fi'---
+l10n_fi      / account.journal          / invoice_reference_model (False): selection_keys added: [number] (most likely nothing to do)
+
+# NOTHING TO DO: new selection key, no existing data to remap
+
+---XML records in module 'l10n_fi'---
