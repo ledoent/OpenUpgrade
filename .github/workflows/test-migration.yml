@@ -79,6 +79,7 @@ jobs:
               expect-dev \
               libevent-dev \
               libldap2-dev \
+              libpq-dev \
               libsasl2-dev \
               libxml2-dev \
               libxslt1-dev \
