@@ -1,0 +1,241 @@
+# MANUAL-ONLY variant of test-migration.yml. Runs the migration against
+# the realistic SMB + OCA-stacked seed produced by:
+#   1. scripts/install-targeted-modules.sh seed_18_woodbimble_real
+#      (25 curated CE modules — sale/purchase/stock/mrp/account/POS/HR + l10n_us)
+#   2. scripts/seed-multicompany-orm.py (Wood + Showroom branch + Bimble)
+#   3. scripts/seed-stock-topology.py (3-step receipt + 2-step ship on Wood,
+#      1-step on Showroom, transit locations)
+#   4. scripts/seed-operations-volume.py (96 SOs + 72 POs + 38 MOs + chatter)
+#   5. scripts/clone-oca-18.sh + odoo -i for OCA modules
+#   6. scripts/seed-oca-assets-rma.py (25 fixed assets + 150 depreciation
+#      lines + RMA cases on Wood; mis_builder + account_reconcile_oca
+#      + account_lock_date_update installed)
+#
+# Result: 18.0-ledoent-real-oca.psql (7.3 MB dump, ~50 MB restored).
+# 137 modules — what real Ledo SMB customers run, not the 631-module
+# CE-all/115-locale-demo bloat the previous mc workflow used.
+#
+# Workflow_dispatch only — no push trigger. Use on-demand:
+#   gh workflow run test-migration-real-oca.yml \
+#     --repo ledoent/OpenUpgrade --ref <branch>
+#
+# Auto-CI still runs test-migration.yml (OCA baseline) +
+# test-migration-enriched.yml (single-company edge cases). This one
+# is the prod-confidence signal — run before any Ledo prod migration
+# commitment or any OCA PR review where multi-company / asset
+# depreciation / RMA / multi-step warehouse depth matters.
+
+name: Test OpenUpgrade migration (real SMB + OCA — manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch to test (default: ledoent)'
+        required: false
+        default: 'ledoent'
+
+jobs:
+  test:
+    # Fork-only: OCA upstream doesn't have our enriched seed.
+    if: ${{ github.repository_owner == 'ledoent' }}
+    runs-on: ubuntu-22.04
+    env:
+      DB: "openupgrade"
+      DB_HOST: "localhost"
+      DB_PASSWORD: "odoo"
+      DB_PORT: 5432
+      DB_USERNAME: "odoo"
+      # Enriched seed lives on ledoent/OpenUpgrade `databases` release.
+      DOWNLOADS: https://github.com/ledoent/OpenUpgrade/releases/download/databases
+      SEED_NAME: 18.0-ledoent-real-oca.psql
+      ODOO: "./odoo/odoo-bin"
+      PGHOST: "localhost"
+      PGPASSWORD: "odoo"
+      PGUSER: "odoo"
+      OPENUPGRADE_USE_DEMO: "yes"
+    services:
+      postgres:
+        # PG16 to match the lab's local postgres used by build-fork-seed.sh.
+        # PG14 in OCA's test-migration.yml can't restore custom-format dumps
+        # written by PG16 (file header version 1.15 vs max-supported 1.14).
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: odoo
+        ports:
+          - 5432:5432
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Sleep for 10 seconds
+        run: sleep 10s
+      - name: Install postgresql-client-16
+        run: |
+          # Ubuntu 22.04 ships pg_restore v14 — can't read PG16 custom-format
+          # dumps from the lab's local postgres:16. Install matching client.
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-16
+          echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
+      - name: DB Creation
+        run: createdb $DB
+      - name: DB Restore (real SMB + OCA seed)
+        run: |
+          wget -q -O- $DOWNLOADS/$SEED_NAME | pg_restore -d $DB --no-owner
+          psql $DB -c "UPDATE ir_module_module SET demo=False"
+      - name: Check out Odoo
+        uses: actions/checkout@v4
+        with:
+          repository: odoo/odoo
+          ref: "19.0"
+          fetch-depth: 1
+          path: odoo
+      - name: Check out previous Odoo
+        uses: actions/checkout@v4
+        with:
+          repository: odoo/odoo
+          ref: "18.0"
+          fetch-depth: 1
+          path: odoo-old
+      - name: Check out OpenUpgrade
+        uses: actions/checkout@v4
+        with:
+          path: openupgrade
+      - name: Clone OCA modules at 18.0 (source) + 19.0 (target)
+        run: |
+          # The seed DB has OCA modules (account_asset_management, rma,
+          # mis_builder, etc.) marked installed. Odoo's registry load
+          # needs their manifests in addons-path or it errors with
+          # "Some modules are not loaded". Clone at BOTH 18.0 (so the
+          # source DB module records match a real install) AND 19.0
+          # (so the target migration finds the upgraded modules).
+          REPOS_OCA="account-financial-reporting account-financial-tools \
+                     account-reconcile bank-statement-import mis-builder \
+                     reporting-engine rma server-tools server-ux"
+          mkdir -p oca-18 oca-19
+          for repo in $REPOS_OCA; do
+            GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch 18.0 \
+              "https://github.com/OCA/$repo.git" "oca-18/$repo" 2>&1 | tail -1 || \
+              echo "  WARN $repo @18.0 unavailable"
+            GIT_TERMINAL_PROMPT=0 git clone --depth=1 --branch 19.0 \
+              "https://github.com/OCA/$repo.git" "oca-19/$repo" 2>&1 | tail -1 || \
+              echo "  WARN $repo @19.0 unavailable"
+          done
+      - name: Configuration
+        run: |
+          sudo apt update
+          sudo apt install \
+              expect \
+              expect-dev \
+              libevent-dev \
+              libldap2-dev \
+              libsasl2-dev \
+              libxml2-dev \
+              libxslt1-dev \
+              nodejs \
+              python3-lxml \
+              python3-passlib \
+              python3-psycopg2 \
+              python3-serial \
+              python3-simplejson \
+              python3-werkzeug \
+              python3-yaml \
+              unixodbc-dev
+      - name: Requirements Installation
+        run: |
+          sed -i -E "s/(gevent==)21\.8\.0( ; sys_platform != 'win32' and python_version == '3.10')/\122.10.2\2/;s/(greenlet==)1.1.2( ; sys_platform != 'win32' and python_version == '3.10')/\12.0.2\2/" odoo/requirements.txt
+          pip install -q -r odoo/requirements.txt
+          pip install -r ./openupgrade/requirements.txt
+          pip install -U git+https://github.com/oca/openupgradelib
+          # this is for v18 l10n_eg_edi_eta which crashes without it
+          pip install asn1crypto
+          # required by v18
+          pip install decorator
+          pip install coverage
+          # this is for account_peppol
+          pip install phonenumbers
+      - name: Test data
+        run: |
+          # Pass OCA-18 addons-path so the 18.0 odoo-bin can load the
+          # registry with all installed modules (incl OCA ones present
+          # in the seed DB). Without this odoo-bin shell fails at
+          # registry load before any data snippet runs.
+          OCA_18_PATHS=$(ls -d $GITHUB_WORKSPACE/oca-18/* 2>/dev/null | tr '\n' ',')
+          OLD_ADDONS="odoo-old/addons,odoo-old/odoo/addons,${OCA_18_PATHS%,}"
+          # Filter data snippets to modules actually installed in the seed.
+          # The realistic SMB seed has 137 modules, not the full 500+ —
+          # data fixtures that env.ref records from uninstalled modules
+          # (like hr_expense) raise ValueError before any useful work.
+          INSTALLED=$(psql -At -d $DB -c \
+              "SELECT name FROM ir_module_module WHERE state='installed'")
+          if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
+             for snippet in openupgrade/openupgrade_scripts/scripts/*/tests/data*.py; do
+               module=$(echo "$snippet" | sed -E 's|.*/scripts/([^/]+)/tests/.*|\1|')
+               if echo "$INSTALLED" | grep -qx "$module"; then
+                   echo "==> $module: running $(basename $snippet)"
+                   odoo-old/odoo-bin shell --addons-path="$OLD_ADDONS" -d $DB < $snippet
+               else
+                   echo "==> $module: SKIP (not installed in this seed)"
+               fi
+             done
+          fi
+      - name: OpenUpgrade test (real SMB + OCA)
+        id: run_migration
+        run: |
+          # select modules and perform the upgrade
+          MODULES_OLD=$(\
+              sed -n '/^+========/,$p' \
+              openupgrade/docsource/modules180-190.rst \
+              | grep "Done\|Partial\|Nothing" \
+              | grep -v "theme_" \
+              | sed -rn 's/((^\| *\|del\| *)|^\| *)([0-9a-z_]*)[ \|].*/\3/g p' \
+              | sed '/^\s*$/d' \
+              | paste -d, -s)
+          MODULES_NEW=$(\
+              sed -n '/^+========/,$p' \
+              openupgrade/docsource/modules180-190.rst \
+              | grep "Done\|Partial\|Nothing" \
+              | grep -v "theme_" \
+              | sed -rn 's/((^\| *\|new\| *)|^\| *)([0-9a-z_]*)[ \|].*/\3/g p' \
+              | sed '/^\s*$/d' \
+              | paste -d, -s)
+          echo "modules_old=$MODULES_OLD" >> $GITHUB_OUTPUT
+          echo "modules_new=$MODULES_NEW" >> $GITHUB_OUTPUT
+          if [ -z "$MODULES_NEW" ]; then
+             echo "No modules to test yet"
+             exit
+          fi
+          REQUEST="update ir_module_module set state='uninstalled' \
+              where name not in ('$(echo $MODULES_OLD | sed -e "s/,/','/g")')"
+          echo Set the modules as not installable if they are not in the following list : $MODULES_OLD
+          echo Running $REQUEST
+          psql $DB -c "$REQUEST"
+          # OCA modules at 19.0 take precedence (target version);
+          # 18.0 clones are referenced only for the Test data step
+          # via odoo-old in the next section. Glob each OCA repo as
+          # its own addons-path entry.
+          ADDONS_PATHS="\
+              $GITHUB_WORKSPACE/odoo/addons \
+              $GITHUB_WORKSPACE/odoo/odoo/addons \
+              $GITHUB_WORKSPACE/openupgrade \
+              $(ls -d $GITHUB_WORKSPACE/oca-19/* 2>/dev/null | tr '\n' ' ')"
+          echo Execution of Openupgrade with the update of the following modules : $MODULES_NEW
+          $ODOO \
+              --addons-path=`echo $ADDONS_PATHS | awk -v OFS="," '$1=$1'` \
+              --database=$DB \
+              --db_host=$DB_HOST \
+              --db_password=$DB_PASSWORD \
+              --db_port=$DB_PORT \
+              --db_user=$DB_USERNAME \
+              --load=base,web,openupgrade_framework \
+              --test-enable \
+              --test-tags openupgrade \
+              --log-handler odoo.models.unlink:WARNING \
+              --stop-after-init \
+              --without-demo=$MODULES_NEW \
+              --update=$MODULES_NEW
