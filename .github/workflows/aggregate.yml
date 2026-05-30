@@ -53,10 +53,14 @@ jobs:
           fetch-depth: 1
           # openupgrade-lab is private; the default GITHUB_TOKEN is scoped to THIS
           # repo only and gets "Repository not found". LAB_READ_TOKEN is a
-          # fine-grained PAT with read access to ledoent/openupgrade-lab.
+          # fine-grained PAT with READ access to ledoent/openupgrade-lab.
           # Create it once:
           #   gh secret set LAB_READ_TOKEN --repo ledoent/OpenUpgrade
           token: ${{ secrets.LAB_READ_TOKEN }}
+          # persist-credentials defaults to true, which makes checkout configure
+          # the token for PUSH and fail a read-only PAT with 403 "Write access
+          # not granted". We only read repos.yaml, so turn it off.
+          persist-credentials: false
 
       - name: Extract the ./openupgrade block into the aggregate config
         # gitaggregate wants a single-repo config; pull just the ./openupgrade
