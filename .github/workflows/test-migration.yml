@@ -74,16 +74,31 @@ jobs:
       - name: Configuration
         run: |
           sudo apt update
+          # The 'oca forks' self-hosted runner pool is leaner than GitHub's
+          # hosted ubuntu-22.04 image (which OCA upstream uses and which ships
+          # the build toolchain preinstalled). Install the full toolchain so
+          # every sdist in odoo/requirements.txt compiles: build-essential +
+          # python3-dev cover gcc/g++/make/Python.h; the lib*-dev headers cover
+          # psycopg2 (libpq), python-ldap (libldap2/libsasl2), lxml (libxml2/
+          # libxslt1), cryptography (libffi/libssl), Pillow (libjpeg/zlib),
+          # PyYAML (libyaml).
           sudo apt install -y \
+              build-essential \
+              python3-dev \
               expect \
               expect-dev \
               libevent-dev \
+              libffi-dev \
+              libjpeg-dev \
               libldap2-dev \
               libpq-dev \
               libsasl2-dev \
+              libssl-dev \
               libxml2-dev \
               libxslt1-dev \
+              libyaml-dev \
               nodejs \
+              zlib1g-dev \
               python3-lxml \
               python3-passlib \
               python3-psycopg2 \
