@@ -126,11 +126,7 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
-          # this is for website, which is marked Done and declares geoip2.
-          # (Only geoip2: google-auth / python-ldap pull a newer cryptography
-          # that breaks the runner's pre-installed pyOpenSSL — add those only
-          # when cloud_storage_google / google_gmail / auth_ldap get marked.)
-          pip install geoip2
+          pip install geoip2 google-auth
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
