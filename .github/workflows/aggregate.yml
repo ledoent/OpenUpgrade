@@ -78,6 +78,42 @@ jobs:
       - name: Run gitaggregate
         run: gitaggregate -c aggregate.yml
 
+      - name: Dedup docsource module rows
+        # Each merged migration branch edits docsource/modules180-190.rst to mark
+        # its modules, so the same module's row recurs once per branch that touches
+        # it. gitaggregate replays those edits verbatim, leaving duplicate rows that
+        # make the coverage table unreadable and let a blank row mask a marked one.
+        # Collapse to first occurrence per module, preferring a marked row over a
+        # blank, and commit so the force-pushed aggregated tree carries the clean
+        # table. (Per-branch diffs stay untouched — this lives only on aggregated.)
+        working-directory: openupgrade
+        run: |
+          python3 - <<'PY'
+          import re
+          path = "docsource/modules180-190.rst"
+          row_re = re.compile(r"^\|\s+([a-z][\w.]+)\s+\|([^|]*)\|")
+          lines = open(path, encoding="utf-8").read().splitlines(keepends=True)
+          pos, out, dropped = {}, [], 0
+          for ln in lines:
+              m = row_re.match(ln)
+              if not m:
+                  out.append(ln); continue
+              mod, col2 = m.group(1), m.group(2).strip()
+              if mod not in pos:
+                  pos[mod] = len(out); out.append(ln)
+              else:
+                  dropped += 1
+                  if not row_re.match(out[pos[mod]]).group(2).strip() and col2:
+                      out[pos[mod]] = ln
+          open(path, "w", encoding="utf-8").writelines(out)
+          print(f"dedup: dropped {dropped} duplicate module row(s)")
+          PY
+          if ! git diff --quiet -- docsource/modules180-190.rst; then
+            git commit -am "[CI] aggregate: dedup docsource module rows"
+          else
+            echo "no duplicate rows to collapse"
+          fi
+
       - name: Force-push aggregated
         id: push
         working-directory: openupgrade
