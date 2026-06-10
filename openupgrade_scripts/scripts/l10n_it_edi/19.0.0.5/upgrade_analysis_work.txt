@@ -78,7 +78,8 @@ DEL l10n_it.document.type: l10n_it_edi_ndd.l10n_it_document_type_26 [renamed to 
 DEL l10n_it.document.type: l10n_it_edi_ndd.l10n_it_document_type_27 [renamed to l10n_it_edi module]
 DEL l10n_it.document.type: l10n_it_edi_ndd.l10n_it_document_type_28 [renamed to l10n_it_edi module]
 
-# DONE: 1 ir.model.access + 22 l10n_it.document.type xmlid renames
+# NOTHING TO DO: l10n_it_edi_ndd records land here automatically via the
+# apriori merge (base pre-migration update_module_names), names unchanged
 # (l10n_it_edi_ndd folded into l10n_it_edi). Handled by rename_xmlids in
 # pre-migration.py.
 
