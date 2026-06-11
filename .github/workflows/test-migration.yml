@@ -126,7 +126,12 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
-          pip install geoip2 google-auth
+          # NB: google-auth is intentionally NOT installed here. It needs
+          # cryptography>=38, which evicts Odoo's pinned cryptography 3.4.8 and
+          # breaks the matched pyopenssl 21 / urllib3 1.26 stack (base won't
+          # import). cloud_storage_google/google_gmail (enriched seed only) need
+          # it — handle their dep without disturbing the base crypto stack.
+          pip install geoip2
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
