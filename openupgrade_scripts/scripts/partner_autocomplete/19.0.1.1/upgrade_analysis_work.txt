@@ -8,10 +8,11 @@ partner_autocomplete / res.company              / partner_gid (integer)         
 partner_autocomplete / res.partner              / additional_info (char)        : DEL
 partner_autocomplete / res.partner              / partner_gid (integer)         : DEL
 
-# DONE: stale ir_model_fields rows and the orphan inheritance views
-# (referenced under XML records below) are deleted in pre-migration
-# via cleanup_obsolete_partner_autocomplete_records. Without this, the
-# rows survive the standard module upgrade and trip cross-cutting view
+# DONE: orphan inheritance views (referenced under XML records below)
+# deleted in pre-migration via cleanup_obsolete_partner_autocomplete_records,
+# cascading to inheriting children; the stale ir_model_fields rows are
+# pruned by the module's own update. Without the view delete, the rows
+# survive the standard module upgrade and trip cross-cutting view
 # validation when later modules' data XML loads (reproduced on
 # l10n_ae/data/account_tax_report_data.xml:3 with the error
 # 'Field partner_gid does not exist in model res.partner').

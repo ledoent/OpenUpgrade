@@ -16,12 +16,6 @@ from openupgradelib import openupgrade
 #   view_res_partner_form_inherit_partner_autocomplete) survive and trip
 # cross-cutting view validation later in the same migration run
 # (reproduced on l10n_ae/data/account_tax_report_data.xml).
-_obsolete_field_xmlids = [
-    "partner_autocomplete.field_res_company__partner_gid",
-    "partner_autocomplete.field_res_partner__additional_info",
-    "partner_autocomplete.field_res_partner__partner_gid",
-]
-
 _obsolete_view_xmlids = [
     "partner_autocomplete.view_partner_simple_form_inherit_partner_autocomplete",
     "partner_autocomplete.view_res_partner_form_inherit_partner_autocomplete",
@@ -30,13 +24,16 @@ _obsolete_view_xmlids = [
 
 def cleanup_obsolete_partner_autocomplete_records(env):
     """
-    Drop stale ir_model_fields rows and orphan ir_ui_view records for
-    fields/views the 18.0 partner_autocomplete module added that don't
-    exist in 19.0. See upgrade_analysis_work.txt for the full block.
+    Drop the orphan ir_ui_view records for fields the 18.0
+    partner_autocomplete module added that don't exist in 19.0; cascade
+    to inheriting children so the helper can't silently fall back to
+    noupdate=True and leave the validation trap in place. The stale
+    ir_model_fields rows need no explicit delete (the helper can't
+    unlink non-manual fields; the module's own update prunes them).
+    See upgrade_analysis_work.txt for the full block.
     """
     openupgrade.delete_records_safely_by_xml_id(
-        env,
-        _obsolete_field_xmlids + _obsolete_view_xmlids,
+        env, _obsolete_view_xmlids, delete_childs=True
     )
 
 
