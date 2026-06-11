@@ -14,7 +14,7 @@ account_peppol / res.company              / peppol_metadata_updated_at (datetime
 account_peppol / res.company              / peppol_self_billing_reception_journal_id (many2one): NEW relation: account.journal, isfunction: function, stored
 account_peppol_selfbilling / account.journal          / is_self_billing (boolean)     : module is now 'account' ('account_peppol_selfbilling')
 
-# NOTHING TO DO
+# DONE: pre-migration maps removed proxy-state key in_verification -> not_registered (required field; rest NOTHING TO DO)
 
 ---XML records in module 'account_peppol'---
 NEW ir.actions.client: account_peppol.action_peppol_auth_callback
