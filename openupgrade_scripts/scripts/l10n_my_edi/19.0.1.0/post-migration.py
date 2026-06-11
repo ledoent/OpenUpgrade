@@ -13,6 +13,7 @@ from openupgradelib import openupgrade
 # re-pointing its ir_attachment rows below.
 _FIELD_MAP = [
     ("myinvois_state", "l10n_my_edi_state"),
+    ("myinvois_document_long_id", "l10n_my_edi_invoice_long_id"),
     ("myinvois_external_uuid", "l10n_my_edi_external_uuid"),
     ("myinvois_retry_at", "l10n_my_edi_retry_at"),
     ("myinvois_submission_uid", "l10n_my_edi_submission_uid"),
@@ -40,11 +41,14 @@ def migrate(env, version):
         env.cr,
         f"""
         INSERT INTO myinvois_document (
-            company_id, currency_id, active, {dst_cols}, _ou_src_invoice,
+            company_id, currency_id, active, myinvois_issuance_date,
+            {dst_cols}, _ou_src_invoice,
             create_uid, create_date, write_uid, write_date
         )
         SELECT
-            am.company_id, am.currency_id, TRUE, {src_cols}, am.id,
+            am.company_id, am.currency_id, TRUE,
+            COALESCE(am.invoice_date, am.date),
+            {src_cols}, am.id,
             COALESCE(am.write_uid, am.create_uid, 1),
             COALESCE(am.write_date, am.create_date, NOW() AT TIME ZONE 'UTC'),
             COALESCE(am.write_uid, am.create_uid, 1),
@@ -80,3 +84,30 @@ def migrate(env, version):
     openupgrade.logged_query(
         env.cr, "ALTER TABLE myinvois_document DROP COLUMN _ou_src_invoice"
     )
+    # sequence.mixin assigns name only on ORM create; compute it for the
+    # SQL-inserted rows. Scoped to NULL names: rows the model move brought
+    # over from l10n_my_edi_pos keep their existing sequence.
+    docs = (
+        env["myinvois.document"]
+        .with_context(tracking_disable=True)
+        .search([("name", "=", False)])
+    )
+    env.add_to_compute(docs._fields["name"], docs)
+    env.flush_all()
+    # 19.0 moves the company's industry classification onto its partner (the
+    # company field is now a related); the partner compute defaulted everyone
+    # to class_00000, so carry the configured value over.
+    if openupgrade.column_exists(
+        env.cr, "res_company", "l10n_my_edi_industrial_classification"
+    ):
+        openupgrade.logged_query(
+            env.cr,
+            """
+            UPDATE res_partner p
+            SET l10n_my_edi_industrial_classification =
+                c.l10n_my_edi_industrial_classification
+            FROM res_company c
+            WHERE c.partner_id = p.id
+              AND c.l10n_my_edi_industrial_classification IS NOT NULL
+            """,
+        )

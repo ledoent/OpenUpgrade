@@ -39,6 +39,7 @@ _RENAMED_XMLIDS_FROM_POS = [
 # post-migration.py re-points its attachment to the new myinvois.document.
 _PRESERVED_ACCOUNT_MOVE = [
     "l10n_my_edi_external_uuid",
+    "l10n_my_edi_invoice_long_id",
     "l10n_my_edi_retry_at",
     "l10n_my_edi_submission_uid",
     "l10n_my_edi_validation_time",
