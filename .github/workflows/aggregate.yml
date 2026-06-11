@@ -18,6 +18,13 @@ on:
       - ledoent
       - "19.0-mig-*"
       - "19.0-fix-*"
+  schedule:
+    # Daily, after mirror-upstream: pushes to clean migration branches don't
+    # carry this workflow file so they never fire the push trigger, and an
+    # upstream OCA merge can silently start conflicting with a repos.yaml
+    # branch (seen with l10n_es / OCA#5646). A scheduled rebuild surfaces
+    # that within a day instead of on the next manual push.
+    - cron: "0 12 * * *"
   workflow_dispatch:
 
 permissions:
