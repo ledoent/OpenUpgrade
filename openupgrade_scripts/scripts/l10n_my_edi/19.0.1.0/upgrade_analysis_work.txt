@@ -67,12 +67,14 @@ l10n_my_edi  / res.company              / l10n_my_edi_industrial_classification 
 l10n_my_edi  / res.company              / l10n_my_edi_industrial_classification (many2one): now related
 l10n_my_edi_extended / account.move             / l10n_my_edi_invoice_long_id (char): DEL
 
-# DONE: account.move MyInvois EDI columns preserved in pre-migration
-# and copied into new myinvois.document rows (post-migration), linked
+# DONE: account.move MyInvois EDI columns (incl. the long id) preserved in
+# pre-migration and copied into new myinvois.document rows (post-migration)
+# with issuance date from the invoice and sequence names computed, linked
 # via the myinvois_document_invoice_rel m2m. myinvois.document fields
 # marked 'previously in module l10n_my_edi_pos' ride the model move.
-# res.company.l10n_my_edi_industrial_classification is now related
-# (non-stored) -- recomputed by the ORM, nothing to do.
+# res.company.l10n_my_edi_industrial_classification is now related to the
+# NEW stored partner field, whose compute defaults to class_00000 -- the
+# configured company value is copied onto the partner in post-migration.
 
 ---XML records in module 'l10n_my_edi'---
 NEW ir.actions.server: l10n_my_edi.action_generate_myinvois_document_file [renamed from l10n_my_edi_pos module]
