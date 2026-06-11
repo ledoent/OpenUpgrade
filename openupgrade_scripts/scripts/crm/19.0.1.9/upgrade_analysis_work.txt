@@ -13,7 +13,7 @@ crm          / crm.team.member          / assignment_domain_preferred (char): NE
 crm          / res.users                / target_sales_done (integer)   : DEL
 crm          / res.users                / target_sales_won (integer)    : DEL
 
-# DONE: crm.stage.team_id m2o→m2m via pre-migration rename + post-migration m2o_to_x2m
+# DONE: crm.stage.team_id m2o→m2m via post-migration m2o_to_x2m (reads the surviving legacy team_id column)
 
 ---XML records in module 'crm'---
 NEW ir.actions.act_window: crm.mail_followers_edit_action_from_lead
