@@ -75,6 +75,13 @@ jobs:
         run: |
           wget -q -O- $DOWNLOADS/$SEED_NAME | pg_restore -d $DB --no-owner
           psql $DB -c "UPDATE ir_module_module SET demo=False"
+          # cloud_storage_google (installed in this seed) gains a hard google-auth
+          # external dependency in 19.0, and google-auth's cryptography>=38 is
+          # incompatible with Odoo 18's pinned pyopenssl/urllib3 stack (it breaks
+          # `import OpenSSL`, so base won't load). Nothing depends on it, so skip it:
+          # mark uninstalled pre-migration so OpenUpgrade doesn't load/upgrade it.
+          # Its 18->19 change needs live Google config to exercise anyway.
+          psql $DB -c "UPDATE ir_module_module SET state='uninstalled' WHERE name = 'cloud_storage_google'"
       - name: Check out Odoo
         uses: actions/checkout@v4
         with:
@@ -126,7 +133,12 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
-          pip install geoip2 google-auth
+          # NB: google-auth is intentionally NOT installed here. It needs
+          # cryptography>=38, which evicts Odoo's pinned cryptography 3.4.8 and
+          # breaks the matched pyopenssl 21 / urllib3 1.26 stack (base won't
+          # import). cloud_storage_google/google_gmail (enriched seed only) need
+          # it — handle their dep without disturbing the base crypto stack.
+          pip install geoip2
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
