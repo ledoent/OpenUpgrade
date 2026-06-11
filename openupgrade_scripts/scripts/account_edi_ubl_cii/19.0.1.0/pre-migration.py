@@ -19,6 +19,12 @@ _reason_code_map = [
 
 @openupgrade.migrate()
 def migrate(env, version):
+    # the column only exists on DBs that ran a saas 18.x build; stock 18.0
+    # never had the field
+    if not openupgrade.column_exists(
+        env.cr, "account_tax", "ubl_cii_tax_exemption_reason_code"
+    ):
+        return
     openupgrade.map_values(
         env.cr,
         "ubl_cii_tax_exemption_reason_code",
