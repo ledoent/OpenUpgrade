@@ -18,7 +18,9 @@ NEW account.report.line: l10n_it.enasarco_sale_tax_report_it_line [renamed from 
 NEW account.report.line: l10n_it.withh_purchase_tax_report_it_line [renamed from l10n_it_edi_withholding module]
 NEW account.report.line: l10n_it.withh_sale_tax_report_it_line [renamed from l10n_it_edi_withholding module]
 
-# DONE: 10 l10n_it_edi_withholding -> l10n_it xmlid renames (withholding-tax
+# DONE: VL3/4/32/33 shorthand balance expressions bound to the new explicit
+# _formula xml_ids (pre-migration), and 10 l10n_it_edi_withholding -> l10n_it
+# xmlid renames (withholding-tax
 # module folded into l10n_it). Handled by rename_xmlids in pre-migration.py.
 
 DEL account.report: l10n_it.tax_report_vat
