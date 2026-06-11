@@ -58,7 +58,7 @@ hr_skills    / hr.resume.line           / duration (integer)            : NEW
 hr_skills    / hr.resume.line           / external_url (char)           : NEW hasdefault: compute
 hr_skills    / hr.resume.line           / resume_line_properties (properties): NEW hasdefault: compute
 
-# NOTHING TO DO: new fields with defaults/compute; display_type removed (not renamed to course_type — different selection domains), column left for database_cleanup
+# NOTHING TO DO: new fields with defaults/compute; display_type removed (classic rows have no course_type meaning; 'course' rows are remapped by hr_skills_slides), column left for database_cleanup
 
 hr_skills    / hr.resume.line.type      / is_course (boolean)           : NEW hasdefault: default
 hr_skills    / hr.resume.line.type      / resume_line_type_properties_definition (properties_definition): NEW

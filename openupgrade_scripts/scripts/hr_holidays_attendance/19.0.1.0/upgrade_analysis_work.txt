@@ -13,10 +13,12 @@ hr_holidays_attendance / hr.leave                 / employee_overtime (float)   
 
 hr_holidays_attendance / hr.leave                 / overtime_id (many2one)        : DEL relation: hr.attendance.overtime
 
-# DONE: drop overtime_id column in pre-migration
+# NOTHING TO DO: column left in place for database_cleanup
 
 hr_holidays_attendance / hr.leave.accrual.level   / frequency (False)             : NEW selection_keys: ['bimonthly', 'biyearly', 'daily', 'hourly', 'monthly', 'weekly', 'worked_hours', 'yearly'], mode: modify
 hr_holidays_attendance / hr.leave.accrual.level   / frequency_hourly_source (selection): DEL selection_keys: ['attendance', 'calendar']
+
+# DONE: pre-migration: hourly+attendance levels remapped to the new worked_hours frequency
 hr_holidays_attendance / hr.leave.allocation      / employee_overtime (float)     : not related anymore
 hr_holidays_attendance / hr.leave.allocation      / employee_overtime (float)     : now a function
 
@@ -24,7 +26,7 @@ hr_holidays_attendance / hr.leave.allocation      / employee_overtime (float)   
 
 hr_holidays_attendance / hr.leave.allocation      / overtime_id (many2one)        : DEL relation: hr.attendance.overtime
 
-# DONE: drop overtime_id column in pre-migration
+# NOTHING TO DO: column left in place for database_cleanup
 
 ---XML records in module 'hr_holidays_attendance'---
 DEL hr.leave.type: hr_holidays_attendance.holiday_status_extra_hours [renamed to hr_holidays module] (noupdate)
