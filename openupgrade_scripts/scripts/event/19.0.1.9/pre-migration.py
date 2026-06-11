@@ -6,10 +6,21 @@ def migrate(env, version):
     # 19.0 drops the Cancelled stage in favour of kanban_state='cancel'.
     # event.event.stage_id is ondelete='restrict', so remap cancelled events
     # onto the surviving Ended stage (flagged cancelled) before removing the
-    # stage; the safe helper also drops the ir_model_data row.
-    cancelled = env.ref("event.event_stage_cancelled", raise_if_not_found=False)
-    done = env.ref("event.event_stage_done", raise_if_not_found=False)
-    if cancelled and done:
+    # stage and its ir_model_data row. Pure SQL: event's models are not in
+    # the registry during its own pre-migration, so env.ref cannot be used.
+    env.cr.execute(
+        """
+        SELECT name, res_id FROM ir_model_data
+        WHERE module = 'event' AND model = 'event.stage'
+          AND name IN ('event_stage_cancelled', 'event_stage_done')
+        """
+    )
+    stages = dict(env.cr.fetchall())
+    cancelled = stages.get("event_stage_cancelled")
+    done = stages.get("event_stage_done")
+    if not cancelled:
+        return
+    if done:
         openupgrade.logged_query(
             env.cr,
             """
@@ -17,6 +28,15 @@ def migrate(env, version):
             SET stage_id = %s, kanban_state = 'cancel'
             WHERE stage_id = %s
             """,
-            (done.id, cancelled.id),
+            (done, cancelled),
         )
-    openupgrade.delete_records_safely_by_xml_id(env, ["event.event_stage_cancelled"])
+    openupgrade.logged_query(
+        env.cr, "DELETE FROM event_stage WHERE id = %s", (cancelled,)
+    )
+    openupgrade.logged_query(
+        env.cr,
+        """
+        DELETE FROM ir_model_data
+        WHERE module = 'event' AND name = 'event_stage_cancelled'
+        """,
+    )

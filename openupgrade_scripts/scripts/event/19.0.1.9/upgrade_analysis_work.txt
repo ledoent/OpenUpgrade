@@ -91,7 +91,8 @@ NEW event.question: event.event_question_phone (noupdate)
 DEL event.stage: event.event_stage_cancelled (noupdate)
 
 # DONE: pre-migration remaps cancelled events to the Ended stage + kanban_state='cancel'
-# (stage_id is ondelete=restrict), then safe-deletes the noupdate stage record
+# (stage_id is ondelete=restrict), then deletes the noupdate stage + imd row (SQL —
+# event's models aren't registered during its own pre-migration)
 
 NEW ir.actions.act_window: event.event_question_action
 NEW ir.actions.act_window: event.event_slot_action_from_event
