@@ -14,7 +14,11 @@ l10n_in_edi_ewaybill / account.move             / l10n_in_type_id (many2one)    
 l10n_in_edi_ewaybill / account.move             / l10n_in_vehicle_no (char)     : DEL
 l10n_in_edi_ewaybill / account.move             / l10n_in_vehicle_type (selection): DEL selection_keys: ['O', 'R']
 
-# DONE: preserved as legacy columns in pre-migration; post-migration spawns one l10n.in.ewaybill row per move (mode '0' coerced to NULL).
+# DONE: preserved as legacy columns in pre-migration; post-migration spawns one
+# l10n.in.ewaybill row per move with meaningful data (distance<>0, mode<>'0',
+# or an in_ewaybill_1_03 EDI document); 18-generated e-waybills get state
+# generated/cancel + NIC number/dates from the EDI response attachment, and
+# the stored computed partner fields are recomputed.
 
 l10n_in_edi_ewaybill / res.company              / l10n_in_edi_ewaybill_auth_validity (datetime): DEL
 l10n_in_edi_ewaybill / res.company              / l10n_in_edi_ewaybill_password (char): DEL
@@ -96,7 +100,9 @@ l10n_in_ewaybill / res.company              / l10n_in_ewaybill_feature (boolean)
 l10n_in_ewaybill / res.company              / l10n_in_ewaybill_password (char): NEW
 l10n_in_ewaybill / res.company              / l10n_in_ewaybill_username (char): NEW
 
-# DONE: auth_validity / password / username receive values from the renamed _edi_ columns; l10n_in_ewaybill_feature is a NEW flag handled by update_db.
+# DONE: auth_validity / password / username receive values from the renamed
+# _edi_ columns; l10n_in_ewaybill_feature is enabled in post-migration for
+# companies owning migrated e-waybills (update_db's default leaves it off).
 
 l10n_in_ewaybill_stock / l10n.in.ewaybill         / company_id (many2one)         : is now stored
 l10n_in_ewaybill_stock / l10n.in.ewaybill         / company_id (many2one)         : not related anymore
