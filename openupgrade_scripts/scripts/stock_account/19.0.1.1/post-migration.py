@@ -74,6 +74,48 @@ def stock_location_valuation_account_id(env):
     )
 
 
+def product_value_aggregate_move_rows(env):
+    """
+    product.value is the history of MANUAL value overrides in 19.0:
+    _get_manual_value() takes the single LATEST row per move as the move's
+    entire value and suppresses the landed-cost extra. One row per former
+    valuation layer makes the newest layer (often a landed-cost adjustment)
+    silently replace the whole move value on the first ORM recompute (e.g.
+    posting a vendor bill against a migrated receipt). Collapse the layers
+    into one summed row per move.
+    """
+    env.cr.execute(
+        """
+        WITH agg AS (
+            SELECT move_id, sum(value) AS value, max(date) AS date,
+                   min(id) AS keep_id,
+                   string_agg(description, ' + ' ORDER BY id) AS description
+            FROM product_value
+            WHERE move_id IS NOT NULL
+            GROUP BY move_id
+            HAVING count(*) > 1
+        )
+        UPDATE product_value pv
+        SET value = agg.value, date = agg.date, description = agg.description
+        FROM agg
+        WHERE pv.id = agg.keep_id
+        """
+    )
+    env.cr.execute(
+        """
+        DELETE FROM product_value pv
+        USING (
+            SELECT move_id, min(id) AS keep_id
+            FROM product_value
+            WHERE move_id IS NOT NULL
+            GROUP BY move_id
+            HAVING count(*) > 1
+        ) agg
+        WHERE pv.move_id = agg.move_id AND pv.id != agg.keep_id
+        """
+    )
+
+
 def stock_move_value(env):
     """
     Set stock.move#value to sum of product.value#value for this move
@@ -100,4 +142,5 @@ def migrate(env, version):
     stock_move_account_move_id(env)
     product_category_property_valuation(env)
     stock_location_valuation_account_id(env)
+    product_value_aggregate_move_rows(env)
     stock_move_value(env)
