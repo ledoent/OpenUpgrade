@@ -69,6 +69,14 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-client-16
           echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
+      - name: Raise Postgres lock limit
+        # the 226-module _process_end unlink sweep exhausts the default 64
+        # max_locks_per_transaction ("out of shared memory" at the end of an
+        # otherwise complete migration)
+        run: |
+          psql -d postgres -c "ALTER SYSTEM SET max_locks_per_transaction = 1024"
+          docker restart ${{ job.services.postgres.id }}
+          until pg_isready -h localhost -U odoo; do sleep 1; done
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore (enriched seed)
