@@ -30,4 +30,7 @@ class TestStockAccountMigration(TransactionCase):
         anglo-saxon COGS entry when the delivery is invoiced on 19.0.
         """
         out_move = self.env.ref("openupgrade_test.stock_account_out_move")
-        self.assertAlmostEqual(out_move.value, 420.0)
+        # 4 units consumed at the receipt's $100 FIFO cost (the raw adjustment
+        # layer doesn't feed remaining_value the way a validated landed cost
+        # does); 18.0 recorded the layer as -400 — 19.0 must hold +400.
+        self.assertAlmostEqual(out_move.value, 400.0)
