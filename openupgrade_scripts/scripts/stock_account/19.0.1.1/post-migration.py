@@ -116,6 +116,31 @@ def product_value_aggregate_move_rows(env):
     )
 
 
+def product_value_outbound_sign(env):
+    """
+    18.0 valuation layers carry a direction sign (outbound = negative);
+    19.0 stores the magnitude of the cost moved (a 19-created delivery or
+    production consumption has a positive value). A negative migrated value
+    flips the anglo-saxon COGS journal entry when the delivery is invoiced
+    after the migration. Normalize outbound moves to magnitudes.
+    """
+    env.cr.execute(
+        """
+        UPDATE product_value pv
+        SET value = -pv.value
+        FROM stock_move sm,
+             stock_location src,
+             stock_location dst
+        WHERE sm.id = pv.move_id
+          AND src.id = sm.location_id
+          AND dst.id = sm.location_dest_id
+          AND pv.value < 0
+          AND src.usage IN ('internal', 'transit')
+          AND dst.usage NOT IN ('internal', 'transit')
+        """
+    )
+
+
 def stock_move_value(env):
     """
     Set stock.move#value to sum of product.value#value for this move
@@ -143,4 +168,5 @@ def migrate(env, version):
     product_category_property_valuation(env)
     stock_location_valuation_account_id(env)
     product_value_aggregate_move_rows(env)
+    product_value_outbound_sign(env)
     stock_move_value(env)
