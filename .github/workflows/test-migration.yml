@@ -53,6 +53,13 @@ jobs:
         run: sleep 10s
       - name: Install PostgreSQL client and wget
         run: sudo apt-get update && sudo apt-get install -y postgresql-client wget
+      - name: Raise Postgres lock limit
+        # the _process_end unlink sweep exhausts the default 64
+        # max_locks_per_transaction (same as the enriched gate)
+        run: |
+          psql -d postgres -c "ALTER SYSTEM SET max_locks_per_transaction = 1024"
+          docker restart ${{ job.services.postgres.id }}
+          until pg_isready -h localhost -U odoo; do sleep 1; done
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore
