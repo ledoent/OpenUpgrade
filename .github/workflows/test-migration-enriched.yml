@@ -60,7 +60,14 @@ jobs:
           python-version: '3.10'
       - name: Sleep for 10 seconds
         run: sleep 10s
-      - name: Install postgresql-client-16
+      - name: Provision and restore the enriched migration DB
+        # Install client, raise the lock limit, create + restore in ONE step:
+        # some "oca forks" self-hosted runners use a fresh container per `run:`,
+        # so a postgresql-client installed in an earlier step is gone by
+        # `createdb` (exit 127, "command not found"). Keeping install → createdb
+        # → restore together guarantees the client is present where it's used.
+        # NB: PG16 bin must go on PATH in-step (export, not $GITHUB_PATH, which
+        # only affects *later* steps) since pg_restore must read PG16 dumps.
         run: |
           # Ubuntu 22.04 ships pg_restore v14 — can't read PG16 custom-format
           # dumps from the lab's local postgres:16. Install matching client.
@@ -68,19 +75,14 @@ jobs:
           wget -q -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo apt-get update -qq
           sudo apt-get install -y postgresql-client-16
-          echo "/usr/lib/postgresql/16/bin" >> $GITHUB_PATH
-      - name: Raise Postgres lock limit
-        # the 226-module _process_end unlink sweep exhausts the default 64
-        # max_locks_per_transaction ("out of shared memory" at the end of an
-        # otherwise complete migration)
-        run: |
+          export PATH="/usr/lib/postgresql/16/bin:$PATH"
+          # the 226-module _process_end unlink sweep exhausts the default 64
+          # max_locks_per_transaction ("out of shared memory" at the end of an
+          # otherwise complete migration)
           psql -d postgres -c "ALTER SYSTEM SET max_locks_per_transaction = 1024"
           docker restart ${{ job.services.postgres.id }}
           until pg_isready -h localhost -U odoo; do sleep 1; done
-      - name: DB Creation
-        run: createdb $DB
-      - name: DB Restore (enriched seed)
-        run: |
+          createdb $DB
           wget -q -O- $DOWNLOADS/$SEED_NAME | pg_restore -d $DB --no-owner
           psql $DB -c "UPDATE ir_module_module SET demo=False"
           # cloud_storage_google (installed in this seed) gains a hard google-auth
