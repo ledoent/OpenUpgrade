@@ -102,6 +102,18 @@ jobs:
           # directly to the freshly-cloned odoo checkout. No-op once
           # odoo/odoo#266722 lands and propagates to the 19.0 branch HEAD.
           sed -i 's/^import lxml\.html$/import lxml.html.clean/' odoo/odoo/_monkeypatches/lxml.py
+          # Workaround for an upstream core bug: l10n_es_edi_verifactu's
+          # models/certificate.py does `_inherit = 'certificate.certificate'`
+          # but its manifest only declares `depends: ['l10n_es']` (every sibling
+          # l10n_es_edi_* and l10n_sa_edi correctly depends on `certificate`).
+          # When the migration force-updates verifactu (it is marked in
+          # docsource so it joins MODULES_NEW) before `certificate` loads, the
+          # registry build dies with
+          # `Model 'certificate.certificate' does not exist in registry`.
+          # OCA's own CI never hits this because their MODULES_NEW excludes
+          # verifactu. Add the missing manifest dependency on the fresh checkout.
+          vfm=$(find odoo -path '*/l10n_es_edi_verifactu/__manifest__.py' | head -1)
+          [ -n "$vfm" ] && sed -i "s/'depends': \['l10n_es'\],/'depends': ['l10n_es', 'certificate'],/" "$vfm"
           pip install -r ./openupgrade/requirements.txt
           pip install -U git+https://github.com/oca/openupgradelib
           # this is for v18 l10n_eg_edi_eta which crashes without it
