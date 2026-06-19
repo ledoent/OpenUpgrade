@@ -25,13 +25,9 @@ def fix_template_lang(env):
 
 
 def fix_removed_mail_partner_helper(env):
-    """Rewrite the removed ``_get_mail_partner`` helper (which returned the
-    recipient ``partner_id``) back to ``object.partner_id`` in any stored
-    ``loyalty.card`` template field. The standard templates are reset by the
-    (non-noupdate) module update, but custom templates are not, and the 19.0
-    data-load render aborts on the missing method before post-migration could
-    run. ``_get_mail_author`` is the wrong substitute (company/internal user).
-    """
+    """Rewrite the removed ``_get_mail_partner()`` helper to its 18.0 equivalent
+    ``object.partner_id`` in custom loyalty.card templates, which the module
+    update doesn't reset."""
     for column in ("lang", "partner_to", "email_to", "body_html"):
         if not openupgrade.column_exists(env.cr, "mail_template", column):
             continue
