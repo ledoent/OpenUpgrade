@@ -29,15 +29,14 @@ def _mark_pickup_auxiliary_addresses(env):
             """
             UPDATE res_partner
             SET is_pickup_location = True
-            WHERE
-                street = %s,
-                city = %s,
-                state_id = %s,
-                country_id = %s,
-                parent_id != False,
-                type = 'delivery',
+            WHERE street = %s
+              AND city = %s
+              AND state_id IS NOT DISTINCT FROM %s
+              AND country_id IS NOT DISTINCT FROM %s
+              AND parent_id IS NOT NULL
+              AND type = 'delivery'
             """,
-            (p.street, p.city, p.state_id, p.country_id),
+            (p.street, p.city, p.state_id.id or None, p.country_id.id or None),
         )
 
 
