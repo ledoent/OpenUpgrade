@@ -7,7 +7,6 @@ renamed_modules = {
     # odoo
     "l10n_ec_website_sale": "l10n_ec_sale",
     "l10n_in_edi_ewaybill": "l10n_in_ewaybill",
-    "membership": "partnership",
     "pos_viva_wallet": "pos_viva_com",
     # odoo/enterprise
     # OCA/timesheet
@@ -48,6 +47,10 @@ merged_modules = {
     # odoo/enterprise
     # OCA/account-invoicing
     "account_tax_legal_notes_translate": "account",
+    # OCA/account-reconcile
+    "account_reconcile_model_oca": "account_reconcile_oca",
+    # OCA/bank-payment
+    "account_payment_partner": "account_payment_mode",
     # OCA/partner-contact
     "partner_contact_lang": "base",
     # OCA/project
