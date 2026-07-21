@@ -1,0 +1,4 @@
+---XML records in module 'payment_demo'---
+UPD payment.method: payment_demo.payment_method_demo (noupdate)
+
+# DONE: support_manual_capture set in noupdate_changes.xml
