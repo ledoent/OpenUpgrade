@@ -1,0 +1,12 @@
+---Models in module 'l10n_in_pos'---
+---Fields in module 'l10n_in_pos'---
+l10n_in_pos  / product.product          / l10n_in_hsn_missing_in_pos (boolean): NEW stored: False
+
+# NOTHING TO DO
+
+---XML records in module 'l10n_in_pos'---
+NEW ir.actions.act_window: l10n_in_pos.action_missing_hsn_product
+NEW ir.ui.view: l10n_in_pos.product_template_view_form_normalized_pos
+NEW ir.ui.view: l10n_in_pos.product_tree_hsn_code
+
+# NOTHING TO DO
