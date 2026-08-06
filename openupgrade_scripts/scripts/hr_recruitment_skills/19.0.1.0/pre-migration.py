@@ -25,16 +25,59 @@ renamed_tables = [
 
 def hr_applicant_skill(env):
     """
-    Set hr.applicant.skill#applicant_id (renamed candidate_id) from hr_applicant
+    Set hr.applicant.skill#applicant_id (renamed candidate_id) from hr_applicant,
+    replicating a candidate's skills onto each of its applications and dropping
+    skills of candidates without any application
     """
+    legacy = openupgrade.get_legacy_name("candidate_id")
+    if not openupgrade_tools.column_exists(env.cr, "hr_applicant_skill", legacy):
+        return
     openupgrade.lift_constraints(env.cr, "hr_applicant_skill", "applicant_id")
     openupgrade.logged_query(
         env.cr,
+        f"""
+        UPDATE hr_applicant_skill s
+        SET applicant_id = (
+            SELECT min(a.id) FROM hr_applicant a
+            WHERE a.candidate_id = s.{legacy}
+        )
+        WHERE EXISTS (
+            SELECT 1 FROM hr_applicant a WHERE a.candidate_id = s.{legacy}
+        )
+        """,
+    )
+    env.cr.execute(
         """
-        UPDATE hr_applicant_skill
-        SET applicant_id=hr_applicant.id
-        FROM hr_applicant
-        WHERE hr_applicant.candidate_id=hr_applicant_skill.applicant_id
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'hr_applicant_skill'
+            AND column_name NOT IN ('id', 'applicant_id')
+        """
+    )
+    columns = [row[0] for row in env.cr.fetchall()]
+    openupgrade.logged_query(
+        env.cr,
+        """
+        INSERT INTO hr_applicant_skill (applicant_id, {columns})
+        SELECT a.id, {qualified}
+        FROM hr_applicant_skill s
+        JOIN hr_applicant a ON a.candidate_id = s.{legacy}
+        WHERE a.id > (
+            SELECT min(a2.id) FROM hr_applicant a2
+            WHERE a2.candidate_id = s.{legacy}
+        )
+        """.format(
+            columns=", ".join(columns),
+            qualified=", ".join("s." + column for column in columns),
+            legacy=legacy,
+        ),
+    )
+    openupgrade.logged_query(
+        env.cr,
+        f"""
+        DELETE FROM hr_applicant_skill s
+        WHERE NOT EXISTS (
+            SELECT 1 FROM hr_applicant a WHERE a.candidate_id = s.{legacy}
+        )
         """,
     )
 
