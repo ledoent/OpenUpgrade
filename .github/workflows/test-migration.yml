@@ -123,6 +123,8 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
+          # cloud_storage_google external dependency
+          pip install 'google-auth<2.48.0'
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
