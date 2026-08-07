@@ -2,7 +2,23 @@ name: Mirror upstream OCA/OpenUpgrade
 
 on:
   schedule:
-    - cron: "0 */6 * * *"  # every 6h — Tecnativa-pace upstream outruns a daily tick (PR-base drift, 2026-07-13)
+    # Weekly, Sunday 05:00 UTC (01:00 US Eastern).
+    #
+    # This ran every 6h from 2026-07-13, because Tecnativa-pace upstream
+    # outran a daily tick and open PRs drifted from their base. That tempo
+    # was worth it while this fork was an active contribution target. It no
+    # longer is, and the cost is paid by the whole organisation: mirroring
+    # force-pushes 19.0, which fires aggregate.yml's push trigger, which
+    # rebuilds and force-pushes `aggregated`, which runs tests, pre-commit
+    # and the migration suite. Four ticks a day of that saturates the
+    # org-wide 20-concurrent-job cap on the Free plan and leaves unrelated
+    # repositories queueing for tens of minutes.
+    #
+    # If contribution restarts, raise this again — but prefer moving the
+    # heavy jobs onto the self-hosted runners first.
+    #
+    # workflow_dispatch below is the escape hatch for a manual catch-up.
+    - cron: "0 5 * * 0"
   workflow_dispatch:
 
 permissions:

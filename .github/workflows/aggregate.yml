@@ -19,12 +19,20 @@ on:
       - "19.0-mig-*"
       - "19.0-fix-*"
   schedule:
-    # Daily, after mirror-upstream: pushes to clean migration branches don't
-    # carry this workflow file so they never fire the push trigger, and an
-    # upstream OCA merge can silently start conflicting with a repos.yaml
-    # branch (seen with l10n_es / OCA#5646). A scheduled rebuild surfaces
-    # that within a day instead of on the next manual push.
-    - cron: "0 12 * * *"
+    # Weekly, Sunday 06:00 UTC — one hour after mirror-upstream, deliberately.
+    #
+    # The ordering is the point, not the hour: pushes to clean migration
+    # branches don't carry this workflow file so they never fire the push
+    # trigger, and an upstream OCA merge can silently start conflicting with a
+    # repos.yaml branch (seen with l10n_es / OCA#5646). A scheduled rebuild
+    # after the mirror surfaces that instead of leaving it for the next manual
+    # push. Keep this cron strictly later than mirror-upstream's.
+    #
+    # Was daily; moved to weekly with the mirror when the fork stopped being an
+    # active contribution target. The detection window widens from a day to a
+    # week — acceptable now, and the reason is org-wide CI concurrency rather
+    # than anything about this workflow. See mirror-upstream.yml.
+    - cron: "0 6 * * 0"
   workflow_dispatch:
 
 permissions:
