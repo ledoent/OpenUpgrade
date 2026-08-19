@@ -3,21 +3,15 @@
 ---Fields in module 'hr_skills_slides'---
 hr_skills_slides / hr.resume.line           / channel_id (many2one)         : now a function
 hr_skills_slides / hr.resume.line           / course_type (False)           : NEW selection_keys: ['elearning', 'external', 'onsite'], mode: modify
-
-# DONE: pre-migration update course_type='elearning' where channel_id is not null
-
 hr_skills_slides / hr.resume.line           / course_url (char)             : not a function anymore
 hr_skills_slides / hr.resume.line           / course_url (char)             : now related
 hr_skills_slides / hr.resume.line           / display_type (False)          : DEL selection_keys: ['certification', 'classic', 'course'], mode: modify
 hr_skills_slides / hr.resume.line           / duration (False)              : NEW mode: modify, hasdefault: compute
 
-# NOTHING TO DO
+# DONE: pre-migration: display_type='course' lines remapped to course_type='elearning' (keeps channel_id from being wiped by its compute)
 
 ---XML records in module 'hr_skills_slides'---
 DEL hr.resume.line.type: hr_skills_slides.resume_type_training [renamed to hr_skills module]
-
-# NOTHING TO DO: handled in hr_skills migration
-
 NEW ir.actions.act_window: hr_skills_slides.slide_channel_training_elearning_action
 NEW ir.ui.menu: hr_skills_slides.menu_learnings_training_attendances_elearning
 NEW ir.ui.view: hr_skills_slides.hr_employee_public_resume_view_form_inherit
