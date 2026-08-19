@@ -1,21 +1,19 @@
-# Copyright 2026 Hunki Enterprises BV
-# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
 from openupgradelib import openupgrade
 
-copy_columns = {
-    "res_company": [
-        ("account_peppol_proxy_state", None, None),
-    ]
-}
+_renamed_models = [("account_peppol.service.wizard", "peppol.config.wizard")]
+_renamed_tables = [("account_peppol_service_wizard", "peppol_config_wizard")]
 
 
 @openupgrade.migrate()
 def migrate(env, version):
-    openupgrade.copy_columns(env.cr, copy_columns)
+    openupgrade.rename_models(env.cr, _renamed_models)
+    openupgrade.rename_tables(env.cr, _renamed_tables)
+    # 19.0 drops the 'in_verification' key from the required proxy-state
+    # selection; map mid-verification companies back to not_registered
+    # (18.0's own deregistration reset).
     openupgrade.map_values(
         env.cr,
-        openupgrade.get_legacy_name("account_peppol_proxy_state"),
+        "account_peppol_proxy_state",
         "account_peppol_proxy_state",
         [("in_verification", "not_registered")],
         table="res_company",
