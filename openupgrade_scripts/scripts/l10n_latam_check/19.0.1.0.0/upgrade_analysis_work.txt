@@ -1,0 +1,7 @@
+---Models in module 'l10n_latam_check'---
+---Fields in module 'l10n_latam_check'---
+---XML records in module 'l10n_latam_check'---
+# NOTHING TO DO: NEW records are auto-created on update.
+NEW ir.model.constraint: l10n_latam_check.constraint_l10n_latam_check_unique
+NEW ir.ui.view: l10n_latam_check.report_payment_receipt_document
+# DONE: noupdate_changes.xml es_419 translations on standard payment-method data loaded in post-migration.
