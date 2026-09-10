@@ -1,0 +1,5 @@
+---Models in module 'l10n_anz_ubl_pint'---
+---Fields in module 'l10n_anz_ubl_pint'---
+l10n_anz_ubl_pint / res.partner              / invoice_edi_format (False)    : selection_keys removed: [pint_jp, pint_my, tw_ecpay, ubl_tr]
+# NOTHING TO DO: those keys belong to sibling country modules (pint_jp/pint_my/tw_ecpay/ubl_tr), not this one; this module still owns only 'pint_anz' in 19.0 (unchanged). No res.partner data to remap.
+---XML records in module 'l10n_anz_ubl_pint'---
