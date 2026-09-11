@@ -93,6 +93,27 @@ jobs:
         run: |
           sed -i -E "s/(gevent==)21\.8\.0( ; sys_platform != 'win32' and python_version == '3.10')/\122.10.2\2/;s/(greenlet==)1.1.2( ; sys_platform != 'win32' and python_version == '3.10')/\12.0.2\2/" odoo/requirements.txt
           pip install -q -r odoo/requirements.txt
+          # Workaround until odoo/odoo#266722 merges: lxml's package
+          # __init__ does not auto-load the html.clean submodule, so the
+          # `import lxml.html` at the top of odoo/_monkeypatches/lxml.py
+          # leaves `lxml.html.clean` undefined and `patch_module()` crashes
+          # Odoo boot with `AttributeError: module 'lxml.html' has no
+          # attribute 'clean'`. Apply Odoo SA's one-line upstream fix
+          # directly to the freshly-cloned odoo checkout. No-op once
+          # odoo/odoo#266722 lands and propagates to the 19.0 branch HEAD.
+          sed -i 's/^import lxml\.html$/import lxml.html.clean/' odoo/odoo/_monkeypatches/lxml.py
+          # Workaround for an upstream core bug: l10n_es_edi_verifactu's
+          # models/certificate.py does `_inherit = 'certificate.certificate'`
+          # but its manifest only declares `depends: ['l10n_es']` (every sibling
+          # l10n_es_edi_* and l10n_sa_edi correctly depends on `certificate`).
+          # When the migration force-updates verifactu (it is marked in
+          # docsource so it joins MODULES_NEW) before `certificate` loads, the
+          # registry build dies with
+          # `Model 'certificate.certificate' does not exist in registry`.
+          # OCA's own CI never hits this because their MODULES_NEW excludes
+          # verifactu. Add the missing manifest dependency on the fresh checkout.
+          vfm=$(find odoo -path '*/l10n_es_edi_verifactu/__manifest__.py' | head -1)
+          [ -n "$vfm" ] && sed -i "s/'depends': \['l10n_es'\],/'depends': ['l10n_es', 'certificate'],/" "$vfm"
           pip install -r ./openupgrade/requirements.txt
           pip install -U git+https://github.com/oca/openupgradelib
           # this is for v18 l10n_eg_edi_eta which crashes without it
@@ -102,6 +123,8 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
+          # cloud_storage_google external dependency
+          pip install 'google-auth<2.48.0'
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
