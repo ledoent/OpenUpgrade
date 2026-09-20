@@ -1,0 +1,4 @@
+---Models in module 'spreadsheet_dashboard_im_livechat'---
+---Fields in module 'spreadsheet_dashboard_im_livechat'---
+---XML records in module 'spreadsheet_dashboard_im_livechat'---
+ir.actions.act_window: spreadsheet_dashboard_im_livechat.ongoing_sessions_all_action (deleted domain)
