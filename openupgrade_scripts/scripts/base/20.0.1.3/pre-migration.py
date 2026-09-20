@@ -3,6 +3,9 @@
 
 from openupgradelib import openupgrade
 
+# pylint: disable=odoo-addons-relative-import
+from odoo.addons.openupgrade_scripts.apriori import merged_modules, renamed_modules
+
 _renamed_xmlids = [
     # Odisha: the id was spelled after the old "Orissa" name
     ("base.state_in_or", "base.state_in_od"),
@@ -133,8 +136,53 @@ def _convert_rules(env):
     )
 
 
+def _convert_field_index_to_selection(env):
+    """ir.model.fields.index was a boolean in 19.0 and is a selection in 20.0.
+
+    Left alone, the boolean column is widened to varchar by the ORM and the
+    values arrive as the strings "true"/"false", which are not members of
+    FIELD_INDEX_TYPES. Registry.check_indexes asserts on exactly that set, so
+    the upgrade stops with a bare AssertionError. A plain b-tree is what an
+    indexed field meant in 19.0.
+    """
+    env.cr.execute(
+        """
+        SELECT data_type FROM information_schema.columns
+        WHERE table_name = 'ir_model_fields' AND column_name = 'index'
+        """
+    )
+    row = env.cr.fetchone()
+    if not row or row[0] != "boolean":
+        return
+    openupgrade.logged_query(
+        env.cr,
+        """
+        ALTER TABLE ir_model_fields
+        ALTER COLUMN "index" DROP DEFAULT,
+        ALTER COLUMN "index" TYPE varchar
+        USING CASE WHEN "index" THEN 'btree' ELSE NULL END
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
+    # Stale transient rows are recomputed during init_models, and a leftover
+    # mail.compose.message renders its template against a model that may not be
+    # loaded yet, which ends the upgrade with a KeyError.
+    openupgrade.clean_transient_models(env.cr)
+    _convert_field_index_to_selection(env)
+    # merged_modules and renamed_modules are only documentation until this
+    # runs: it re-points every ir_model_data row at the module that owns the
+    # record in 20.0. Without it each absorbed module's data collides on
+    # load -- hr_org_chart's org chart action against hr's copy of it, and so
+    # on for every entry in apriori.
+    openupgrade.update_module_names(
+        env.cr, renamed_modules.items(), environment_namespec=True
+    )
+    openupgrade.update_module_names(
+        env.cr, merged_modules.items(), merge_modules=True, environment_namespec=True
+    )
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     _convert_model_access(env)
     _convert_rules(env)

@@ -48,6 +48,9 @@ merged_modules = {
 # Renamed models is a mapping from old model name to new model name
 renamed_models = {
     # odoo
+    # the valuation report moved from stock_account into account
+    "stock_account.stock.valuation.report": "account.stock.valuation.report",
+    "hr.contract.type": "hr.employee.type",
     # OCA/...
 }
 
