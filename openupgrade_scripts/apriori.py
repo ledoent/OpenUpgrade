@@ -51,6 +51,7 @@ renamed_models = {
     # the valuation report moved from stock_account into account
     "stock_account.stock.valuation.report": "account.stock.valuation.report",
     "hr.contract.type": "hr.employee.type",
+    "l10n_tr_nilvera_einvoice_extended.tax.office": "l10n_tr.tax.office",
     # OCA/...
 }
 
