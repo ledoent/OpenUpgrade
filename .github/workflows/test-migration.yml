@@ -31,7 +31,7 @@ jobs:
       OPENUPGRADE_USE_DEMO: "yes"
     services:
       postgres:
-        image: postgres:14.0
+        image: postgres:16
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
