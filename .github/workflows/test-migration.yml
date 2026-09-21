@@ -123,6 +123,11 @@ jobs:
           pip install coverage
           # this is for account_peppol
           pip install phonenumbers
+          # external_dependencies declared by modules in the 19.0 seed that the
+          # oca-ci base image does not carry: without these, button_upgrade
+          # raises UserError and the whole migration stops on the first one
+          # (cloud_storage_google wanting google-auth).
+          pip install geoip2 google-auth python-ldap
       - name: Test data
         run: |
           if test -n "$(ls openupgrade/openupgrade_scripts/scripts/*/tests/data*.py 2> /dev/null)"; then
