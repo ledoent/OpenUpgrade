@@ -137,16 +137,16 @@ jobs:
           MODULES_OLD=$(\
               sed -n '/^+========/,$p' \
               openupgrade/docsource/modules190-200.rst \
-              | grep "Done\|Partial\|Nothing" \
-              | grep -v "theme_" \
+              | grep -E '^\|[^|]*\|[^|]*(Done|Partial|Nothing)' \
+              | grep -vE '^\| *(\|(del|new)\| *)?theme_' \
               | sed -rn 's/((^\| *\|del\| *)|^\| *)([0-9a-z_]*)[ \|].*/\3/g p' \
               | sed '/^\s*$/d' \
               | paste -d, -s)
           MODULES_NEW=$(\
               sed -n '/^+========/,$p' \
               openupgrade/docsource/modules190-200.rst \
-              | grep "Done\|Partial\|Nothing" \
-              | grep -v "theme_" \
+              | grep -E '^\|[^|]*\|[^|]*(Done|Partial|Nothing)' \
+              | grep -vE '^\| *(\|(del|new)\| *)?theme_' \
               | sed -rn 's/((^\| *\|new\| *)|^\| *)([0-9a-z_]*)[ \|].*/\3/g p' \
               | sed '/^\s*$/d' \
               | paste -d, -s)
