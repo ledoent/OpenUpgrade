@@ -45,6 +45,20 @@ jobs:
           python-version: '3.12'
       - name: Sleep for 10 seconds
         run: sleep 10s
+      - name: PostgreSQL 16 client
+        # The seed is dumped by PostgreSQL 16, whose archive format the runner's
+        # stock pg_restore rejects with "unsupported version (1.15) in file
+        # header". 16 is the series target anyway.
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+            http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-16
+          pg_restore --version
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore
