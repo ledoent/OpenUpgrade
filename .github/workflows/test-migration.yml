@@ -60,6 +60,25 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends postgresql-client-16
           pg_restore --version
+      - name: Raise max_locks_per_transaction
+        # The migration takes far more than the default 64 locks in a single
+        # transaction and dies with "out of shared memory / You might need to
+        # increase max_locks_per_transaction". The lab compose has carried
+        # max_locks_per_transaction=256 since the 18->19 cycle for the same
+        # reason. A service container cannot take a command, so set it in
+        # postgresql.conf and restart -- the setting needs a restart, a reload
+        # is not enough. Data survives the restart; nothing is loaded yet anyway.
+        run: |
+          PG=$(docker ps --filter "ancestor=postgres:16" --format '{{.ID}}' | head -1)
+          test -n "$PG"
+          docker exec "$PG" bash -c \
+            "echo max_locks_per_transaction=256 >> /var/lib/postgresql/data/postgresql.conf"
+          docker restart "$PG"
+          for i in $(seq 1 30); do
+            pg_isready -h localhost -U odoo && break
+            sleep 2
+          done
+          psql -h localhost -U odoo -d postgres -tAc "show max_locks_per_transaction"
       - name: DB Creation
         run: createdb $DB
       - name: DB Restore
