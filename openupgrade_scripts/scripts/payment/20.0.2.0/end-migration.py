@@ -70,7 +70,7 @@ def _restore_per_company_methods(env):
         # Mirrors payment.provider.copy(): the brands have to be copied against
         # the copy of their own primary method, not the original.
         new_primary = primary.copy({"provider_id": provider_id})
-        for old, new in zip(primary, new_primary):
+        for old, new in zip(primary, new_primary, strict=True):
             old.brand_ids.copy(
                 {"provider_id": provider_id, "primary_payment_method_id": new.id}
             )
