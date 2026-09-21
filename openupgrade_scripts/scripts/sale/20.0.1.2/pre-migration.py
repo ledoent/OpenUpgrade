@@ -3,26 +3,10 @@
 
 from openupgradelib import openupgrade
 
+# pylint: disable=odoo-addons-relative-import
+from odoo.addons.openupgrade_scripts.helpers import release_xmlid
+
 _legacy_sale_delay = openupgrade.get_legacy_name("sale_delay")
-
-
-def _release_accrued_revenue_action(env):
-    """The accrued revenue entry action changed type, keeping its external id.
-
-    19.0 shipped it as an ir.actions.act_window, 20.0 as an ir.actions.server,
-    and the loader will not bind an id to a record of another model. Sweeping
-    every ir.actions.server id in the 20.0 source against this database, it is
-    the only one left in that state.
-    """
-    openupgrade.logged_query(
-        env.cr,
-        """
-        DELETE FROM ir_model_data
-        WHERE module = 'sale'
-          AND name = 'action_accrued_revenue_entry_sale_order_line'
-          AND model = 'ir.actions.act_window'
-        """,
-    )
 
 
 @openupgrade.migrate()
@@ -37,4 +21,12 @@ def migrate(env, version):
         openupgrade.rename_columns(
             env.cr, {"product_template": [("sale_delay", _legacy_sale_delay)]}
         )
-    _release_accrued_revenue_action(env)
+    # 19.0 shipped the accrued revenue entry action as an
+    # ir.actions.act_window, 20.0 as an ir.actions.server. Sweeping every
+    # ir.actions.server id in the 20.0 source against this database, it is the
+    # only one left in that state.
+    release_xmlid(
+        env.cr,
+        "sale.action_accrued_revenue_entry_sale_order_line",
+        "ir.actions.act_window",
+    )

@@ -22,14 +22,13 @@ access_ru = env["ir.model.access"].create(
 # Give it an external id: the script renames the table rather than copying rows
 # precisely so that ids, and therefore external ids, survive.
 #
-# These external ids claim to belong to base, which base does not declare, so
-# _process_end removes them once every module has loaded. That is harmless
-# here: the tests are at_install and run right after base loads, well before
-# the end-of-run cleanup. It does mean a second -u base over the same database
-# finds them gone.
+# The id is filed under a module that does not exist. _process_end removes data
+# rows belonging to modules it has just loaded, so an id claiming to be base's
+# would be deleted at the end of the run -- the tests would still pass, being
+# at_install, but the fixture would not survive for inspection afterwards.
 env["ir.model.data"].create(
     {
-        "module": "base",
+        "module": "__ou19__",
         "name": "ou19_access_ru",
         "model": "ir.model.access",
         "res_id": access_ru.id,
@@ -63,7 +62,7 @@ access_none = env["ir.model.access"].create(
 )
 env["ir.model.data"].create(
     {
-        "module": "base",
+        "module": "__ou19__",
         "name": "ou19_access_none",
         "model": "ir.model.access",
         "res_id": access_none.id,
@@ -99,7 +98,7 @@ rule_multigroup = env["ir.rule"].create(
 )
 env["ir.model.data"].create(
     {
-        "module": "base",
+        "module": "__ou19__",
         "name": "ou19_rule_multigroup",
         "model": "ir.rule",
         "res_id": rule_multigroup.id,

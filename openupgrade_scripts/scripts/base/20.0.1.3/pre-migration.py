@@ -41,14 +41,13 @@ def _convert_model_access(env):
     security/ir.access.csv match its records instead of trying to create them a
     second time.
     """
+    # rename_models re-points ir_model_data.model itself: it walks the
+    # many2one references, and on a 19.0 schema get_many2one_references falls
+    # back to a static list whose first entry is ("ir.model.data", "res_id",
+    # "model", ""). No separate update is needed, and hr and l10n_tr rename
+    # their own models without one for the same reason.
     openupgrade.rename_models(env.cr, [("ir.model.access", "ir.access")])
     openupgrade.rename_tables(env.cr, [("ir_model_access", "ir_access")])
-    # rename_models covers ir_model, ir_model_fields and the reference fields,
-    # but ir_model_data.model is a plain char column.
-    openupgrade.logged_query(
-        env.cr,
-        "UPDATE ir_model_data SET model = 'ir.access' WHERE model = 'ir.model.access'",
-    )
     openupgrade.logged_query(
         env.cr,
         f"""

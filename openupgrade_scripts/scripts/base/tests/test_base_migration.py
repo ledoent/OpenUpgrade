@@ -38,7 +38,7 @@ class TestBaseMigration(TransactionCase):
 
     def test_external_id_survives_the_rename(self):
         """Renaming the table rather than copying rows keeps ids, so xml_ids hold."""
-        access = self.env.ref("base.ou19_access_ru")
+        access = self.env.ref("__ou19__.ou19_access_ru")
         self.assertEqual(access._name, "ir.access")
         self.assertEqual(access.operation, "ru")
 
@@ -53,7 +53,7 @@ class TestBaseMigration(TransactionCase):
         """operation is required and has no value meaning "nothing"."""
         self.assertFalse(self._access("ou19-access-none"))
         self.assertFalse(
-            self.env.ref("base.ou19_access_none", raise_if_not_found=False)
+            self.env.ref("__ou19__.ou19_access_none", raise_if_not_found=False)
         )
 
     def test_rule_fans_out_one_row_per_group(self):
@@ -75,7 +75,7 @@ class TestBaseMigration(TransactionCase):
         """The script maps min(id); which row that is depends on join order."""
         rows = self._access("ou19-rule-multigroup")
         self.assertEqual(len(rows), 3)
-        named = self.env.ref("base.ou19_rule_multigroup")
+        named = self.env.ref("__ou19__.ou19_rule_multigroup")
         self.assertEqual(named._name, "ir.access")
         self.assertIn(named, rows)
         self.assertEqual(
