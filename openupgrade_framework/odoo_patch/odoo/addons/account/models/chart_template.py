@@ -1,6 +1,7 @@
 # Copyright Odoo Community Association (OCA)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 """account is not a dependency of this module, so the patch is optional."""
+
 try:
     from odoo.addons.account.models.chart_template import AccountChartTemplate
 except ImportError:

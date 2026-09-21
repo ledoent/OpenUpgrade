@@ -5,7 +5,12 @@ from openupgradelib import openupgrade
 
 # 20.0 drops the product_ prefix from the unit of measure field.
 _renamed_fields = [
-    ("purchase.requisition.line", "purchase_requisition_line", "product_uom_id", "uom_id"),
+    (
+        "purchase.requisition.line",
+        "purchase_requisition_line",
+        "product_uom_id",
+        "uom_id",
+    ),
 ]
 
 

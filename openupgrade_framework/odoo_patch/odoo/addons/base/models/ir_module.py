@@ -59,9 +59,7 @@ def _button_immediate_function(self, function):
 
 update_list._original_method = IrModuleModule.update_list
 IrModuleModule.update_list = update_list
-_button_immediate_function._original_method = (
-    IrModuleModule._button_immediate_function
-)
+_button_immediate_function._original_method = IrModuleModule._button_immediate_function
 IrModuleModule._button_immediate_function = _button_immediate_function
 check_external_dependencies._original_method = (
     IrModuleModule.check_external_dependencies

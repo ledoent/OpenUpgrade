@@ -3,7 +3,7 @@ obsolete model pdp.config.wizard [transient]
 new model l10n_fr_pdp.annuaire.line [transient]
 new model l10n_fr_pdp.partner.lookup [transient]
 ---Fields in module 'l10n_fr_pdp'---
-l10n_fr_pdp  / account.move             / l10n_fr_pdp_status (selection): selection_keys 
+l10n_fr_pdp  / account.move             / l10n_fr_pdp_status (selection): selection_keys
 l10n_fr_pdp  / account.move             / peppol_move_state (False)     : selection_keys removed: [skipped]
 l10n_fr_pdp  / account_edi_proxy_client.user / proxy_type (False)            : selection_keys removed: [l10n_it_edi, l10n_my_edi]
 l10n_fr_pdp  / l10n.fr.pdp.reports.flow / website_message_ids (one2many): DEL relation: mail.message
