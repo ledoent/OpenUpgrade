@@ -2,6 +2,7 @@
 ---Fields in module 'contacts'---
 ---XML records in module 'contacts'---
 NEW ir.ui.menu: contacts.menu_res_city [renamed from base_address_extended module]
+# NOTHING TO DO: the menu moves here from base_address_extended, which drops its own id
 # NOTHING TO DO: the record is not noupdate, so the module update creates it
 DEL ir.ui.menu: contacts.menu_action_res_bank_form
 DEL ir.ui.menu: contacts.menu_config_bank_accounts

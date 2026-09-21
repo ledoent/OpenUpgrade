@@ -16,20 +16,26 @@ def migrate(env, version):
     #
     # Keeping the table under its own name is not enough: its foreign keys
     # cascade, so deleting the obsolete provider-agnostic methods would empty it.
-    # Renaming it and dropping the keys leaves an inert copy of the 19.0 state,
+    # Dropping the keys and renaming leaves an inert copy of the 19.0 state,
     # which is what OpenUpgrade keeps legacy data for.
-    if not openupgrade.table_exists(env.cr, _rel):
+    if not openupgrade.table_exists(env.cr, _rel) or openupgrade.table_exists(
+        env.cr, _legacy_rel
+    ):
         return
-    openupgrade.rename_tables(env.cr, [(_rel, _legacy_rel)])
     env.cr.execute(
         """
         SELECT conname FROM pg_constraint
         WHERE conrelid = %s::regclass AND contype IN ('f', 'p')
         """,
-        (_legacy_rel,),
+        (_rel,),
     )
     for (conname,) in env.cr.fetchall():
         openupgrade.logged_query(
-            env.cr,
-            f'ALTER TABLE {_legacy_rel} DROP CONSTRAINT "{conname}"',
+            env.cr, f'ALTER TABLE {_rel} DROP CONSTRAINT "{conname}"'
         )
+    # Not openupgrade.rename_tables: it renames the constraints along with the
+    # table, and both foreign key names prefixed with the legacy name truncate to
+    # the same 63 character identifier, so the second rename collides with the
+    # first. A plain rename leaves the indexes named after the old table, which
+    # is cosmetic on a table nothing queries by name any more.
+    openupgrade.logged_query(env.cr, f"ALTER TABLE {_rel} RENAME TO {_legacy_rel}")
