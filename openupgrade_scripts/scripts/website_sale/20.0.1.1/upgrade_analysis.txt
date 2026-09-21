@@ -1,8 +1,6 @@
 ---Models in module 'website_sale'---
 obsolete model website.base.unit
-model product.attribute.category (moved from website_sale_comparison)
 new model product.stock.notification
-model product.wishlist (moved from website_sale_wishlist)
 new model website.checkout.alert.mixin [abstract]
 new model withdrawal.request
 ---Fields in module 'website_sale'---
@@ -14,13 +12,7 @@ website_sale / delivery.carrier         / delivery_estimate_range_days (integer)
 website_sale / delivery.carrier         / enable_delivery_estimate (boolean): NEW
 website_sale / delivery.carrier         / publish_on (datetime)         : NEW
 website_sale / delivery.carrier         / published_date (datetime)     : NEW
-website_sale / product.attribute        / category_id (many2one)        : previously in module website_sale_comparison
 website_sale / product.attribute        / external_identifier (char)    : NEW
-website_sale / product.attribute.category / _order                        : previously in module website_sale_comparison
-website_sale / product.attribute.category / attribute_ids (one2many)      : previously in module website_sale_comparison
-website_sale / product.attribute.category / display_name (char)           : previously in module website_sale_comparison
-website_sale / product.attribute.category / name (char)                   : previously in module website_sale_comparison
-website_sale / product.attribute.category / sequence (integer)            : previously in module website_sale_comparison
 website_sale / product.document         / attached_on_sale (False)      : previously in module sale_pdf_quote_builder
 website_sale / product.document         / shown_on_product_page (boolean): DEL
 website_sale / product.feed             / website_message_ids (one2many): DEL relation: mail.message
@@ -66,18 +58,7 @@ website_sale / product.template         / suggest_accessory_products (boolean): 
 website_sale / product.template         / suggest_alternative_products (boolean): NEW hasdefault: compute
 website_sale / product.template         / suggest_optional_products (boolean): NEW hasdefault: compute
 website_sale / product.template         / suggested_products_last_update (datetime): NEW
-website_sale / product.wishlist         / _order                        : previously in module website_sale_wishlist
-website_sale / product.wishlist         / active (boolean)              : previously in module website_sale_wishlist
-website_sale / product.wishlist         / currency_id (many2one)        : previously in module website_sale_wishlist
-website_sale / product.wishlist         / display_name (char)           : previously in module website_sale_wishlist
-website_sale / product.wishlist         / partner_id (many2one)         : previously in module website_sale_wishlist
-website_sale / product.wishlist         / price (float)                 : previously in module website_sale_wishlist
-website_sale / product.wishlist         / pricelist_id (many2one)       : previously in module website_sale_wishlist
-website_sale / product.wishlist         / product_id (many2one)         : previously in module website_sale_wishlist
-website_sale / product.wishlist         / website_id (many2one)         : previously in module website_sale_wishlist
 website_sale / res.company              / free_order_label (char)       : NEW hasdefault: default, translate
-website_sale / res.partner              / wishlist_ids (one2many)       : previously in module website_sale_wishlist
-website_sale / res.users                / wishlist_ids (one2many)       : previously in module website_sale_wishlist
 website_sale / sale.order               / alerts (json)                 : NEW
 website_sale / sale.order               / assigned_website_id (many2one): NEW relation: website, isfunction: function, stored
 website_sale / sale.order               / is_rating_email_sent (boolean): NEW
@@ -106,10 +87,6 @@ website_sale / website                  / show_category_description (boolean): N
 website_sale / website                  / show_category_title (boolean) : NEW hasdefault: default
 website_sale / website                  / show_line_subtotals_tax_selection (selection): now required
 website_sale / website                  / show_product_reference_price (boolean): NEW
-website_sale / website                  / wishlist_gap (char)           : previously in module website_sale_wishlist
-website_sale / website                  / wishlist_grid_columns (integer): previously in module website_sale_wishlist
-website_sale / website                  / wishlist_mobile_columns (integer): previously in module website_sale_wishlist
-website_sale / website                  / wishlist_opt_products_design_classes (char): previously in module website_sale_wishlist
 website_sale / website.base.unit        / name (char)                   : DEL required
 website_sale / website.checkout.step    / publish_on (datetime)         : NEW
 website_sale / website.checkout.step    / published_date (datetime)     : NEW
@@ -173,6 +150,7 @@ ir.actions.act_window: website_sale.website_sale_visitor_product_action (deleted
 DEL ir.actions.act_window: website_sale.action_product_pages_list
 DEL ir.actions.act_window: website_sale.action_view_unpaid_quotation_tree
 DEL ir.actions.act_window: website_sale.base_unit_action [renamed to product module]
+DEL ir.actions.act_window: website_sale_comparison.product_attribute_category_action [renamed to website_sale module]
 NEW ir.actions.act_window.view: website_sale.website_sale_order_kanban
 NEW ir.actions.act_window.view: website_sale.website_sale_order_list
 NEW ir.actions.server: website_sale.action_update_suggested_products
@@ -250,6 +228,14 @@ DEL ir.model.access: website_sale.access_website_base_unit_public_portal
 DEL ir.model.access: website_sale.access_website_base_unit_public_public
 DEL ir.model.access: website_sale.access_website_base_unit_sale_manager
 DEL ir.model.access: website_sale.access_website_checkout_step_website_designer
+DEL ir.model.access: website_sale_comparison.access_product_attribute_category_public_employee
+DEL ir.model.access: website_sale_comparison.access_product_attribute_category_public_portal
+DEL ir.model.access: website_sale_comparison.access_product_attribute_category_public_public
+DEL ir.model.access: website_sale_comparison.access_product_attribute_category_public_saleman
+DEL ir.model.access: website_sale_wishlist.access_product_wishlist_default
+DEL ir.model.access: website_sale_wishlist.access_product_wishlist_portal
+DEL ir.model.access: website_sale_wishlist.access_product_wishlist_public
+DEL ir.model.access: website_sale_wishlist.access_product_wishlist_user
 NEW ir.model.constraint: website_sale.constraint_product_stock_notification_rel_product_stock_notificat_a3552ee5
 ir.model.constraint: website_sale.constraint_product_template_default_code_gist_idx (changed definition: is now 'False' ('INDEX USING GIST(default_code gist_trgm_ops)'))
 NEW ir.model.constraint: website_sale.constraint_product_template_description_ecommerce_gist_idx
@@ -258,12 +244,15 @@ ir.model.constraint: website_sale.constraint_product_template_description_sale_g
 NEW ir.model.constraint: website_sale.constraint_product_template_minimum_quantity_non_negative
 ir.model.constraint: website_sale.constraint_product_template_name_gist_idx (changed definition: is now 'False' ('INDEX USING GIST((JSONB_PATH_QUERY_ARRAY(name, '$.*'::jsonpath)::text) gist_trgm_ops)'))
 NEW ir.model.constraint: website_sale.constraint_product_wishlist_product_unique_partner_id [renamed from website_sale_wishlist module] (changed definition: is now 'False' ('UNIQUE(product_id, partner_id)'))
+DEL ir.model.constraint: website_sale_wishlist.constraint_product_wishlist_product_unique_partner_id [renamed to website_sale module]
 DEL ir.rule: website_sale.empty_public_categories_rule (noupdate)
 DEL ir.rule: website_sale.product_attribute_custom_value_portal_rule (noupdate)
 DEL ir.rule: website_sale.product_attribute_custom_value_sale_rule (noupdate)
 DEL ir.rule: website_sale.product_pricelist_comp_rule (noupdate)
 DEL ir.rule: website_sale.product_pricelist_item_comp_rule (noupdate)
 DEL ir.rule: website_sale.product_template_public (noupdate)
+DEL ir.rule: website_sale_wishlist.all_product_wishlist_rule (noupdate)
+DEL ir.rule: website_sale_wishlist.product_wishlist_rule (noupdate)
 NEW ir.ui.menu: website_sale.menu_attribute_category_action [renamed from website_sale_comparison module]
 NEW ir.ui.menu: website_sale.menu_open_shop
 DEL ir.ui.menu: website_sale.menu_ecommerce_payment_methods
@@ -273,6 +262,7 @@ DEL ir.ui.menu: website_sale.menu_orders_unpaid_orders
 DEL ir.ui.menu: website_sale.menu_product_combos
 DEL ir.ui.menu: website_sale.menu_product_pages
 DEL ir.ui.menu: website_sale.product_catalog_product_tags
+DEL ir.ui.menu: website_sale_comparison.menu_attribute_category_action [renamed to website_sale module]
 NEW ir.ui.view: website_sale.accordion_specs_item
 NEW ir.ui.view: website_sale.add_to_compare
 NEW ir.ui.view: website_sale.add_to_wishlist
@@ -350,6 +340,36 @@ DEL ir.ui.view: website_sale.s_mega_menu_multi_menus
 DEL ir.ui.view: website_sale.s_mega_menu_odoo_menu
 DEL ir.ui.view: website_sale.s_mega_menu_thumbnails
 DEL ir.ui.view: website_sale.view_sales_order_filter_ecommerce_abondand
+DEL ir.ui.view: website_sale_collect_wishlist.unavailable_products_warning
+DEL ir.ui.view: website_sale_comparison.accordion_specs_item
+DEL ir.ui.view: website_sale_comparison.add_to_compare
+DEL ir.ui.view: website_sale_comparison.product_add_to_compare
+DEL ir.ui.view: website_sale_comparison.product_attribute_category_tree_view
+DEL ir.ui.view: website_sale_comparison.product_attribute_tree_view_inherit
+DEL ir.ui.view: website_sale_comparison.product_attribute_view_form
+DEL ir.ui.view: website_sale_comparison.product_attributes_body
+DEL ir.ui.view: website_sale_comparison.product_compare
+DEL ir.ui.view: website_sale_comparison.specifications_table
+DEL ir.ui.view: website_sale_comparison_wishlist.product_wishlist
+DEL ir.ui.view: website_sale_wishlist.add_to_wishlist
+DEL ir.ui.view: website_sale_wishlist.empty_wishlist_svg
+DEL ir.ui.view: website_sale_wishlist.header_hide_empty_wishlist_link
+DEL ir.ui.view: website_sale_wishlist.header_wishlist_link
+DEL ir.ui.view: website_sale_wishlist.product_add_to_wishlist
+DEL ir.ui.view: website_sale_wishlist.product_cart_lines
+DEL ir.ui.view: website_sale_wishlist.product_wishlist
+DEL ir.ui.view: website_sale_wishlist.template_header_boxed
+DEL ir.ui.view: website_sale_wishlist.template_header_default
+DEL ir.ui.view: website_sale_wishlist.template_header_hamburger
+DEL ir.ui.view: website_sale_wishlist.template_header_mobile
+DEL ir.ui.view: website_sale_wishlist.template_header_sales_four
+DEL ir.ui.view: website_sale_wishlist.template_header_sales_one
+DEL ir.ui.view: website_sale_wishlist.template_header_sales_three
+DEL ir.ui.view: website_sale_wishlist.template_header_sales_two
+DEL ir.ui.view: website_sale_wishlist.template_header_search
+DEL ir.ui.view: website_sale_wishlist.template_header_sidebar
+DEL ir.ui.view: website_sale_wishlist.template_header_stretch
+DEL ir.ui.view: website_sale_wishlist.template_header_vertical
 NEW mail.template: website_sale.email_template_back_in_stock
 mail.template: website_sale.mail_template_sale_cart_recovery (noupdate switched)
 NEW mail.template: website_sale.mail_template_sale_order_rating

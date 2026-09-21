@@ -142,6 +142,8 @@ base         / website                  / domain_punycode (char)        : previo
 base         / website                  / name (char)                   : previously in module website
 base         / website                  / sequence (integer)            : previously in module website
 base         / website                  / user_id (many2one)            : previously in module website
+base_vat     / res.company              / vat_check_vies (boolean)      : module is now 'account' ('base_vat')
+base_vat     / res.partner              / vies_valid (boolean)          : DEL
 website      / website                  / domain_punycode (char)        : is now stored
 ---XML records in module 'base'---
 NEW clearing.label: base.clearing_label_ae
@@ -310,6 +312,7 @@ DEL ir.actions.act_window: base.ir_access_act
 NEW ir.actions.server: base.ir_actions_server_change_password_wizard
 NEW ir.actions.server: base.ir_profile_query_action_explain
 ir.config_parameter: base.default_max_email_size (noupdate switched)
+DEL ir.cron: base_vat.vies_iap_check_update
 DEL ir.model.access: base.access_base_enable_profiling_wizard
 DEL ir.model.access: base.access_base_language_export
 DEL ir.model.access: base.access_base_language_import
@@ -612,6 +615,10 @@ DEL ir.ui.view: base.view_res_bank_tree
 DEL ir.ui.view: base.view_rule_form
 DEL ir.ui.view: base.view_rule_search
 DEL ir.ui.view: base.view_rule_tree
+DEL ir.ui.view: base_iban.setup_bank_account_iban_wizard
+DEL ir.ui.view: base_iban.view_partner_property_iban_form
+DEL ir.ui.view: base_vat.res_config_settings_view_form
+DEL ir.ui.view: base_vat.view_partner_base_vat_form
 report.paperformat: base.paperformat_batch_deposit (noupdate switched)
 report.paperformat: base.paperformat_euro (noupdate switched)
 report.paperformat: base.paperformat_us (noupdate switched)

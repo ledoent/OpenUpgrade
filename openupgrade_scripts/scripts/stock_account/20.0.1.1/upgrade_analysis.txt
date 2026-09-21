@@ -1,5 +1,5 @@
 ---Models in module 'stock_account'---
-obsolete model stock_account.stock.valuation.report [abstract]
+obsolete model stock_account.stock.valuation.report (renamed to account.stock.valuation.report in module account) [abstract]
 ---Fields in module 'stock_account'---
 stock_account / account.account          / account_stock_expense_id (many2one): module is now 'account' ('stock_account')
 stock_account / account.account          / account_stock_variation_id (many2one): module is now 'account' ('stock_account')

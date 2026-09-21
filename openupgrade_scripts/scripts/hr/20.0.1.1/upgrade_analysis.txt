@@ -1,50 +1,32 @@
 ---Models in module 'hr'---
-obsolete model hr.contract.type
+model homework.location.wizard (moved to hr_calendar) [transient]
+obsolete model hr.contract.type (renamed to hr.employee.type)
 obsolete model hr.departure.wizard [transient]
 obsolete model hr.version.wizard [transient]
 new model hr.employee.create.version.wizard [transient]
 new model hr.employee.departure
-model hr.employee.location (moved from hr_homeworking)
-new model hr.employee.type
+new model hr.employee.type (renamed from hr.contract.type)
 ---Fields in module 'hr'---
-hr           / hr.contract.type         / code (char)                   : DEL
-hr           / hr.contract.type         / country_id (many2one)         : DEL relation: res.country
-hr           / hr.contract.type         / name (char)                   : DEL required
-hr           / hr.contract.type         / sequence (integer)            : DEL
+hr           / hr.contract.type         / _order                        : _order is now 'sequence, name' ('sequence')
 hr           / hr.department            / website_message_ids (one2many): DEL relation: mail.message
 hr           / hr.departure.reason      / active (boolean)              : NEW hasdefault: default
 hr           / hr.employee              / additional_note (text)        : is now stored
 hr           / hr.employee              / additional_note (text)        : not related anymore
 hr           / hr.employee              / birthday_month (selection)    : NEW selection_keys: ['0', '1', '10', '11', '12', '2', '3', '4', '5', '6', '7', '8', '9'], isfunction: function, stored
-hr           / hr.employee              / child_all_count (integer)     : previously in module hr_org_chart
-hr           / hr.employee              / child_count (integer)         : previously in module hr_org_chart
 hr           / hr.employee              / contract_template_id (many2one): is now stored
 hr           / hr.employee              / contract_template_id (many2one): not related anymore
-hr           / hr.employee              / department_color (integer)    : previously in module hr_org_chart
 hr           / hr.employee              / driving_license_name (char)   : NEW
-hr           / hr.employee              / exceptional_location_id (many2one): previously in module hr_homeworking
 hr           / hr.employee              / first_contract_date (date)    : NEW isfunction: function, stored
-hr           / hr.employee              / friday_location_id (many2one) : previously in module hr_homeworking
-hr           / hr.employee              / hourly_cost (float)           : previously in module hr_hourly_cost
 hr           / hr.employee              / hr_icon_display (selection)   : selection_keys added: [presence_home, presence_office, presence_other], removed: [presence_archive]
 hr           / hr.employee              / hr_presence_state (selection) : selection_keys removed: [archive]
 hr           / hr.employee              / id_card_name (char)           : NEW
-hr           / hr.employee              / is_subordinate (boolean)      : previously in module hr_org_chart
-hr           / hr.employee              / monday_location_id (many2one) : previously in module hr_homeworking
 hr           / hr.employee              / phone_mobile_search (char)    : NEW stored: False
 hr           / hr.employee              / phone_sanitized (char)        : NEW isfunction: function, stored
 hr           / hr.employee              / private_car_plate (char)      : DEL
 hr           / hr.employee              / resource_calendar_id (many2one): now required
-hr           / hr.employee              / saturday_location_id (many2one): previously in module hr_homeworking
 hr           / hr.employee              / study_school (char)           : DEL
-hr           / hr.employee              / subordinate_ids (one2many)    : previously in module hr_org_chart
-hr           / hr.employee              / sunday_location_id (many2one) : previously in module hr_homeworking
-hr           / hr.employee              / thursday_location_id (many2one): previously in module hr_homeworking
-hr           / hr.employee              / today_location_name (char)    : previously in module hr_homeworking
-hr           / hr.employee              / tuesday_location_id (many2one): previously in module hr_homeworking
 hr           / hr.employee              / tz (selection)                : now required
 hr           / hr.employee              / website_message_ids (one2many): DEL relation: mail.message
-hr           / hr.employee              / wednesday_location_id (many2one): previously in module hr_homeworking
 hr           / hr.employee.departure    / action_date (date)            : NEW isfunction: function, stored
 hr           / hr.employee.departure    / apply_date (date)             : NEW
 hr           / hr.employee.departure    / departure_date (date)         : NEW hasdefault: compute
@@ -53,21 +35,8 @@ hr           / hr.employee.departure    / departure_reason_id (many2one): NEW re
 hr           / hr.employee.departure    / dismissal_date (date)         : NEW required, hasdefault: default
 hr           / hr.employee.departure    / employee_id (many2one)        : NEW relation: hr.employee, required, hasdefault: default
 hr           / hr.employee.departure    / last_contract_date_end (date) : NEW
-hr           / hr.employee.location     / _order                        : previously in module hr_homeworking
-hr           / hr.employee.location     / date (date)                   : previously in module hr_homeworking
-hr           / hr.employee.location     / day_week_string (char)        : previously in module hr_homeworking
-hr           / hr.employee.location     / display_name (char)           : previously in module hr_homeworking
-hr           / hr.employee.location     / employee_id (many2one)        : previously in module hr_homeworking
-hr           / hr.employee.location     / employee_name (char)          : previously in module hr_homeworking
-hr           / hr.employee.location     / work_location_id (many2one)   : previously in module hr_homeworking
-hr           / hr.employee.location     / work_location_name (char)     : previously in module hr_homeworking
-hr           / hr.employee.location     / work_location_type (selection): previously in module hr_homeworking
-hr           / hr.employee.type         / code (char)                   : NEW hasdefault: compute
 hr           / hr.employee.type         / company_id (many2one)         : NEW relation: res.company
-hr           / hr.employee.type         / country_id (many2one)         : NEW relation: res.country
 hr           / hr.employee.type         / employee_ids (one2many)       : NEW relation: hr.employee
-hr           / hr.employee.type         / name (char)                   : NEW required, translate
-hr           / hr.employee.type         / sequence (integer)            : NEW hasdefault: default
 hr           / hr.job                   / company_id (many2one)         : now required
 hr           / hr.job                   / contract_type_id (many2one)   : DEL relation: hr.contract.type
 hr           / hr.job                   / employee_type_id (many2one)   : NEW relation: hr.employee.type
@@ -111,14 +80,12 @@ hr           / res.users                / emergency_phone (char)        : now a 
 hr           / res.users                / employee_bank_account_ids (many2many): not related anymore
 hr           / res.users                / employee_bank_account_ids (many2many): now a function
 hr           / res.users                / employee_public_ids (one2many): NEW relation: hr.employee.public
-hr           / res.users                / friday_location_id (many2one) : previously in module hr_homeworking
 hr           / res.users                / job_title (char)              : not related anymore
 hr           / res.users                / job_title (char)              : now a function
 hr           / res.users                / km_home_work (integer)        : not related anymore
 hr           / res.users                / km_home_work (integer)        : now a function
 hr           / res.users                / mobile_phone (char)           : not related anymore
 hr           / res.users                / mobile_phone (char)           : now a function
-hr           / res.users                / monday_location_id (many2one) : previously in module hr_homeworking
 hr           / res.users                / pin (char)                    : not related anymore
 hr           / res.users                / pin (char)                    : now a function
 hr           / res.users                / private_city (char)           : not related anymore
@@ -137,13 +104,8 @@ hr           / res.users                / private_street2 (char)        : not re
 hr           / res.users                / private_street2 (char)        : now a function
 hr           / res.users                / private_zip (char)            : not related anymore
 hr           / res.users                / private_zip (char)            : now a function
-hr           / res.users                / saturday_location_id (many2one): previously in module hr_homeworking
-hr           / res.users                / sunday_location_id (many2one) : previously in module hr_homeworking
-hr           / res.users                / thursday_location_id (many2one): previously in module hr_homeworking
-hr           / res.users                / tuesday_location_id (many2one): previously in module hr_homeworking
 hr           / res.users                / visa_expire (date)            : not related anymore
 hr           / res.users                / visa_expire (date)            : now a function
-hr           / res.users                / wednesday_location_id (many2one): previously in module hr_homeworking
 hr           / res.users                / work_contact_id (many2one)    : not related anymore
 hr           / res.users                / work_contact_id (many2one)    : now a function
 hr           / res.users                / work_email (char)             : not related anymore
@@ -153,6 +115,7 @@ hr           / res.users                / work_location_id (many2one)   : now a 
 hr           / res.users                / work_phone (char)             : not related anymore
 hr           / res.users                / work_phone (char)             : now a function
 hr           / resource.calendar        / version_ids (one2many)        : NEW relation: hr.version
+hr_homeworking / hr.employee              / hr_icon_display (False)       : DEL selection_keys: ['presence_absent', 'presence_archive', 'presence_holiday_absent', 'presence_holiday_present', 'presence_home', 'presence_office', 'presence_other', 'presence_out_of_working_hour', 'presence_present', 'presence_undetermined'], mode: modify
 hr_homeworking / res.users                / friday_location_id (many2one) : not related anymore
 hr_homeworking / res.users                / friday_location_id (many2one) : now a function
 hr_homeworking / res.users                / monday_location_id (many2one) : not related anymore
@@ -168,32 +131,25 @@ hr_homeworking / res.users                / tuesday_location_id (many2one): now 
 hr_homeworking / res.users                / wednesday_location_id (many2one): not related anymore
 hr_homeworking / res.users                / wednesday_location_id (many2one): now a function
 ---XML records in module 'hr'---
-DEL hr.contract.type: hr.contract_type_apprenticeship (noupdate)
-DEL hr.contract.type: hr.contract_type_employee (noupdate)
 DEL hr.contract.type: hr.contract_type_full_time (noupdate)
-DEL hr.contract.type: hr.contract_type_interim (noupdate)
-DEL hr.contract.type: hr.contract_type_intern (noupdate)
 DEL hr.contract.type: hr.contract_type_part_time (noupdate)
 DEL hr.contract.type: hr.contract_type_permanent (noupdate)
-DEL hr.contract.type: hr.contract_type_seasonal (noupdate)
 DEL hr.contract.type: hr.contract_type_statutory (noupdate)
-DEL hr.contract.type: hr.contract_type_student (noupdate)
 DEL hr.contract.type: hr.contract_type_temporary (noupdate)
-DEL hr.contract.type: hr.contract_type_thesis (noupdate)
 hr.department: hr.dep_administration (noupdate switched)
 NEW hr.departure.reason: hr.departure_dead
 hr.departure.reason: hr.departure_fired (noupdate switched)
 hr.departure.reason: hr.departure_resigned (noupdate switched)
 hr.departure.reason: hr.departure_retired (noupdate switched)
 DEL hr.employee: hr.employee_admin (noupdate)
-NEW hr.employee.type: hr.contract_type_apprenticeship
+hr.employee.type: hr.contract_type_apprenticeship (noupdate switched)
 NEW hr.employee.type: hr.contract_type_company_executive
-NEW hr.employee.type: hr.contract_type_employee
-NEW hr.employee.type: hr.contract_type_interim
-NEW hr.employee.type: hr.contract_type_intern
-NEW hr.employee.type: hr.contract_type_seasonal
-NEW hr.employee.type: hr.contract_type_student
-NEW hr.employee.type: hr.contract_type_thesis
+hr.employee.type: hr.contract_type_employee (noupdate switched)
+hr.employee.type: hr.contract_type_interim (noupdate switched)
+hr.employee.type: hr.contract_type_intern (noupdate switched)
+hr.employee.type: hr.contract_type_seasonal (noupdate switched)
+hr.employee.type: hr.contract_type_student (noupdate switched)
+hr.employee.type: hr.contract_type_thesis (noupdate switched)
 hr.payroll.structure.type: hr.structure_type_employee (noupdate switched)
 hr.payroll.structure.type: hr.structure_type_employee_cp200 (noupdate switched)
 DEL hr.payroll.structure.type: hr.structure_type_employee_cp200_pfi (noupdate)
@@ -258,10 +214,17 @@ ir.actions.act_window: hr.hr_employee_public_action (deleted domain)
 ir.actions.act_window: hr.mail_activity_plan_action (deleted domain)
 ir.actions.act_window: hr.open_view_employee_list_my (deleted domain)
 DEL ir.actions.act_window: hr.hr_version_wizard_action
+DEL ir.actions.act_window: hr_homeworking_calendar.set_location_wizard_action [renamed to hr_calendar module]
+DEL ir.actions.act_window: hr_org_chart.action_hr_employee_org_chart [renamed to hr module]
+DEL ir.actions.act_window: hr_org_chart.action_hr_employee_public_org_chart [renamed to hr module]
 NEW ir.actions.act_window.view: hr.act_hr_department_hierarchy_view_kanban_action [renamed from hr_org_chart module]
 NEW ir.actions.act_window.view: hr.act_hr_department_hierarchy_view_tree_action [renamed from hr_org_chart module]
 NEW ir.actions.act_window.view: hr.act_hr_employee_public_hierarchy_view [renamed from hr_org_chart module]
 NEW ir.actions.act_window.view: hr.act_open_view_employee_list_my_hierarchy_view [renamed from hr_org_chart module]
+DEL ir.actions.act_window.view: hr_org_chart.act_hr_department_hierarchy_view_kanban_action [renamed to hr module]
+DEL ir.actions.act_window.view: hr_org_chart.act_hr_department_hierarchy_view_tree_action [renamed to hr module]
+DEL ir.actions.act_window.view: hr_org_chart.act_hr_employee_public_hierarchy_view [renamed to hr module]
+DEL ir.actions.act_window.view: hr_org_chart.act_open_view_employee_list_my_hierarchy_view [renamed to hr module]
 NEW ir.actions.server: hr.action_hr_employee_create_versions
 NEW ir.actions.server: hr.action_hr_employee_departure
 DEL ir.actions.server: hr.action_hr_employee_create_users
@@ -296,6 +259,9 @@ DEL ir.model.access: hr.access_hr_work_location_manager
 DEL ir.model.access: hr.access_hr_work_location_user
 DEL ir.model.access: hr.access_mail_activity_plan_hr_manager
 DEL ir.model.access: hr.access_mail_activity_plan_template_hr_manager
+DEL ir.model.access: hr_homeworking.access_hr_employee_location
+DEL ir.model.access: hr_homeworking.access_user_employee_location
+DEL ir.model.access: hr_homeworking_calendar.access_homework_location_wizard
 ir.model.constraint: hr.constraint_hr_employee_barcode_uniq (changed definition: is now 'False' ('unique (barcode)'))
 ir.model.constraint: hr.constraint_hr_employee_category_name_uniq (changed definition: is now 'False' ('unique (name)'))
 NEW ir.model.constraint: hr.constraint_hr_employee_location_uniq_exceptional_per_day [renamed from hr_homeworking module] (changed definition: is now 'False' ('unique(employee_id, date)'))
@@ -305,6 +271,7 @@ ir.model.constraint: hr.constraint_hr_job_no_of_recruitment_positive (changed de
 ir.model.constraint: hr.constraint_hr_version_check_contract_start_date_defined (changed definition: is now 'False' ('CHECK(contract_date_end IS NULL OR contract_date_start IS NOT NULL)'))
 ir.model.constraint: hr.constraint_hr_version_check_unique_date_version (changed definition: is now 'False' ('UNIQUE INDEX (employee_id, date_version) WHERE active = TRUE AND employee_id IS NOT NULL'))
 NEW ir.model.constraint: hr.constraint_hr_version_check_wage_positive
+DEL ir.model.constraint: hr_homeworking.constraint_hr_employee_location_uniq_exceptional_per_day [renamed to hr module]
 DEL ir.rule: hr.hr_dept_comp_rule (noupdate)
 DEL ir.rule: hr.hr_employee_comp_rule (noupdate)
 DEL ir.rule: hr.hr_employee_public_comp_rule (noupdate)
@@ -318,6 +285,10 @@ DEL ir.rule: hr.ir_rule_res_partner_bank_employees (noupdate)
 DEL ir.rule: hr.ir_rule_res_partner_bank_internal_users (noupdate)
 DEL ir.rule: hr.mail_plan_rule_group_hr_manager (noupdate)
 DEL ir.rule: hr.mail_plan_templates_rule_group_hr_manager (noupdate)
+DEL ir.rule: hr_homeworking.homeworking_admin_rule (noupdate)
+DEL ir.rule: hr_homeworking.homeworking_own_rule (noupdate)
+DEL ir.rule: hr_homeworking_calendar.homeworking_location_wizard_admin_rule (noupdate)
+DEL ir.rule: hr_homeworking_calendar.homeworking_location_wizard_own_rule (noupdate)
 NEW ir.ui.menu: hr.menu_config_working_times
 NEW ir.ui.view: hr.hr_department_hierarchy_view
 NEW ir.ui.view: hr.hr_employee_create_version_wizard_view_form
@@ -332,6 +303,20 @@ NEW ir.ui.view: hr.resource_resource_form_view_inherit_hr
 NEW ir.ui.view: hr.resource_resource_tree_view_inherit_hr
 DEL ir.ui.view: hr.hr_departure_wizard_view_form
 DEL ir.ui.view: hr.hr_version_wizard_view_form
+DEL ir.ui.view: hr_homeworking.res_users_view_form
+DEL ir.ui.view: hr_homeworking.res_useurs_view_form_profile
+DEL ir.ui.view: hr_homeworking.view_employee_filter
+DEL ir.ui.view: hr_homeworking.view_employee_form
+DEL ir.ui.view: hr_homeworking.view_employee_tree
+DEL ir.ui.view: hr_homeworking_calendar.homework_location_wizard_view_form
+DEL ir.ui.view: hr_hourly_cost.view_employee_form
+DEL ir.ui.view: hr_org_chart.hr_department_hierarchy_view
+DEL ir.ui.view: hr_org_chart.hr_employee_hierarchy_view
+DEL ir.ui.view: hr_org_chart.hr_employee_public_hierarchy_view
+DEL ir.ui.view: hr_org_chart.hr_employee_public_view_form_inherit_org_chart
+DEL ir.ui.view: hr_org_chart.hr_employee_view_form_inherit_org_chart
+DEL ir.ui.view: hr_org_chart.hr_employee_view_graph_inherit_org_chart
+DEL ir.ui.view: hr_org_chart.hr_employee_view_pivot_inherit_org_chart
 mail.activity.plan: hr.offboarding_plan (noupdate switched)
 mail.activity.plan: hr.onboarding_plan (noupdate switched)
 mail.activity.plan.template: hr.offboarding_setup_compute_out_delais (noupdate switched)

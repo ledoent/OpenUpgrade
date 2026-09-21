@@ -12,9 +12,6 @@ stock_delivery / product.template         / hs_code (char)                : now 
 stock_delivery / res.partner              / pickup_location_data (json)   : NEW
 stock_delivery / stock.picking.type       / auto_print_carrier_labels (boolean): NEW
 stock_delivery / stock.picking.type       / auto_print_export_documents (boolean): NEW
-stock_delivery / stock.picking.type       / batch_group_by_carrier (boolean): previously in module delivery_stock_picking_batch
-stock_delivery / stock.picking.type       / batch_max_weight (integer)    : previously in module delivery_stock_picking_batch
-stock_delivery / stock.picking.type       / weight_uom_name (char)        : previously in module delivery_stock_picking_batch
 ---XML records in module 'stock_delivery'---
 NEW ir.access: stock_delivery.access_choose_delivery_carrier_stock_user
 NEW ir.access: stock_delivery.access_delivery_carrier_stock_manager
@@ -49,6 +46,7 @@ NEW ir.ui.view: stock_delivery.product_product_hs_code
 NEW ir.ui.view: stock_delivery.product_product_hs_code_list
 NEW ir.ui.view: stock_delivery.report_shipping_docs
 NEW ir.ui.view: stock_delivery.report_shipping_labels
+DEL ir.ui.view: delivery_stock_picking_batch.view_picking_type_form_inherit
 DEL ir.ui.view: stock_delivery.alternative_zpl_label
 DEL ir.ui.view: stock_delivery.label_package_template_view_delivery
 DEL ir.ui.view: stock_delivery.normal_zpl_label

@@ -64,6 +64,9 @@ hr_work_entry / hr.work.entry.type       / rating_ids (one2many)         : NEW r
 hr_work_entry / hr.work.entry.type       / resource_calendar_attendance_ids (one2many): NEW relation: resource.calendar.attendance
 hr_work_entry / hr.work.entry.type       / resource_calendar_selectable (boolean): NEW hasdefault: compute
 hr_work_entry / res.company              / external_code (char)          : NEW
+hr_work_entry_holidays / hr.leave.type            / work_entry_type_id (many2one) : DEL relation: hr.work.entry.type
+hr_work_entry_holidays / hr.work.entry            / leave_id (many2one)           : DEL relation: hr.leave
+hr_work_entry_holidays / hr.work.entry.type       / leave_type_ids (one2many)     : DEL relation: hr.leave.type
 ---XML records in module 'hr_work_entry'---
 NEW hr.time.rule: hr_work_entry.hr_time_rule_employee_schedule
 NEW hr.time.rule: hr_work_entry.hr_time_rule_l10n_ae_day_time
@@ -767,3 +770,5 @@ DEL ir.ui.view: hr_work_entry.hr_work_entry_view_form
 DEL ir.ui.view: hr_work_entry.hr_work_entry_view_pivot
 DEL ir.ui.view: hr_work_entry.hr_work_entry_view_search
 DEL ir.ui.view: hr_work_entry.hr_work_entry_view_tree
+DEL ir.ui.view: hr_work_entry_holidays.view_holiday_status_normal_tree
+DEL ir.ui.view: hr_work_entry_holidays.work_entry_type_leave_form_inherit

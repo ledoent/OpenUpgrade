@@ -1,6 +1,6 @@
 ---Models in module 'account'---
 obsolete model account.group
-new model account.stock.valuation.report [abstract]
+new model account.stock.valuation.report (renamed from stock_account.stock.valuation.report in module stock_account) [abstract]
 new model res.currency.rate.consolidation.mixin [abstract]
 ---Fields in module 'account'---
 account      / account.account          / _order                        : _order is now 'code_path, account_type, name_path' ('code, placeholder_code')
@@ -127,14 +127,12 @@ account      / res.company              / website_message_ids (one2many): DEL re
 account      / res.partner              / display_invoice_template_pdf_report_id (boolean): now a function
 account      / res.partner              / duplicate_bank_partner_ids (many2many): not related anymore
 account      / res.partner              / duplicate_bank_partner_ids (many2many): now a function
-account      / res.partner              / global_location_number (char) : previously in module account_add_gln
 account      / res.partner              / qr_code_method (selection)    : NEW selection_keys: function
 account      / res.partner.bank         / account_type (False)          : NEW selection_keys: ['bank', 'clabe', 'iban'], mode: modify
 account      / res.partner.bank         / has_iban_warning (boolean)    : DEL
 account      / res.partner.bank         / has_money_transfer_warning (boolean): DEL
 account      / res.partner.bank         / has_phishing_warnings (boolean): NEW isfunction: function, stored
 account      / res.partner.bank         / website_message_ids (one2many): DEL relation: mail.message
-account      / res.users                / global_location_number (char) : previously in module account_add_gln
 account_add_gln / res.partner              / global_location_number (char) : not stored anymore
 account_add_gln / res.partner              / global_location_number (char) : now a function
 stock_account / product.category         / property_cost_method (selection): selection_keys removed: [fifo]
@@ -542,6 +540,7 @@ DEL ir.ui.view: account.product_view_search_catalog
 DEL ir.ui.view: account.view_account_group_form
 DEL ir.ui.view: account.view_account_group_search
 DEL ir.ui.view: account.view_account_group_tree
+DEL ir.ui.view: account_add_gln.view_partner_form_inherit
 mail.message.subtype: account.mt_invoice_created (noupdate switched)
 mail.message.subtype: account.mt_invoice_paid (noupdate switched)
 mail.message.subtype: account.mt_invoice_validated (noupdate switched)

@@ -6,13 +6,10 @@ obsolete model stock.quantity.history [transient]
 obsolete model stock.return.picking [transient]
 obsolete model stock.return.picking.line [transient]
 obsolete model stock.scrap
-model stock.add.to.wave (moved from stock_picking_batch) [transient]
 new model stock.allocation.report [abstract]
 new model stock.location.label.layout [transient]
 new model stock.orderpoint.suggest [transient]
 new model stock.package.label.layout [transient]
-model stock.picking.batch (moved from stock_picking_batch)
-model stock.picking.to.batch (moved from stock_picking_batch) [transient]
 new model stock.picking.type.label.layout [transient]
 new model stock.zero.demand.confirmation [transient]
 ---Fields in module 'stock'---
@@ -51,85 +48,22 @@ stock        / stock.move               / scrap_id (many2one)           : DEL re
 stock        / stock.move               / scrap_reason_tag_ids (many2many): NEW relation: stock.scrap.reason.tag
 stock        / stock.move               / should_replenish_scrapped (boolean): NEW
 stock        / stock.move               / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
-stock        / stock.move.line          / batch_id (many2one)           : previously in module stock_picking_batch
 stock        / stock.move.line          / date (datetime)               : now related
 stock        / stock.move.line          / product_uom_id (many2one)     : DEL relation: uom.uom, required
 stock        / stock.move.line          / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
-stock        / stock.picking            / batch_id (many2one)           : previously in module stock_picking_batch
-stock        / stock.picking            / batch_sequence (integer)      : previously in module stock_picking_batch
 stock        / stock.picking            / show_return (boolean)         : NEW hasdefault: default
 stock        / stock.picking            / website_message_ids (one2many): DEL relation: mail.message
-stock        / stock.picking.batch      / _order                        : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_calendar_event_id (many2one): previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_date_deadline (date) : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_exception_decoration (selection): previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_exception_icon (char): previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_ids (one2many)       : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_state (selection)    : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_summary (char)       : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_type_icon (char)     : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_type_id (many2one)   : previously in module stock_picking_batch
-stock        / stock.picking.batch      / activity_user_id (many2one)   : previously in module stock_picking_batch
-stock        / stock.picking.batch      / allowed_picking_ids (one2many): previously in module stock_picking_batch
-stock        / stock.picking.batch      / company_id (many2one)         : previously in module stock_picking_batch
-stock        / stock.picking.batch      / description (char)            : previously in module stock_picking_batch
-stock        / stock.picking.batch      / display_name (char)           : previously in module stock_picking_batch
-stock        / stock.picking.batch      / estimated_shipping_volume (float): previously in module stock_picking_batch
-stock        / stock.picking.batch      / estimated_shipping_weight (float): previously in module stock_picking_batch
-stock        / stock.picking.batch      / has_message (boolean)         : previously in module stock_picking_batch
-stock        / stock.picking.batch      / is_wave (boolean)             : previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_attachment_count (integer): previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_follower_ids (one2many): previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_has_error (boolean)   : previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_has_error_counter (integer): previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_has_sms_error (boolean): previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_ids (one2many)        : previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_is_follower (boolean) : previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_needaction (boolean)  : previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_needaction_counter (integer): previously in module stock_picking_batch
-stock        / stock.picking.batch      / message_partner_ids (many2many): previously in module stock_picking_batch
-stock        / stock.picking.batch      / move_ids (one2many)           : previously in module stock_picking_batch
-stock        / stock.picking.batch      / move_line_ids (one2many)      : previously in module stock_picking_batch
-stock        / stock.picking.batch      / my_activity_date_deadline (date): previously in module stock_picking_batch
-stock        / stock.picking.batch      / name (char)                   : previously in module stock_picking_batch
-stock        / stock.picking.batch      / picking_ids (one2many)        : previously in module stock_picking_batch
-stock        / stock.picking.batch      / picking_type_code (selection) : previously in module stock_picking_batch
-stock        / stock.picking.batch      / picking_type_id (many2one)    : previously in module stock_picking_batch
 stock        / stock.picking.batch      / priority (selection)          : NEW selection_keys: ['0', '1'], hasdefault: default
-stock        / stock.picking.batch      / properties (properties)       : previously in module stock_picking_batch
-stock        / stock.picking.batch      / rating_ids (one2many)         : previously in module stock_picking_batch
-stock        / stock.picking.batch      / scheduled_date (datetime)     : previously in module stock_picking_batch
-stock        / stock.picking.batch      / show_allocation (boolean)     : previously in module stock_picking_batch
-stock        / stock.picking.batch      / show_check_availability (boolean): previously in module stock_picking_batch
-stock        / stock.picking.batch      / show_lots_text (boolean)      : previously in module stock_picking_batch
-stock        / stock.picking.batch      / state (selection)             : previously in module stock_picking_batch
-stock        / stock.picking.batch      / user_id (many2one)            : previously in module stock_picking_batch
-stock        / stock.picking.batch      / warehouse_id (many2one)       : previously in module stock_picking_batch
 stock        / stock.picking.type       / allocated_location_id (many2one): NEW relation: stock.location
-stock        / stock.picking.type       / auto_batch (boolean)          : previously in module stock_picking_batch
 stock        / stock.picking.type       / auto_show_allocation_report (boolean): NEW
 stock        / stock.picking.type       / auto_show_reception_report (boolean): DEL
-stock        / stock.picking.type       / batch_auto_confirm (boolean)  : previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_group_by_dest_loc (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_group_by_destination (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_group_by_partner (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_group_by_src_loc (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_max_lines (integer)     : previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_max_pickings (integer)  : previously in module stock_picking_batch
-stock        / stock.picking.type       / batch_properties_definition (properties_definition): previously in module stock_picking_batch
-stock        / stock.picking.type       / count_picking_batch (integer) : previously in module stock_picking_batch
 stock        / stock.picking.type       / lot_label_format (selection)  : selection_keys is now 'function' ('['4x12_lots', '4x12_units', 'zpl_lots', 'zpl_units']')
 stock        / stock.picking.type       / product_label_format (selection): selection_keys is now 'function' ('['2x7xprice', '4x12', '4x12xprice', '4x7xprice', 'dymo', 'zpl', 'zplxprice']')
 stock        / stock.picking.type       / sequence_code (char)          : not stored anymore
 stock        / stock.picking.type       / sequence_code (char)          : now related
 stock        / stock.picking.type       / show_operations (boolean)     : DEL
-stock        / stock.picking.type       / wave_category_ids (many2many) : previously in module stock_picking_batch
 stock        / stock.picking.type       / wave_date_granularity (selection): NEW selection_keys: ['day', 'week'], hasdefault: default
-stock        / stock.picking.type       / wave_group_by_category (boolean): previously in module stock_picking_batch
 stock        / stock.picking.type       / wave_group_by_date (boolean)  : NEW
-stock        / stock.picking.type       / wave_group_by_location (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / wave_group_by_product (boolean): previously in module stock_picking_batch
-stock        / stock.picking.type       / wave_location_ids (many2many) : previously in module stock_picking_batch
 stock        / stock.scrap              / company_id (many2one)         : DEL relation: res.company, required
 stock        / stock.scrap              / date_done (datetime)          : DEL
 stock        / stock.scrap              / location_id (many2one)        : DEL relation: stock.location, required
@@ -156,6 +90,7 @@ stock        / stock.warehouse.orderpoint / daily_demand (float)          : NEW 
 stock        / stock.warehouse.orderpoint / min_max_based_on (selection)  : NEW required, selection_keys: ['custom', 'last_year', 'last_year_2', 'last_year_3', 'last_year_quarter', 'one_month', 'one_week', 'one_year', 'three_months'], hasdefault: default
 stock        / stock.warehouse.orderpoint / min_max_based_on_factor (integer): NEW required, hasdefault: default
 stock_picking_batch / stock.picking.batch      / _order                        : _order is now 'priority desc, name desc' ('name desc')
+stock_picking_batch / stock.picking.batch      / website_message_ids (one2many): DEL relation: mail.message
 ---XML records in module 'stock'---
 barcode.rule: stock.barcode_rule_location (noupdate switched)
 barcode.rule: stock.barcode_rule_lot (noupdate switched)
@@ -282,6 +217,12 @@ DEL ir.actions.act_window: stock.action_get_picking_type_ready_moves
 DEL ir.actions.act_window: stock.action_inventory_at_date
 DEL ir.actions.act_window: stock.action_stock_scrap
 DEL ir.actions.act_window: stock.stock_product_normal_action
+DEL ir.actions.act_window: stock_picking_batch.action_picking_tree_wave
+DEL ir.actions.act_window: stock_picking_batch.action_prepare_wave
+DEL ir.actions.act_window: stock_picking_batch.action_prepare_wave_for_picking_type
+DEL ir.actions.act_window: stock_picking_batch.stock_add_to_wave_action_stock_picking [renamed to stock module]
+DEL ir.actions.act_window: stock_picking_batch.stock_picking_batch_action [renamed to stock module]
+DEL ir.actions.act_window: stock_picking_batch.stock_picking_to_batch_action_stock_picking [renamed to stock module]
 NEW ir.actions.client: stock.allocation_report_action
 DEL ir.actions.client: stock.stock_reception_action
 NEW ir.actions.report: stock.action_report_picking_batch [renamed from stock_picking_batch module]
@@ -297,6 +238,7 @@ DEL ir.actions.report: stock.label_packaging_barcode
 DEL ir.actions.report: stock.label_picking_type
 DEL ir.actions.report: stock.label_product_product
 DEL ir.actions.report: stock.stock_reception_report_action
+DEL ir.actions.report: stock_picking_batch.action_report_picking_batch [renamed to stock module]
 NEW ir.actions.server: stock.action_merge_batch_picking [renamed from stock_picking_batch module]
 NEW ir.actions.server: stock.action_print_location_label_pdf
 NEW ir.actions.server: stock.action_print_location_label_zpl
@@ -316,6 +258,8 @@ NEW ir.actions.server: stock.action_unreserve_batch_picking [renamed from stock_
 DEL ir.actions.server: stock.action_revert_inventory_adjustment
 DEL ir.actions.server: stock.action_scrap
 DEL ir.actions.server: stock.action_toggle_is_locked
+DEL ir.actions.server: stock_picking_batch.action_merge_batch_picking [renamed to stock module]
+DEL ir.actions.server: stock_picking_batch.action_unreserve_batch_picking [renamed to stock module]
 ir.config_parameter: stock.barcode_separator (noupdate switched)
 ir.cron: stock.ir_cron_scheduler_action (noupdate switched)
 DEL ir.model.access: stock.access_barcode_nomenclature_stock_manager
@@ -395,6 +339,9 @@ DEL ir.model.access: stock.access_stock_warehouse_orderpoint_system
 DEL ir.model.access: stock.access_stock_warehouse_user
 DEL ir.model.access: stock.access_stock_warn_insufficient_qty_scrap
 DEL ir.model.access: stock.access_update_product_attribute_value_stock_manager
+DEL ir.model.access: stock_picking_batch.access_stock_add_to_wave
+DEL ir.model.access: stock_picking_batch.access_stock_picking_batch
+DEL ir.model.access: stock_picking_batch.access_stock_picking_to_batch
 ir.model.constraint: stock.constraint_stock_location_barcode_company_uniq (changed definition: is now 'False' ('unique (barcode,company_id)'))
 ir.model.constraint: stock.constraint_stock_location_inventory_freq_nonneg (changed definition: is now 'False' ('check(cyclic_inventory_frequency >= 0)'))
 ir.model.constraint: stock.constraint_stock_location_parent_path_id_idx (changed definition: is now 'False' ('INDEX (parent_path, id)'))
@@ -430,14 +377,20 @@ DEL ir.rule: stock.stock_scrap_company_rule (noupdate)
 DEL ir.rule: stock.stock_storage_category_rule (noupdate)
 DEL ir.rule: stock.stock_warehouse_comp_rule (noupdate)
 DEL ir.rule: stock.stock_warehouse_orderpoint_rule (noupdate)
+DEL ir.rule: stock_picking_batch.stock_picking_batch_multicompany_rule
 ir.sequence: stock.seq_package (noupdate switched)
 NEW ir.sequence: stock.seq_picking_batch [renamed from stock_picking_batch module] (noupdate switched)
 ir.sequence: stock.seq_picking_internal (noupdate switched)
 ir.sequence: stock.sequence_mrp_op (noupdate switched)
 ir.sequence: stock.sequence_production_lots (noupdate switched)
+DEL ir.sequence: stock_picking_batch.seq_picking_batch [renamed to stock module] (noupdate)
+DEL ir.sequence: stock_picking_batch.seq_picking_wave (noupdate)
 NEW ir.ui.menu: stock.menu_stock_jobs [renamed from stock_picking_batch module]
 NEW ir.ui.menu: stock.stock_picking_batch_menu [renamed from stock_picking_batch module]
 DEL ir.ui.menu: stock.product_product_menu
+DEL ir.ui.menu: stock_picking_batch.menu_stock_jobs [renamed to stock module]
+DEL ir.ui.menu: stock_picking_batch.stock_picking_batch_menu [renamed to stock module]
+DEL ir.ui.menu: stock_picking_batch.stock_picking_wave_menu
 NEW ir.ui.view: stock.digest_digest_view_form
 NEW ir.ui.view: stock.location_barcode_4x7_label
 NEW ir.ui.view: stock.location_barcode_zpl_label
@@ -504,8 +457,32 @@ DEL ir.ui.view: stock.stock_scrap_view_kanban
 DEL ir.ui.view: stock.view_stock_quantity_history
 DEL ir.ui.view: stock.view_stock_return_picking_form
 DEL ir.ui.view: stock.view_template_property_form
+DEL ir.ui.view: stock_picking_batch.report_picking_batch
+DEL ir.ui.view: stock_picking_batch.stock_add_to_wave_form
+DEL ir.ui.view: stock_picking_batch.stock_move_line_view_search_inherit_stock_picking_batch
+DEL ir.ui.view: stock_picking_batch.stock_picking_batch_calendar
+DEL ir.ui.view: stock_picking_batch.stock_picking_batch_filter
+DEL ir.ui.view: stock_picking_batch.stock_picking_batch_form
+DEL ir.ui.view: stock_picking_batch.stock_picking_batch_kanban
+DEL ir.ui.view: stock_picking_batch.stock_picking_batch_tree
+DEL ir.ui.view: stock_picking_batch.stock_picking_form_inherit
+DEL ir.ui.view: stock_picking_batch.stock_picking_to_batch_form
+DEL ir.ui.view: stock_picking_batch.stock_picking_type_kanban_batch
+DEL ir.ui.view: stock_picking_batch.stock_picking_view_batch_tree_ref
+DEL ir.ui.view: stock_picking_batch.stock_picking_wave_kanban
+DEL ir.ui.view: stock_picking_batch.stock_picking_wave_tree
+DEL ir.ui.view: stock_picking_batch.view_move_line_tree
+DEL ir.ui.view: stock_picking_batch.view_move_line_tree_detailed_wave
+DEL ir.ui.view: stock_picking_batch.view_move_line_tree_inherit_stock_picking_batch
+DEL ir.ui.view: stock_picking_batch.view_picking_form_inherited
+DEL ir.ui.view: stock_picking_batch.view_picking_internal_search_inherit
+DEL ir.ui.view: stock_picking_batch.view_picking_internal_search_inherit_stock_picking_batch
+DEL ir.ui.view: stock_picking_batch.view_picking_move_tree_inherited
+DEL ir.ui.view: stock_picking_batch.view_picking_type_form_inherit
+DEL ir.ui.view: stock_picking_batch.vpicktree
 NEW mail.message.subtype: stock.mt_batch_state [renamed from stock_picking_batch module] (noupdate switched)
 NEW mail.message.subtype: stock.mt_picking_state
+DEL mail.message.subtype: stock_picking_batch.mt_batch_state [renamed to stock module] (noupdate)
 mail.template: stock.mail_template_data_delivery_confirmation (noupdate switched)
 NEW res.groups: stock.group_stock_picking_batch
 DEL res.groups: stock.group_reception_report

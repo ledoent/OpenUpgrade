@@ -25,3 +25,4 @@ DEL ir.ui.view: website_sale_stock.product_template_form_view_inherit_website_sa
 DEL ir.ui.view: website_sale_stock.view_picking_form_inherit_website_sale_stock
 DEL ir.ui.view: website_sale_stock.website_sale_stock_cart_lines
 DEL ir.ui.view: website_sale_stock.website_sale_stock_product
+DEL ir.ui.view: website_sale_stock_wishlist.product_wishlist
