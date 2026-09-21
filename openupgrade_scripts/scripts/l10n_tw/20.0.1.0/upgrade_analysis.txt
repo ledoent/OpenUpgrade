@@ -1,0 +1,5 @@
+---Models in module 'l10n_tw'---
+---Fields in module 'l10n_tw'---
+---XML records in module 'l10n_tw'---
+res.country: base.tw (noupdate switched)
+res.currency: base.TWD (noupdate switched)

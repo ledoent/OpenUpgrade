@@ -1,0 +1,46 @@
+---Models in module 'payment_asiapay'---
+---Fields in module 'payment_asiapay'---
+---XML records in module 'payment_asiapay'---
+DEL ir.ui.view: payment_asiapay.redirect_form
+NEW payment.method: payment_asiapay.payment_method_alipay
+NEW payment.method: payment_asiapay.payment_method_alipay_hk
+NEW payment.method: payment_asiapay.payment_method_amex
+NEW payment.method: payment_asiapay.payment_method_atome [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_bangkok_bank [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_bank_of_ayudhya [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_card
+NEW payment.method: payment_asiapay.payment_method_diners
+NEW payment.method: payment_asiapay.payment_method_duitnow
+NEW payment.method: payment_asiapay.payment_method_enets [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_fps [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_gcash
+NEW payment.method: payment_asiapay.payment_method_hoolah [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_humm [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_jcb
+NEW payment.method: payment_asiapay.payment_method_jkopay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_krungthai_bank [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_linepay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_mastercard
+NEW payment.method: payment_asiapay.payment_method_maya [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_maybank [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_momo
+NEW payment.method: payment_asiapay.payment_method_octopus [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_pace [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_pay_id [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_payme [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_paypal
+NEW payment.method: payment_asiapay.payment_method_poli [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_samsung_pay
+NEW payment.method: payment_asiapay.payment_method_scb [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_tendopay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_tenpay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_tmb [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_touch_n_go
+NEW payment.method: payment_asiapay.payment_method_truemoney [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_ttb [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_unionpay
+NEW payment.method: payment_asiapay.payment_method_uob [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_asiapay.payment_method_visa
+NEW payment.method: payment_asiapay.payment_method_wechat_pay
+NEW payment.method: payment_asiapay.payment_method_zip
+payment.provider: payment.payment_provider_asiapay (noupdate switched)
