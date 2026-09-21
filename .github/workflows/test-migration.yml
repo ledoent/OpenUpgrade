@@ -17,6 +17,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 120
     env:
       DB: "openupgrade"
       DB_HOST: "localhost"
@@ -145,9 +146,10 @@ jobs:
               | paste -d, -s)
           echo "modules_old=$MODULES_OLD" >> $GITHUB_OUTPUT
           echo "modules_new=$MODULES_NEW" >> $GITHUB_OUTPUT
-          if [ -z "$MODULES_NEW" ]; then
-             echo "No modules to test yet"
-             exit
+          if [ -z "$MODULES_OLD" ] || [ -z "$MODULES_NEW" ]; then
+             echo "::error::modules190-200.rst has no row marked Done/Partial/Nothing,"
+             echo "::error::so the migration would not run. Refusing to report success."
+             exit 1
           fi
           REQUEST="update ir_module_module set state='uninstalled' \
               where name not in ('$(echo $MODULES_OLD | sed -e "s/,/','/g")')"
