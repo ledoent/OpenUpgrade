@@ -51,7 +51,7 @@ jobs:
         # header". 16 is the series target anyway.
         run: |
           sudo install -d /usr/share/postgresql-common/pgdg
-          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+          sudo curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
             https://www.postgresql.org/media/keys/ACCC4CF8.asc
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
             http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
