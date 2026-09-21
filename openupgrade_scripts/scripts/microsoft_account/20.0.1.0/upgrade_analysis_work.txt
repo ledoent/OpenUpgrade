@@ -1,0 +1,5 @@
+---Models in module 'microsoft_account'---
+---Fields in module 'microsoft_account'---
+---XML records in module 'microsoft_account'---
+ir.config_parameter: microsoft_account.config_microsoft_redirect_uri (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
