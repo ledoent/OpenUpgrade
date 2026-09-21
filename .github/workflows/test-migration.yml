@@ -128,12 +128,14 @@ jobs:
           sed -i -E "s/(gevent==)21\.8\.0( ; sys_platform != 'win32' and python_version == '3.10')/\122.10.2\2/;s/(greenlet==)1.1.2( ; sys_platform != 'win32' and python_version == '3.10')/\12.0.2\2/" odoo/requirements.txt
           pip install -q -r odoo/requirements.txt
           pip install -r ./openupgrade/requirements.txt
-          # TEMPORARY pin to the fork branch carrying the get_many2one_references
-          # fix (ledoent/openupgradelib#4). Upstream master selects
+          # TEMPORARY pin to the fork branch carrying the two 20.0 fixes
+          # (ledoent/openupgradelib#4). Upstream master selects
           # ir_model_fields.relation_model_field, which only exists in 20.0, while a
           # pre-migration runs against the 19.0 schema -- every script calling
-          # rename_models or rename_fields dies on UndefinedColumn. Drop this back to
-          # oca/openupgradelib once the fix is released.
+          # rename_models or rename_fields dies on UndefinedColumn. It also reaches
+          # convert_xml_import through odoo.tools, which 20.0 no longer re-exports,
+          # so every load_data call ends the upgrade. Drop this back to
+          # oca/openupgradelib once the fixes are released.
           pip install -U git+https://github.com/ledoent/openupgradelib@20.0-fix-many2one-references
           # this is for v18 l10n_eg_edi_eta which crashes without it
           pip install asn1crypto
