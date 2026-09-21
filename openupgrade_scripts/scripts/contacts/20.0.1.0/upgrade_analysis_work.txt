@@ -1,0 +1,10 @@
+---Models in module 'contacts'---
+---Fields in module 'contacts'---
+---XML records in module 'contacts'---
+NEW ir.ui.menu: contacts.menu_res_city [renamed from base_address_extended module]
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.menu: contacts.menu_action_res_bank_form
+DEL ir.ui.menu: contacts.menu_config_bank_accounts
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: contacts.res_partner_view_hierarchy
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
