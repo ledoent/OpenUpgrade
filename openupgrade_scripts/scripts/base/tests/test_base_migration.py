@@ -107,3 +107,34 @@ class TestBaseMigration(TransactionCase):
             ),
             0,
         )
+
+    def test_bank_account_number_is_renamed_not_recreated(self):
+        """acc_number and its sanitized twin carry their values into 20.0.
+
+        Renaming the columns rather than letting the ORM add empty ones is the
+        whole point: without it every bank account in the database reads as
+        having no number, and the upgrade says so in a line it does not fail
+        on -- "Constraint not added: column account_number of relation
+        res_partner_bank contains null values".
+        """
+        bank = self.env["res.partner.bank"].search(
+            [("partner_id.name", "=", "ou19-bank-partner")]
+        )
+        self.assertTrue(bank)
+        self.assertEqual(len(bank), 1)
+        self.assertEqual(bank.account_number, "ou19-acct 0042/7")
+        # Carried across, not recomputed from an empty column: the stored
+        # sanitized value strips punctuation and upper-cases.
+        self.assertEqual(bank.sanitized_account_number, "OU19ACCT00427")
+
+    def test_no_bank_account_lost_its_number(self):
+        """The rename is global, so nothing anywhere should be left blank.
+
+        Asserting on the fixture alone would pass even if the rename had only
+        caught the rows the test itself created.
+        """
+        self.assertTrue(self.env["res.partner.bank"].search_count([]))
+        self.assertEqual(
+            self.env["res.partner.bank"].search_count([("account_number", "=", False)]),
+            0,
+        )

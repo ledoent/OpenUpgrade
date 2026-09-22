@@ -151,13 +151,19 @@ def _pick_targets(env):
           AND lt.work_entry_type_id = wet.id
         """,
     )
-    # 20.0 decides from these two flags what may be picked when requesting time
-    # off, so a record derived from a leave type has to carry them.
+    # 20.0 decides from this flag what may be picked when requesting time off,
+    # so a record derived from a leave type has to carry it.
+    #
+    # Not is_leave alongside it: that was 19.0's field on hr.work.entry.type
+    # and 20.0 drops it. OpenUpgrade keeps the column, so SQL will happily
+    # write to it for ever while no model reads it -- the migration test is
+    # what noticed, with 'hr.work.entry.type' object has no attribute
+    # 'is_leave'.
     openupgrade.logged_query(
         env.cr,
         f"""
         UPDATE hr_work_entry_type
-        SET is_leave = TRUE, time_off_selectable = TRUE
+        SET time_off_selectable = TRUE
         WHERE {_legacy_leave_type_id} IS NOT NULL
         """,
     )

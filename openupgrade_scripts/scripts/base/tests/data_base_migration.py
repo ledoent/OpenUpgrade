@@ -138,4 +138,22 @@ env["ir.rule"].create(
 # There is deliberately no rule granting nothing: 19.0 carries a CHECK
 # constraint, ir_rule_no_access_rights, that forbids one. ir_model_access
 # has no equivalent constraint, which is why the access line above exists.
+
+# --- res.partner.bank account number rename ---------------------------------
+# 20.0 spells the field out: acc_number -> account_number, and
+# sanitized_acc_number -> sanitized_account_number. Both are stored, so the
+# values have to be carried across rather than recomputed.
+#
+# The number is written with punctuation and lower case on purpose: the
+# sanitized column strips non-alphanumerics and upper-cases, so a test that
+# only checked account_number would pass even if the sanitized half had been
+# left to a compute that never ran.
+partner_ru = env["res.partner"].create({"name": "ou19-bank-partner"})
+env["res.partner.bank"].create(
+    {
+        "acc_number": "ou19-acct 0042/7",
+        "partner_id": partner_ru.id,
+    }
+)
+
 env.cr.commit()
