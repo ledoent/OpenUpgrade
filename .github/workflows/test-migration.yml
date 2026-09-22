@@ -159,6 +159,10 @@ jobs:
       - name: OpenUpgrade test
         id: run_migration
         run: |
+          # The upgrade is piped through tee so the constraint check below can
+          # read it. Without pipefail the step would report tee's status and a
+          # failed upgrade would pass.
+          set -o pipefail
           # select modules and perform the upgrade
           MODULES_OLD=$(\
               sed -n '/^+========/,$p' \
@@ -210,7 +214,15 @@ jobs:
               --log-handler odoo.models.unlink:WARNING \
               --stop-after-init \
               --without-demo=$MODULES_NEW \
-              --update=$MODULES_NEW
+              --update=$MODULES_NEW \
+              2>&1 | tee "$GITHUB_WORKSPACE/migration.log"
+      - name: Check the constraints the upgrade could not apply
+        if: ${{ steps.run_migration.outputs.modules_new != '' }}
+        run: |
+          PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USERNAME \
+          PGPASSWORD=$DB_PASSWORD PGDATABASE=$DB \
+              python3 openupgrade/.github/scripts/check_unapplied_constraints.py \
+                  "$GITHUB_WORKSPACE/migration.log"
       - name: Generate coverage.xml
         if: ${{ steps.run_migration.outputs.modules_new != '' }}
         run: coverage xml
