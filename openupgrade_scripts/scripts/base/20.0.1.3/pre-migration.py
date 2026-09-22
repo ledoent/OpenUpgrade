@@ -13,6 +13,29 @@ _renamed_xmlids = [
     ("l10n_in.state_in_la", "base.state_in_la"),
 ]
 
+# res.partner.bank spells its account number out in 20.0. Both halves are pure
+# renames -- the sanitized one is a stored compute in 19.0 and in 20.0 alike --
+# so renaming the columns carries the values over and leaves
+# unique(sanitized_account_number, partner_id) meaningful. Left undone, the new
+# columns are created empty: every bank account in the database reads as having
+# no number, and the upgrade says so in one line it does not fail on,
+# "Constraint not added: column account_number of relation res_partner_bank
+# contains null values".
+_renamed_fields = [
+    (
+        "res.partner.bank",
+        "res_partner_bank",
+        "acc_number",
+        "account_number",
+    ),
+    (
+        "res.partner.bank",
+        "res_partner_bank",
+        "sanitized_acc_number",
+        "sanitized_account_number",
+    ),
+]
+
 # Keeps the source ir.rule id on the rows we derive from it, so the xml_ids can
 # be re-pointed afterwards.
 _legacy_rule_id = openupgrade.get_legacy_name("ir_rule_id")
@@ -171,6 +194,11 @@ def migrate(env, version):
     # loaded yet, which ends the upgrade with a KeyError.
     openupgrade.clean_transient_models(env.cr)
     _convert_field_index_to_selection(env)
+    # rename_fields warns against using it in base because it needs the
+    # environment, which is not loaded yet. It does not: every statement in it
+    # and in rename_field_references goes through env.cr, and its own no_deep
+    # flag is declared but never read.
+    openupgrade.rename_fields(env, _renamed_fields)
     # merged_modules and renamed_modules are only documentation until this
     # runs: it re-points every ir_model_data row at the module that owns the
     # record in 20.0. Without it each absorbed module's data collides on
