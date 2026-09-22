@@ -1,0 +1,6 @@
+---Models in module 'l10n_latam_invoice_document'---
+---Fields in module 'l10n_latam_invoice_document'---
+l10n_latam_invoice_document / account.move             / l10n_latam_use_documents (boolean): not related anymore
+l10n_latam_invoice_document / account.move             / l10n_latam_use_documents (boolean): now a function
+# NOTHING TO DO: non-stored related -> non-stored computed; no DB column either side, ORM computes on read
+---XML records in module 'l10n_latam_invoice_document'---
