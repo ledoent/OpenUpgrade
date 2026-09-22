@@ -139,6 +139,12 @@ def _drop_obsolete_methods(env):
     Anything still referenced is left alone rather than cascading the delete into
     a customer's transactions; provider_id then stays nullable, which is the same
     state the upgrade reaches today.
+
+    The provider-agnostic "unknown" method goes with the rest. 20.0 gives every
+    provider its own, and payment no longer ships payment_method_unknown at all,
+    so the 19.0 record has no counterpart. _unlink_if_not_default_payment_method
+    refuses to unlink a method with that code, but it is an @api.ondelete hook on
+    the ORM and these rows are deleted in SQL, so it never runs.
     """
     for table in ("payment_transaction", "payment_token"):
         _retarget_references(env, table)
@@ -150,7 +156,6 @@ def _drop_obsolete_methods(env):
           AND res_id IN (
             SELECT m.id FROM payment_method m
             WHERE m.provider_id IS NULL
-              AND m.code != 'unknown'
               AND NOT EXISTS (SELECT 1 FROM payment_transaction t
                               WHERE t.payment_method_id = m.id)
               AND NOT EXISTS (SELECT 1 FROM payment_token k
@@ -163,7 +168,6 @@ def _drop_obsolete_methods(env):
         """
         DELETE FROM payment_method m
         WHERE m.provider_id IS NULL
-          AND m.code != 'unknown'
           AND NOT EXISTS (SELECT 1 FROM payment_transaction t
                           WHERE t.payment_method_id = m.id)
           AND NOT EXISTS (SELECT 1 FROM payment_token k
