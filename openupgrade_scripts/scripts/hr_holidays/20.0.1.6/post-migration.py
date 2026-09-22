@@ -208,6 +208,40 @@ def _report_synthesised_codes(env):
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "hr_holidays", "20.0.1.6/noupdate_changes.xml")
+    openupgrade.delete_record_translations(
+        env.cr,
+        "hr_holidays",
+        [
+            "hr_work_entry.l10n_be_work_entry_type_phc",
+            "hr_work_entry.l10n_eg_work_entry_type_death",
+            "hr_work_entry.l10n_eg_work_entry_type_hajj",
+            "hr_work_entry.l10n_eg_work_entry_type_marriage",
+            "hr_work_entry.l10n_eg_work_entry_type_maternity",
+            "hr_work_entry.l10n_kw_work_entry_type_annual_leave",
+            "hr_work_entry.l10n_kw_work_entry_type_compassionate_leave",
+            "hr_work_entry.l10n_kw_work_entry_type_hajj_leave",
+            "hr_work_entry.l10n_kw_work_entry_type_maternity_leave",
+            "hr_work_entry.l10n_kw_work_entry_type_sick_leave",
+            "hr_work_entry.l10n_kw_work_entry_type_study_leave",
+            "hr_work_entry.l10n_om_work_entry_type_fdrcl",
+            "hr_work_entry.l10n_om_work_entry_type_hajj",
+            "hr_work_entry.l10n_om_work_entry_type_iddah",
+            "hr_work_entry.l10n_om_work_entry_type_maternity",
+            "hr_work_entry.l10n_om_work_entry_type_paternity",
+            "hr_work_entry.l10n_om_work_entry_type_sdrcl",
+            "hr_work_entry.l10n_om_work_entry_type_sick_leave_0",
+            "hr_work_entry.l10n_om_work_entry_type_sick_leave_100",
+            "hr_work_entry.l10n_om_work_entry_type_sick_leave_35",
+            "hr_work_entry.l10n_om_work_entry_type_sick_leave_50",
+            "hr_work_entry.l10n_om_work_entry_type_sick_leave_75",
+            "hr_work_entry.l10n_sa_work_entry_type_hajj",
+            "hr_work_entry.l10n_sa_work_entry_type_iddah",
+            "hr_work_entry.l10n_sa_work_entry_type_marriage",
+            "hr_work_entry.l10n_sa_work_entry_type_paternity",
+            "hr_work_entry.l10n_sa_work_entry_type_study",
+        ],
+        ["name"],
+    )
     # hr.leave.type is gone in 20.0: hr_holidays now _inherit's
     # hr.work.entry.type and declares the leave settings on it. Both models
     # existed in 19.0, so this is a merge and not a rename -- it must not go in

@@ -17,7 +17,8 @@ def _fill_attendance_duration_hours(env):
     The rule is 20.0's own _compute_duration_hours::
 
         if not attendance.duration_based:
-            attendance.duration_hours = max(0, attendance.hour_to - attendance.hour_from)
+            attendance.duration_hours = max(
+                0, attendance.hour_to - attendance.hour_from)
 
     duration_based is the case where 20.0 lets the user type the duration in
     directly rather than derive it, so those rows are left alone -- the compute

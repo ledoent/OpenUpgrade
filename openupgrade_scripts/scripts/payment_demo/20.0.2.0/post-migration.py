@@ -12,3 +12,9 @@ def migrate(env, version):
         "20.0.2.0/noupdate_changes.xml",
         xml_transformation_filename="20.0.2.0/noupdate_changes-transformation.xml",
     )
+    openupgrade.delete_record_translations(
+        env.cr,
+        "payment_demo",
+        ["payment_method_unknown"],
+        ["name"],
+    )

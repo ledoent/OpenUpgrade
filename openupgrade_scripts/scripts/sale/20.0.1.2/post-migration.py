@@ -9,6 +9,18 @@ _legacy_sale_delay = openupgrade.get_legacy_name("sale_delay")
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "sale", "20.0.1.2/noupdate_changes.xml")
+    openupgrade.delete_record_translations(
+        env.cr,
+        "sale",
+        ["email_template_proforma"],
+        ["body_html", "description", "name", "subject"],
+    )
+    openupgrade.delete_record_translations(
+        env.cr,
+        "sale",
+        ["email_template_edi_sale", "mail_template_sale_confirmation"],
+        ["body_html", "subject"],
+    )
     # The 19.0 value was global, so it holds for every company. A missing key
     # means the field default, which is 0, so zeroes need no row.
     if not openupgrade.column_exists(env.cr, "product_template", _legacy_sale_delay):
