@@ -160,6 +160,63 @@ _renamed_fields = [
 ]
 
 
+def _fix_user_groups_id_references(env):
+    """rename_fields() renames the field column on res_users and quoted
+    references in ir.filters.domain, but it does not process ir.rule
+    domain_force, server-action code, or unquoted dotted references like
+    ``user.groups_id.ids`` in Python-evaluated domain expressions — those
+    crash at evaluation time with ``AttributeError: 'res.users' object has
+    no attribute 'groups_id'``.
+
+    18.0's stored groups_id held the TRANSITIVE group set; 19.0 splits it
+    into group_ids (explicitly assigned only) and all_group_ids (the
+    closure). The faithful rewrite — for the dotted user reference and for
+    the LHS of res.users-scoped domains alike — is all_group_ids, matching
+    how 19.0 core rewrote its own rule data (e.g. mail_group).
+    """
+    for table, column in (
+        ("ir_rule", "domain_force"),
+        ("ir_filters", "domain"),
+        ("ir_act_server", "code"),
+    ):
+        openupgrade.logged_query(
+            env.cr,
+            rf"""
+            UPDATE {table}
+            SET {column} = regexp_replace(
+                {column}, '\muser\.groups_id\M', 'user.all_group_ids', 'g'
+            )
+            WHERE {column} ~ '\muser\.groups_id\M'
+            """,
+        )
+    # the LHS of res.users-scoped rule/filter domains: 18's groups_id closure
+    # maps to all_group_ids
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_rule r
+        SET domain_force = regexp_replace(
+            domain_force, '([''"])groups_id\1', '\1all_group_ids\1', 'g'
+        )
+        FROM ir_model m
+        WHERE m.id = r.model_id
+          AND m.model = 'res.users'
+          AND r.domain_force ~ '([''"])groups_id\1'
+        """,
+    )
+    openupgrade.logged_query(
+        env.cr,
+        r"""
+        UPDATE ir_filters
+        SET domain = regexp_replace(
+            domain, '([''"])groups_id\1', '\1all_group_ids\1', 'g'
+        )
+        WHERE model_id = 'res.users'
+          AND domain ~ '([''"])groups_id\1'
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.logged_query(
@@ -180,3 +237,4 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     openupgrade.rename_xmlids(env.cr, _merged_xmlids, allow_merge=True)
     openupgrade.rename_fields(env, _renamed_fields)
+    _fix_user_groups_id_references(env)
