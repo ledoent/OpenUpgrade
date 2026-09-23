@@ -1,0 +1,19 @@
+---Models in module 'snailmail'---
+---Fields in module 'snailmail'---
+snailmail    / mail.message             / message_type (False)          : selection_keys added: [tracking] (most likely nothing to do)
+snailmail    / mail.notification        / failure_type (False)          : selection_keys added: [sms_database_non_active, sn_undeliverable] (most likely nothing to do)
+snailmail    / snailmail.letter         / error_code (selection)        : selection_keys added: [LETTER_UNDELIVERABLE] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+snailmail    / snailmail.letter         / letter_uid (char)             : NEW
+# NOTHING TO DO: empty is the right value for existing records
+snailmail    / snailmail.letter         / state (selection)             : selection_keys added: [process] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+---XML records in module 'snailmail'---
+NEW ir.access: snailmail.access_snailmail_letter_system
+NEW ir.access: snailmail.access_snailmail_letter_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: snailmail.action_mail_letters (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: snailmail.access_snailmail_letter_system
+DEL ir.model.access: snailmail.access_snailmail_letter_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
