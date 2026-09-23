@@ -1,0 +1,8 @@
+---Models in module 'l10n_fr'---
+---Fields in module 'l10n_fr'---
+---XML records in module 'l10n_fr'---
+DEL ir.ui.view: l10n_fr.view_partner_form_inherit_l10n_fr
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.country.group: l10n_fr.fr_and_mc (noupdate switched)
+res.country.group: l10n_fr.fr_and_mc_and_drom (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
