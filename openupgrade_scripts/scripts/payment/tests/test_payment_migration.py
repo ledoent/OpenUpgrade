@@ -73,3 +73,48 @@ class TestPaymentMigration(TransactionCase):
             )
             linked = bool(self.env.cr.fetchone()[0])
             self.assertEqual(linked, expected, name)
+
+    def test_an_enabled_provider_comes_out_in_live_mode(self):
+        """19.0's state governs 20.0's is_live, which has no default.
+
+        is_published decides whether customers are offered the provider and
+        survives the upgrade untouched; is_live decides whether the payment is
+        real. Left at its default an enabled provider is still offered and
+        quietly takes nothing, so the two have to move together.
+
+        Unlike the fan-out this runs in post-migration, which Odoo executes
+        while payment loads and therefore before this test, so the outcome is
+        assertable here.
+        """
+        for name, expected in (
+            ("ou19-provider-live", True),
+            ("ou19-provider-test", False),
+        ):
+            provider = self._provider(name)
+            self.assertTrue(provider, name)
+            self.assertEqual(len(provider), 1, name)
+            self.assertEqual(provider.is_live, expected, name)
+
+    def test_the_provider_state_is_kept_for_post_migration_to_read(self):
+        """pre-migration keeps state, which 20.0 drops.
+
+        Odoo leaves a removed field's column alone, so post-migration could
+        read `state` as it stands -- until some other module declares a state
+        on payment.provider and the value silently becomes that module's. The
+        legacy name is the column this migration owns.
+        """
+        legacy = openupgrade.get_legacy_name("state")
+        self.env.cr.execute(
+            """
+            SELECT count(*) FROM information_schema.columns
+            WHERE table_name = 'payment_provider' AND column_name = %s
+            """,
+            (legacy,),
+        )
+        self.assertTrue(self.env.cr.fetchone()[0], f"payment_provider.{legacy} is gone")
+        self.env.cr.execute(
+            f"SELECT count(*) FROM payment_provider WHERE {legacy} = 'enabled'"
+        )
+        self.assertTrue(
+            self.env.cr.fetchone()[0], "the enabled fixture did not reach the upgrade"
+        )

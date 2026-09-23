@@ -43,4 +43,26 @@ env.cr.execute(
     (without.id,),
 )
 
+# 20.0 replaces state with is_live, which is new and has no default, so every
+# provider arrives on False -- a provider that was enabled keeps being offered
+# to customers while processing through the test interface.
+#
+# The seed cannot show this: every one of its 2115 providers is disabled but
+# one, which is on test. enabled is the only state the carry has to act on and
+# nothing in the seed is in it, so without these two the fix would be asserted
+# by a database that cannot disagree.
+#
+# state is written in SQL because 19.0 refuses to enable a provider whose
+# credentials are not filled in, and the credentials are not what is under
+# test; pre-migration reads the column either way.
+for name, state in (("ou19-provider-live", "enabled"), ("ou19-provider-test", "test")):
+    provider = providers.search(
+        [("name", "not like", "ou19-provider-%")], order="id", limit=1
+    )
+    assert provider, f"no provider left to mark for {name}"
+    provider.name = name
+    env.cr.execute(
+        "UPDATE payment_provider SET state = %s WHERE id = %s", (state, provider.id)
+    )
+
 env.cr.commit()
