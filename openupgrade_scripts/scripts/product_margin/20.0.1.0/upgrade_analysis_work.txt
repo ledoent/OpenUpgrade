@@ -1,0 +1,6 @@
+---Models in module 'product_margin'---
+---Fields in module 'product_margin'---
+---XML records in module 'product_margin'---
+NEW ir.access: product_margin.access_product_margin
+DEL ir.model.access: product_margin.access_product_margin
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
