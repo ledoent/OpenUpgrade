@@ -102,6 +102,66 @@ def _reclassify_break_attendances(env):
     )
 
 
+def _carry_the_schedule_type_into_the_calendar_type(env):
+    """19.0's schedule_type becomes 20.0's calendar_type, with a third option.
+
+    19.0 asked one question with two answers::
+
+        schedule_type = flexible     "Define an amount of hours to work on the week"
+                      | fully_fixed  "define the days, periods and the start &
+                                      end time for each period of the day"
+
+    and carried `flexible_hours` beside it, which was not a second question --
+    19.0's own compute is `calendar.flexible_hours = calendar.schedule_type ==
+    'flexible'`, and its inverse writes the other way.
+
+    20.0 asks the same question with three answers, and the third is not a
+    renaming of anything::
+
+        fixed      a weekly attendance pattern that repeats identically
+        variable   attendances on specific dates rather than a repeating weekly
+                   pattern, such as a one-off schedule or a multi-week rotation
+        undefined  no predefined slots at all; the resource can work whenever it
+                   wants, optionally up to an hours target
+
+    The mapping is not read off the labels -- "flexible" appears in neither
+    list -- but off what each version's own code treats as flexible. 20.0::
+
+        def _is_flexible(self):
+            return self.calendar_type == 'undefined'
+
+    That is the same property 19.0 spelled `flexible_hours`: work without
+    relying on the working schedule, against an hours target rather than fixed
+    periods. So `flexible` maps to `undefined`, not to `variable`.
+
+    `two_weeks_calendar` is the one that maps to 'variable': 20.0's own help
+    names "a multi-week rotation" as what variable is for, and a 19.0 two-week
+    calendar is exactly that. The seed contains none, so the migration test
+    builds one -- without it this branch is unreachable and nothing would say so.
+
+    `fully_fixed` maps to `fixed`, which is what the new column already
+    defaults to, so nothing is written for it. That matters: 122 of the seed's
+    124 calendars are fully_fixed, and a blanket write would touch every one of
+    them to no effect while hiding whether the rule discriminates at all.
+
+    Without this a flexible calendar comes out reading as a fixed weekly
+    pattern it does not have, and every attendance, work entry and time-off
+    computation that asks `_is_flexible` gets the wrong answer.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE resource_calendar
+        SET calendar_type = CASE
+            WHEN schedule_type = 'flexible' THEN 'undefined'
+            ELSE 'variable'
+        END
+        WHERE calendar_type = 'fixed'
+          AND (schedule_type = 'flexible' OR two_weeks_calendar)
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "resource", "20.0.1.1/noupdate_changes.xml")
@@ -109,3 +169,4 @@ def migrate(env, version):
     # have to be reclassified after the durations are filled, not before.
     _fill_attendance_duration_hours(env)
     _reclassify_break_attendances(env)
+    _carry_the_schedule_type_into_the_calendar_type(env)
