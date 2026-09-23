@@ -1,0 +1,39 @@
+---Models in module 'l10n_hu_edi'---
+new model l10n_hu_edi.receive.bills.wizard [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'l10n_hu_edi'---
+---XML records in module 'l10n_hu_edi'---
+DEL account.cash.rounding: l10n_hu_edi.cash_rounding_1_huf
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.access: l10n_hu_edi.access_l10n_hu_edi_receive_bills_wizard
+NEW ir.access: l10n_hu_edi.l10n_hu_edi_cancellation_user
+NEW ir.access: l10n_hu_edi.l10n_hu_edi_tax_audit_export_user
+DEL ir.model.access: l10n_hu_edi.l10n_hu_edi_cancellation_user
+DEL ir.model.access: l10n_hu_edi.l10n_hu_edi_tax_audit_export_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: l10n_hu_edi.external_layout_center
+NEW ir.ui.view: l10n_hu_edi.external_layout_compact
+NEW ir.ui.view: l10n_hu_edi.external_layout_dual
+NEW ir.ui.view: l10n_hu_edi.external_layout_footer_content
+NEW ir.ui.view: l10n_hu_edi.external_layout_lines
+NEW ir.ui.view: l10n_hu_edi.l10n_hu_edi_receive_bills_wizard_form
+NEW ir.ui.view: l10n_hu_edi.l10n_hu_edi_view_in_invoice_bill_tree
+NEW ir.ui.view: l10n_hu_edi.query_invoice_data_request
+NEW ir.ui.view: l10n_hu_edi.query_invoice_digest_request
+NEW ir.ui.view: l10n_hu_edi.uom_uom_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_hu_edi.external_layout_bold
+DEL ir.ui.view: l10n_hu_edi.external_layout_boxed
+DEL ir.ui.view: l10n_hu_edi.external_layout_striped
+DEL ir.ui.view: l10n_hu_edi.uom_uom_form_inherit_l10n_hu_edi
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+uom.uom: uom.product_uom_cubic_meter (noupdate switched)
+uom.uom: uom.product_uom_day (noupdate switched)
+uom.uom: uom.product_uom_hour (noupdate switched)
+uom.uom: uom.product_uom_kgm (noupdate switched)
+uom.uom: uom.product_uom_km (noupdate switched)
+uom.uom: uom.product_uom_litre (noupdate switched)
+uom.uom: uom.product_uom_meter (noupdate switched)
+uom.uom: uom.product_uom_ton (noupdate switched)
+uom.uom: uom.product_uom_unit (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

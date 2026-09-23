@@ -1,0 +1,34 @@
+---Models in module 'l10n_gr_edi'---
+new model account.edi.xml.ubl_gr [abstract]
+# NOTHING TO DO: an abstract model has no table
+---Fields in module 'l10n_gr_edi'---
+l10n_gr_edi  / account.move             / l10n_gr_edi_budget_type (selection): NEW selection_keys: ['1', '2', '3']
+# NOTHING TO DO: a new field, so empty is the right value for existing records
+l10n_gr_edi  / account.move             / l10n_gr_edi_contract_reference (char): NEW required, hasdefault: default
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_gr_edi  / account.move             / l10n_gr_edi_project_reference (char): NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_gr_edi  / account.move.line        / l10n_gr_edi_cpv_code (char)   : NEW hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_gr_edi  / product.template         / l10n_gr_edi_cpv_code (char)   : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_gr_edi  / res.partner              / invoice_edi_format (False)    : previously in module l10n_tr_nilvera
+# NOTHING TO DO: the field only changed owning module, the column is the same
+l10n_gr_edi  / res.partner              / l10n_gr_edi_contracting_authority_code (char): NEW
+l10n_gr_edi  / res.partner              / l10n_gr_edi_contracting_authority_name (char): NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_tr_nilvera / res.partner              / invoice_edi_format (False)    : selection_keys added: [es_facturae, oioubl_21, tw_ecpay, ubl_21_fr, ubl_gr, ubl_hr], removed: [pint_sg, ubl_tr]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_gr_edi'---
+NEW ir.access: l10n_gr_edi.access_l10n_gr_edi_document_group_invoice
+NEW ir.access: l10n_gr_edi.access_l10n_gr_edi_document_readonly
+NEW ir.access: l10n_gr_edi.access_l10n_gr_edi_preferred_classification
+DEL ir.model.access: l10n_gr_edi.access_l10n_gr_edi_document_group_invoice
+DEL ir.model.access: l10n_gr_edi.access_l10n_gr_edi_document_readonly
+DEL ir.model.access: l10n_gr_edi.access_l10n_gr_edi_preferred_classification
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
