@@ -1,0 +1,12 @@
+---Models in module 'website_sale_collect'---
+---Fields in module 'website_sale_collect'---
+website_sale_collect / payment.provider         / custom_mode (False)           : selection_keys added: [pay_on_invoice] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+---XML records in module 'website_sale_collect'---
+delivery.carrier: website_sale_collect.carrier_pick_up_in_store (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml
+NEW ir.ui.view: website_sale_collect.payment_provider_form
+NEW ir.ui.view: website_sale_collect.sale_order_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+product.product: website_sale_collect.product_pick_up_in_store (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
