@@ -59,7 +59,53 @@ def _fill_attendance_duration_hours(env):
         )
 
 
+def _reclassify_break_attendances(env):
+    """19.0's day_period had a 'lunch' option; 20.0 has no break concept at all.
+
+    19.0 declared day_period as a plain stored selection of morning / lunch
+    ("Break") / afternoon / full_day. 20.0 drops 'lunch' and makes the field a
+    stored compute over the hours, so nothing it can produce is 'lunch' -- but
+    the column already holds a value, so the ORM leaves it there and the rows
+    keep a key the selection no longer declares. On the seed that is 600 of the
+    1825 attendances, every one of them a lunch break.
+
+    Rewritten with 20.0's own _compute_day_period, transcribed rather than
+    approximated::
+
+        if duration_hours > 0.75 * calendar.hours_per_day or duration_based:
+            'full_day'
+        elif hour_from and hour_to:
+            'afternoon' if hour_from > 12 or (12 - hour_from <= hour_to - 12)
+            else 'morning'
+        else:
+            'morning'
+
+    Only the 'lunch' rows are touched: every other value is one 20.0 still
+    declares, and recomputing them would silently rewrite data the upgrade had
+    no reason to change.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE resource_calendar_attendance a
+        SET day_period = CASE
+            WHEN a.duration_hours > 0.75 * coalesce(c.hours_per_day, 0)
+                 OR a.duration_based THEN 'full_day'
+            WHEN coalesce(a.hour_from, 0) != 0 AND coalesce(a.hour_to, 0) != 0
+                 AND (a.hour_from > 12 OR (12 - a.hour_from <= a.hour_to - 12))
+                THEN 'afternoon'
+            ELSE 'morning'
+        END
+        FROM resource_calendar c
+        WHERE c.id = a.calendar_id AND a.day_period = 'lunch'
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "resource", "20.0.1.1/noupdate_changes.xml")
+    # Order matters: day_period is computed from duration_hours, so the breaks
+    # have to be reclassified after the durations are filled, not before.
     _fill_attendance_duration_hours(env)
+    _reclassify_break_attendances(env)
