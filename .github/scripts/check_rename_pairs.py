@@ -48,6 +48,11 @@ DECLARED = re.compile(
     r'\(\s*"(?P<model>[\w.]+)"\s*,\s*"(?P<table>\w+)"\s*,\s*'
     r'"(?P<old>\w+)"\s*,\s*"(?P<new>\w+)"\s*,?\s*\)'
 )
+# _renamed_models = [("hr.contract.type", "hr.employee.type")]. Scoped to the
+# declaration: a bare pair of dotted names also matches an xml_id rename, and
+# "base.state_in_or" -> "base.state_in_od" is not a model.
+MODEL_RENAME_BLOCK = re.compile(r"renamed_models\s*=\s*[\[{](.*?)[\]}]", re.S)
+MODEL_RENAME = re.compile(r'"([\w.]+)"\s*[,:]\s*"([\w.]+)"')
 
 # "module:model.old -> new (type)" -> why it is not a rename, for pairs that
 # survive the automatic checks and have been looked at by hand.
@@ -129,6 +134,43 @@ def relation_of(what):
     """The comodel an analysis line names, if any."""
     m = re.search(r"relation: ([\w.]+)", what or "")
     return m.group(1) if m else None
+
+
+def renamed_models():
+    """Models a pre-migration renames, as old name -> new name.
+
+    Needed to compare comodels. A field whose comodel was renamed in the same
+    release reads as pointing somewhere else entirely -- hr.version's
+    contract_type_id (hr.contract.type) against employee_type_id
+    (hr.employee.type) -- and gets dismissed as a model-level change, which is
+    exactly the pair that most needs checking: the rename carries no data by
+    itself and the 20 versions that had a contract type came out with none.
+    """
+    out = {}
+    # apriori is the declaration the analyser itself pairs on; the pre-migrations
+    # are what perform it. Read both, so a rename that only one of them knows
+    # about still resolves.
+    sources = ["openupgrade_scripts/apriori.py"] + glob.glob(
+        "openupgrade_scripts/scripts/*/20.0.*/pre-migration.py"
+    )
+    for path in sources:
+        try:
+            text = open(path).read()
+        except OSError:
+            continue
+        for block in MODEL_RENAME_BLOCK.findall(text):
+            for old, new in MODEL_RENAME.findall(block):
+                out[old] = new
+    return out
+
+
+def canonical(comodel, renames):
+    """The comodel under the name it ends the migration with."""
+    seen = set()
+    while comodel in renames and comodel not in seen:
+        seen.add(comodel)
+        comodel = renames[comodel]
+    return comodel
 
 
 def declared_renames():
@@ -258,6 +300,8 @@ def main():
     if conn is None:
         return 2
 
+    model_renames = renamed_models()
+
     suspects, cleared, unreadable = [], [], []
     with conn, conn.cursor() as cur:
         for module, model, old, new, ftype, old_rel, new_rel in pairs:
@@ -265,10 +309,17 @@ def main():
             if label in ACKNOWLEDGED:
                 cleared.append((label, f"acknowledged: {ACKNOWLEDGED[label]}"))
                 continue
-            if old_rel and new_rel and old_rel != new_rel:
+            if (
+                old_rel
+                and new_rel
+                and canonical(old_rel, model_renames)
+                != canonical(new_rel, model_renames)
+            ):
                 # A field cannot be renamed into one that points at a different
                 # model. Whatever happened is a model-level change, which is
                 # apriori's business and not a rename this check can speak to.
+                # Compared after the model renames, or a comodel that was itself
+                # renamed makes the pair look unrelated.
                 cleared.append((label, f"different comodel: {old_rel} vs {new_rel}"))
                 continue
             table = table_of(cur, model)
