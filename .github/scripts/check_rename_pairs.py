@@ -238,9 +238,20 @@ def main():
     )
     opts = parser.parse_args()
 
+    analyses = glob.glob("openupgrade_scripts/scripts/*/20.0.*/upgrade_analysis.txt")
+    if not analyses:
+        # Zero pairs and zero files look identical in the output, and the files
+        # are found relative to the working directory, so run this from the
+        # wrong place and it congratulates you.
+        print(
+            "::error::no upgrade_analysis.txt found -- run this from the root of "
+            "an OpenUpgrade series clone"
+        )
+        return 2
+
     pairs = candidate_pairs()
     if not pairs:
-        print("OK: no DEL/NEW field pair is unaccounted for.")
+        print(f"OK: {len(analyses)} analyses, no DEL/NEW field pair unaccounted for.")
         return 0
 
     conn = connect(opts.dsn)
