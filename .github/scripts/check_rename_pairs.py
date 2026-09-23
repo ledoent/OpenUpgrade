@@ -11,17 +11,50 @@ bank account in the database reading as having no number.
 Pairing DEL with NEW on the same model and type finds the candidates, but a pair
 is only a suspicion: two unrelated fields on one model change in one release all
 the time. The database settles it. After a migration a real missed rename looks
-exactly one way:
+one of two ways:
 
-    the old column still holds values  AND  the new column is empty
+    (1) the old column still holds values  AND  the new column is EMPTY
+    (2) the old column still holds several values  AND  the new column holds
+        exactly ONE on every row -- its default
 
 That is evidence, not a guess, and it is the same shape as the constraint gate
 next door: the analysis says where to look, the schema says what happened.
+
+RULE 2 EXISTS BECAUSE RULE 1 CANNOT SEE A DEFAULT
+-------------------------------------------------
+A NEW field declared `required` with a `default` is never empty: the ORM fills
+every pre-existing row as it creates the column. Rule 1 can therefore never fire
+for one, and most new fields have a default. Three real defects sat behind that
+blind spot in the 19->20 run, each of which rule 1 cleared as "both filled":
+
+  * fleet.vehicle.log.services.date -> date_from, where date_from carries 19.0's
+    help text unchanged AND `default=today`, so all six of the seed's service
+    logs came out on the day the upgrade ran rather than empty;
+  * sale's product.template.expense_policy -> reinvoice_policy, where all 197
+    templates came out on the default while the old column sat beside them;
+  * maintenance.request, where completion had lived on maintenance.stage.done
+    and the new state defaulted every request to "In Progress".
+
+The uniformity is the signal. A genuinely new setting is also uniform, which is
+why rule 2 additionally requires the paired OLD column to still hold more than
+one value: the information exists, and the new column is not reading it.
 
 Pairs that have been looked at and are NOT renames go in ACKNOWLEDGED with the
 reason. Pairs already handled -- by openupgrade.rename_fields, or by a script
 that moves the data some other way -- are detected automatically and need no
 entry.
+
+WHAT THIS STILL CANNOT SEE, SO ITS SILENCE IS NOT A VERDICT
+-----------------------------------------------------------
+  * A succession ACROSS models. maintenance.request.state took over from
+    maintenance.stage.done -- a column on a different table -- and no DEL/NEW
+    pairing on one model can reach that.
+  * A pair whose OLD column does not vary in THIS database. maintenance's own
+    kanban_state -> state pair is reported cleared for exactly that reason: all
+    five seed requests are on 'normal', so the data cannot tell a carried value
+    from a defaulted one. That is a statement about the seed, not the code.
+  * A change of type. user_id (many2one) -> user_ids (many2many) is a real
+    succession that pairing on equal types never proposes.
 
 Usage:  check_rename_pairs.py [--dsn DSN] [--all]
 
@@ -272,6 +305,88 @@ def filled(cur, table, column):
     return cur.fetchone()[0]
 
 
+def spread(cur, table, column):
+    """Distinct non-null values in the column, or None when they cannot be counted.
+
+    `json` has no equality operator in Postgres, so DISTINCT over one raises
+    rather than answering. That is reported as unreadable instead of being
+    swallowed: a column this cannot measure must not be counted as cleared.
+    """
+    try:
+        cur.execute(f'SELECT count(DISTINCT "{column}") FROM "{table}"')
+        return cur.fetchone()[0]
+    except Exception:  # noqa: BLE001 - any failure here means "cannot measure"
+        cur.connection.rollback()
+        return None
+
+
+def classify(cur, pair, model_renames):
+    """One pair's verdict: ("suspect" | "cleared" | "unreadable", label, why).
+
+    Split out of main so each rule reads on its own -- and so the tool stays
+    under the complexity limit it is itself linted against.
+    """
+    module, model, old, new, ftype, old_rel, new_rel = pair
+    label = f"{module}:{model}.{old} -> {new} ({ftype})"
+    if label in ACKNOWLEDGED:
+        return "cleared", label, f"acknowledged: {ACKNOWLEDGED[label]}"
+    if (
+        old_rel
+        and new_rel
+        and canonical(old_rel, model_renames) != canonical(new_rel, model_renames)
+    ):
+        # A field cannot be renamed into one that points at a different model.
+        # Whatever happened is a model-level change, which is apriori's business
+        # and not a rename this check can speak to. Compared after the model
+        # renames, or a comodel that was itself renamed looks unrelated.
+        return "cleared", label, f"different comodel: {old_rel} vs {new_rel}"
+    table = table_of(cur, model)
+    if not table:
+        # The model is gone in 20.0, so this is a model-level change and not a
+        # field rename; whatever happened is a different question.
+        return "cleared", label, "the model itself does not exist in 20.0"
+
+    old_n, new_n = filled(cur, table, old), filled(cur, table, new)
+    if old_n is None:
+        tail = (
+            ", as the declared rename intends"
+            if ftype == "declared"
+            else ", so nothing was left"
+        )
+        return "cleared", label, f"{table}.{old} is gone{tail}"
+    if new_n is None:
+        return "unreadable", label, f"{table}.{new} does not exist"
+    if old_n and not new_n:
+        # Rule 1.
+        return (
+            "suspect",
+            label,
+            f"{table}.{old} holds {old_n} value(s), {new} holds none",
+        )
+    if not (old_n and new_n):
+        return "cleared", label, f"{old}={old_n} filled, {new}={new_n} filled"
+
+    # Rule 2. Both columns are full, which is what a default does to a new
+    # column, so rule 1 is silent here by construction.
+    old_spread = spread(cur, table, old)
+    new_spread = spread(cur, table, new)
+    if old_spread is None or new_spread is None:
+        return "unreadable", label, f"{table}.{old} or {new} cannot be counted DISTINCT"
+    if new_spread == 1 and old_spread > 1:
+        return (
+            "suspect",
+            label,
+            f"{table}.{new} holds ONE value on all {new_n} row(s) -- what a "
+            f"default does -- while {old} still holds {old_spread}",
+        )
+    return (
+        "cleared",
+        label,
+        f"{old}={old_n} filled/{old_spread} distinct, "
+        f"{new}={new_n} filled/{new_spread} distinct",
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dsn", help="libpq connection string")
@@ -303,52 +418,11 @@ def main():
     model_renames = renamed_models()
 
     suspects, cleared, unreadable = [], [], []
+    buckets = {"suspect": suspects, "cleared": cleared, "unreadable": unreadable}
     with conn, conn.cursor() as cur:
-        for module, model, old, new, ftype, old_rel, new_rel in pairs:
-            label = f"{module}:{model}.{old} -> {new} ({ftype})"
-            if label in ACKNOWLEDGED:
-                cleared.append((label, f"acknowledged: {ACKNOWLEDGED[label]}"))
-                continue
-            if (
-                old_rel
-                and new_rel
-                and canonical(old_rel, model_renames)
-                != canonical(new_rel, model_renames)
-            ):
-                # A field cannot be renamed into one that points at a different
-                # model. Whatever happened is a model-level change, which is
-                # apriori's business and not a rename this check can speak to.
-                # Compared after the model renames, or a comodel that was itself
-                # renamed makes the pair look unrelated.
-                cleared.append((label, f"different comodel: {old_rel} vs {new_rel}"))
-                continue
-            table = table_of(cur, model)
-            if not table:
-                # The model is gone in 20.0, so this is a model-level change and
-                # not a field rename; whatever happened is a different question.
-                cleared.append((label, "the model itself does not exist in 20.0"))
-                continue
-            old_n, new_n = filled(cur, table, old), filled(cur, table, new)
-            if old_n is None:
-                cleared.append(
-                    (
-                        label,
-                        f"{table}.{old} is gone"
-                        + (
-                            ", as the declared rename intends"
-                            if ftype == "declared"
-                            else ", so nothing was left"
-                        ),
-                    )
-                )
-            elif new_n is None:
-                unreadable.append((label, f"{table}.{new} does not exist"))
-            elif old_n and not new_n:
-                suspects.append(
-                    (label, f"{table}.{old} holds {old_n} value(s), {new} holds none")
-                )
-            else:
-                cleared.append((label, f"{old}={old_n} filled, {new}={new_n} filled"))
+        for pair in pairs:
+            kind, label, why = classify(cur, pair, model_renames)
+            buckets[kind].append((label, why))
 
     if opts.all:
         for label, why in cleared:
@@ -368,9 +442,10 @@ def main():
         print(f"::error::{label} -- {why}")
     print(
         f"\n{len(suspects)} field(s) look renamed and were migrated as a drop plus a "
-        f"create: the old column still holds values and the new one is empty. Either "
-        f"add the rename to that module's pre-migration, or record in ACKNOWLEDGED "
-        f"why the two are unrelated."
+        f"create: either the old column still holds values and the new one is empty, "
+        f"or the new one holds a single value on every row -- its default -- while "
+        f"the old one still holds several. Either add the rename to that module's "
+        f"pre-migration, or record in ACKNOWLEDGED why the two are unrelated."
     )
     return 1
 
