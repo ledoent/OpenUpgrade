@@ -22,12 +22,13 @@ _references = [
     ("hr_leave", "holiday_status_id", "work_entry_type_id"),
     ("hr_leave_allocation", "holiday_status_id", "work_entry_type_id"),
     ("hr_leave_accrual_plan", "time_off_type_id", "work_entry_type_id"),
-    (
-        "res_company",
-        "l10n_fr_reference_leave_type",
-        "l10n_fr_reference_work_entry_type",
-    ),
 ]
+
+# res.company.l10n_fr_reference_leave_type belongs to this fold too, but it is
+# re-pointed from l10n_fr_hr_holidays' own script instead. That module loads 127
+# modules after this one, so its replacement column does not exist yet when this
+# runs -- the column_exists guard below skipped the update and the value was
+# silently lost rather than erroring.
 
 
 def _shared_columns(env):
