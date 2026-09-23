@@ -1,23 +1,19 @@
 ---Models in module 'l10n_us'---
 new model l10n_us.res.county
-# NOTHING TO DO: a new model, created empty and then filled by the data below
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
 ---Fields in module 'l10n_us'---
 l10n_us      / l10n_us.res.county       / name (char)                   : NEW required
 l10n_us      / l10n_us.res.county       / state_id (many2one)           : NEW relation: res.country.state, required
-# NOTHING TO DO: on a model 20.0 introduces, so there are no rows to backfill
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
 l10n_us      / res.city                 / l10n_us_county_id (many2one)  : NEW relation: l10n_us.res.county
-# NOTHING TO DO: 20.0 sets this on the cities it ships. The 41 it leaves empty
-# are the US independent cities, which belong to no county by definition -- 38
-# in Virginia plus Baltimore, St. Louis and Carson City. Verified against the
-# migrated database: 31277 US cities, 41 without a county, and that is the whole
-# list. Deriving a county for them would be inventing one.
+# NOTHING TO DO: empty is the right value for existing records
 ---XML records in module 'l10n_us'---
 NEW ir.access: l10n_us.access_l10n_us_res_county_group_partner_manager
 NEW ir.access: l10n_us.access_l10n_us_res_county_group_user
 # NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
 NEW ir.ui.view: l10n_us.res_city_view_form_inherit_l10n_us
 NEW ir.ui.view: l10n_us.res_city_view_list_inherit_l10n_us
-# NOTHING TO DO: the record is not noupdate, so the module update creates it
 NEW l10n_us.res.county: l10n_us.county_us_01001
 NEW l10n_us.res.county: l10n_us.county_us_01003
 NEW l10n_us.res.county: l10n_us.county_us_01005
@@ -3190,7 +3186,6 @@ NEW l10n_us.res.county: l10n_us.county_us_72147
 NEW l10n_us.res.county: l10n_us.county_us_72149
 NEW l10n_us.res.county: l10n_us.county_us_72151
 NEW l10n_us.res.county: l10n_us.county_us_72153
-# NOTHING TO DO: the new model's reference data, loaded with it
 NEW res.city: l10n_us.city_us_01
 NEW res.city: l10n_us.city_us_02
 NEW res.city: l10n_us.city_us_03
@@ -34468,6 +34463,6 @@ NEW res.city: l10n_us.city_us_9996
 NEW res.city: l10n_us.city_us_9997
 NEW res.city: l10n_us.city_us_9998
 NEW res.city: l10n_us.city_us_9999
-# NOTHING TO DO: reference data 20.0 ships and its own data files load
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
 res.company: base.main_company (noupdate switched)
 # NOTHING TO DO: only the noupdate flag changed, the definition is the same

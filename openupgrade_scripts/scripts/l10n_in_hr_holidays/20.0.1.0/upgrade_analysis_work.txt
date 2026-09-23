@@ -1,0 +1,25 @@
+---Models in module 'l10n_in_hr_holidays'---
+---Fields in module 'l10n_in_hr_holidays'---
+l10n_in_hr_holidays / hr.leave.type            / l10n_in_is_limited_to_optional_days (boolean): DEL
+l10n_in_hr_holidays / hr.leave.type            / l10n_in_is_sandwich_leave (boolean): DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_is_limited_to_optional_days (boolean): NEW
+l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_is_sandwich_leave (boolean): NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_sandwich_policy (selection): NEW selection_keys: ['full', 'public_holiday', 'weekend'], hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'l10n_in_hr_holidays'---
+NEW ir.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_manager
+NEW ir.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_user
+NEW ir.access: l10n_in_hr_holidays.hr_leave_optional_holiday_rule_multi_company
+DEL ir.model.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_manager
+DEL ir.model.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_user
+DEL ir.rule: l10n_in_hr_holidays.hr_leave_optional_holiday_rule_multi_company
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: l10n_in_hr_holidays.hr_work_entry_type_view_form_inherit
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_in_hr_holidays.hr_leave_type_view_form_inherit
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

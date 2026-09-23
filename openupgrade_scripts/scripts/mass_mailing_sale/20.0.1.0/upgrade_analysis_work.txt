@@ -1,0 +1,6 @@
+---Models in module 'mass_mailing_sale'---
+---Fields in module 'mass_mailing_sale'---
+mass_mailing_sale / mailing.mailing          / sale_invoiced_amount (integer): type is now 'float' ('integer')
+# NOTHING TO DO: the ORM converts the column in place. Checked across the
+# upgrade: no field flagged here comes out holding fewer values than it did
+---XML records in module 'mass_mailing_sale'---

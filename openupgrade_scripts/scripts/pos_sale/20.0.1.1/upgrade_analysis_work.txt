@@ -1,0 +1,26 @@
+---Models in module 'pos_sale'---
+---Fields in module 'pos_sale'---
+pos_sale     / pos.config               / default_product_id (many2one) : NEW relation: product.product, hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+pos_sale     / sale.order               / amount_unpaid (float)         : module is now 'sale' ('pos_sale')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+---XML records in module 'pos_sale'---
+crm.team: sales_team.pos_sales_team (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: pos_sale.pos_sale_rule_pos_channel_pos_manager
+NEW ir.access: pos_sale.rule_pos_sale_order
+NEW ir.access: pos_sale.rule_pos_sale_order_line
+DEL ir.model.access: pos_sale.access_crm_team_pos_manager
+DEL ir.rule: pos_sale.pos_sale_rule_pos_channel_pos_manager (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: pos_sale.pos_orderline_receipt_information
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: pos_sale.message_body
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+product.product: pos_sale.default_downpayment_product (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW product.product: pos_sale.default_sol_product
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
