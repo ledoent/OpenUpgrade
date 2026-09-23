@@ -1,0 +1,35 @@
+---Models in module 'l10n_es_edi_sii'---
+new model l10n_es_edi_sii.document
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
+---Fields in module 'l10n_es_edi_sii'---
+l10n_es_edi_sii / account.move             / l10n_es_edi_csv (char)        : not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+l10n_es_edi_sii / account.move             / l10n_es_edi_csv (char)        : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+l10n_es_edi_sii / account.move             / l10n_es_edi_sii_document_ids (one2many): NEW relation: l10n_es_edi_sii.document
+# NOTHING TO DO: a one2many has no column of its own
+l10n_es_edi_sii / certificate.certificate  / scope (False)                 : selection_keys added: [ca] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+l10n_es_edi_sii / l10n_es_edi_sii.document / attachment_id (many2one)      : NEW relation: ir.attachment
+l10n_es_edi_sii / l10n_es_edi_sii.document / csv (char)                    : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_es_edi_sii / l10n_es_edi_sii.document / move_id (many2one)            : NEW relation: account.move, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_es_edi_sii / l10n_es_edi_sii.document / response_message (html)       : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_es_edi_sii / l10n_es_edi_sii.document / state (selection)             : NEW required, selection_keys: ['accepted', 'accepted_with_errors', 'cancelled', 'to_cancel', 'to_send'], hasdefault: default
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+---XML records in module 'l10n_es_edi_sii'---
+DEL account.edi.format: l10n_es_edi_sii.edi_es_sii
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.access: l10n_es_edi_sii.access_l10n_es_edi_sii_document_readonly
+NEW ir.access: l10n_es_edi_sii.sii_document_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.server: l10n_es_edi_sii.action_l10n_es_send_sii
+NEW ir.ui.view: l10n_es_edi_sii.view_invoice_tree_inherit_l10n_es_edi_sii
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
