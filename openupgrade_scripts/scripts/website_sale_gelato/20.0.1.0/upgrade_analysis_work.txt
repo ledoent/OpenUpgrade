@@ -1,0 +1,8 @@
+---Models in module 'website_sale_gelato'---
+---Fields in module 'website_sale_gelato'---
+---XML records in module 'website_sale_gelato'---
+delivery.carrier: sale_gelato.express_delivery (noupdate switched)
+delivery.carrier: sale_gelato.standard_delivery (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.ui.view: website_sale_gelato.limit
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

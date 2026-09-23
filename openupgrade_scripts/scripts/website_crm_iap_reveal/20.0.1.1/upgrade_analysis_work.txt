@@ -1,0 +1,28 @@
+---Models in module 'website_crm_iap_reveal'---
+---Fields in module 'website_crm_iap_reveal'---
+---XML records in module 'website_crm_iap_reveal'---
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_rule_all
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_rule_all_1
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_rule_salesman
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_view_all
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_view_all_1
+NEW ir.access: website_crm_iap_reveal.ir_rule_crm_reveal_view_salesman
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.cron: website_crm_iap_reveal.ir_cron_crm_reveal_lead (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: website_crm_iap_reveal.access_crm_reveal_rule_manager
+DEL ir.model.access: website_crm_iap_reveal.access_crm_reveal_rule_salesman
+DEL ir.model.access: website_crm_iap_reveal.access_crm_reveal_view_manager
+DEL ir.model.access: website_crm_iap_reveal.access_crm_reveal_view_salesman
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: website_crm_iap_reveal.constraint_crm_reveal_rule_limit_extra_contacts (changed definition: is now 'False' ('check(extra_contacts >= 1 and extra_contacts <= 5)'))
+ir.model.constraint: website_crm_iap_reveal.constraint_crm_reveal_view_ip_rule_id (changed definition: is now 'False' ('UNIQUE INDEX (reveal_rule_id,reveal_ip)'))
+ir.model.constraint: website_crm_iap_reveal.constraint_crm_reveal_view_state_create_date (changed definition: is now 'False' ('INDEX (reveal_state,create_date)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: website_crm_iap_reveal.ir_rule_crm_reveal_rule_all (noupdate)
+DEL ir.rule: website_crm_iap_reveal.ir_rule_crm_reveal_rule_salesman (noupdate)
+DEL ir.rule: website_crm_iap_reveal.ir_rule_crm_reveal_view_all (noupdate)
+DEL ir.rule: website_crm_iap_reveal.ir_rule_crm_reveal_view_salesman (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: website_crm_iap_reveal.enrich_company
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
