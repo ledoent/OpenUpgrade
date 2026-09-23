@@ -117,9 +117,13 @@ hr_attendance / res.company              / attendance_capture_check_in (boolean)
 # would have written. The one flagged field whose default names a record,
 # pos.config.default_product_id, has a script instead
 hr_attendance / res.company              / attendance_overtime_validation (selection): DEL selection_keys: ['by_manager', 'no_validation']
-# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
-# the selection gate reads ir_model_fields_selection and reports the field clean
 hr_attendance / res.company              / attendance_validation (selection): NEW selection_keys: ['manual_validation', 'no_validation', 'tolerance_validation'], hasdefault: default
+# DONE: pre-migration keeps the 19.0 answer and post-migration writes
+# by_manager across as manual_validation. Not a selection whose keys changed but
+# a field renamed: the new column takes its own default, so a company that
+# required a manager to approve extra hours comes out approving them
+# automatically -- shown as the other answer rather than as empty, which is why
+# neither the selection gate nor a filled-versus-empty check can see it
 hr_attendance / res.company              / attendance_validation_tolerance (float): NEW hasdefault: default
 hr_attendance / res.company              / attendance_work_entry_type_id (many2one): NEW relation: hr.work.entry.type, hasdefault: compute
 hr_attendance / res.company              / auto_check_out_mode (selection): NEW selection_keys: ['specific_time', 'tolerance'], hasdefault: default
