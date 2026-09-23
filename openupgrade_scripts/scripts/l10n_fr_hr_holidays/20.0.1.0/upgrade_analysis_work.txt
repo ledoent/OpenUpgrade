@@ -1,0 +1,10 @@
+---Models in module 'l10n_fr_hr_holidays'---
+---Fields in module 'l10n_fr_hr_holidays'---
+l10n_fr_hr_holidays / res.company              / l10n_fr_reference_leave_type (many2one): DEL relation: hr.leave.type
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_fr_hr_holidays / res.company              / l10n_fr_reference_work_entry_type (many2one): NEW relation: hr.work.entry.type, hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'l10n_fr_hr_holidays'---
