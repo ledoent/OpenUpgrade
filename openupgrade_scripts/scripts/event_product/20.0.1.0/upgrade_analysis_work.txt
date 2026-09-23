@@ -1,0 +1,12 @@
+---Models in module 'event_product'---
+---Fields in module 'event_product'---
+event_product / event.event.ticket       / additional_product_ids (many2many): NEW relation: product.product
+# NOTHING TO DO: empty is the right value for existing records
+event_product / event.event.ticket       / price_incl (float)            : DEL stored: False
+# NOTHING TO DO: the field was not stored, so it left no data behind
+event_product / event.type.ticket        / additional_product_ids (many2many): NEW relation: product.product
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'event_product'---
+product.category: event_product.product_category_events (noupdate switched)
+product.product: event_product.product_product_event (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
