@@ -1,0 +1,44 @@
+---Models in module 'l10n_latam_check'---
+---Fields in module 'l10n_latam_check'---
+l10n_latam_check / l10n_latam.check         / bank_account_id (many2one)    : NEW relation: res.partner.bank, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_latam_check / l10n_latam.check         / bank_id (many2one)            : DEL relation: res.bank
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_latam_check / l10n_latam.check         / company_id (many2one)         : not related anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+l10n_latam_check / l10n_latam.check         / company_id (many2one)         : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+l10n_latam_check / l10n_latam.check         / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+---XML records in module 'l10n_latam_check'---
+account.payment.method: l10n_latam_check.account_payment_method_in_third_party_checks (noupdate switched)
+account.payment.method: l10n_latam_check.account_payment_method_new_third_party_checks (noupdate switched)
+account.payment.method: l10n_latam_check.account_payment_method_out_third_party_checks (noupdate switched)
+account.payment.method: l10n_latam_check.account_payment_method_own_checks (noupdate switched)
+account.payment.method: l10n_latam_check.account_payment_method_return_third_party_checks (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: l10n_latam_check.access_l10n_latam_account_payment_register_check
+NEW ir.access: l10n_latam_check.access_l10n_latam_check
+NEW ir.access: l10n_latam_check.access_l10n_latam_check_readonly
+NEW ir.access: l10n_latam_check.access_l10n_latam_payment_mass_transfer
+NEW ir.access: l10n_latam_check.l10n_latam_check_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: l10n_latam_check.action_own_check (deleted domain)
+ir.actions.act_window: l10n_latam_check.action_third_party_check (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: l10n_latam_check.access_l10n_latam_account_payment_register_check
+DEL ir.model.access: l10n_latam_check.access_l10n_latam_check
+DEL ir.model.access: l10n_latam_check.access_l10n_latam_check_readonly
+DEL ir.model.access: l10n_latam_check.access_l10n_latam_payment_mass_transfer
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_latam_check.constraint_l10n_latam_check_unique (changed definition: is now 'False' ('UNIQUE INDEX (name, payment_method_line_id) WHERE outstanding_line_id IS NOT NULL'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: l10n_latam_check.l10n_latam_check_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

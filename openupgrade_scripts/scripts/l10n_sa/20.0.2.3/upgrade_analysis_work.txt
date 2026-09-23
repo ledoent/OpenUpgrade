@@ -1,0 +1,25 @@
+---Models in module 'l10n_sa'---
+new model zatca.mixin [abstract]
+# NOTHING TO DO: an abstract model has no table
+---Fields in module 'l10n_sa'---
+l10n_sa      / account.move             / l10n_sa_invoice_type (selection): NEW selection_keys: ['simplified', 'tax'], hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'l10n_sa'---
+NEW ir.ui.view: l10n_sa.external_layout_footer_content
+NEW ir.ui.view: l10n_sa.l10n_sa_external_layout_center
+NEW ir.ui.view: l10n_sa.l10n_sa_external_layout_compact
+NEW ir.ui.view: l10n_sa.l10n_sa_external_layout_dual
+NEW ir.ui.view: l10n_sa.l10n_sa_external_layout_lines
+NEW ir.ui.view: l10n_sa.res_config_settings_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_sa.l10n_sa_additional_footer
+DEL ir.ui.view: l10n_sa.l10n_sa_external_layout_bold
+DEL ir.ui.view: l10n_sa.l10n_sa_external_layout_boxed
+DEL ir.ui.view: l10n_sa.l10n_sa_external_layout_striped
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+report.paperformat: l10n_sa.paperformat_l10n_sa_a4 (noupdate switched)
+res.country: base.sa (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
