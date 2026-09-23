@@ -1,0 +1,14 @@
+---Models in module 'base_geolocalize'---
+---Fields in module 'base_geolocalize'---
+base_geolocalize / res.partner              / should_be_geolocalized (boolean): NEW hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'base_geolocalize'---
+NEW ir.access: base_geolocalize.access_base_geo_provider
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.cron: base_geolocalize.ir_cron_geolocalize_required_partners
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: base_geolocalize.access_base_geo_provider
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

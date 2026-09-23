@@ -1,0 +1,15 @@
+---Models in module 'base_address_extended'---
+---Fields in module 'base_address_extended'---
+---XML records in module 'base_address_extended'---
+NEW ir.access: base_address_extended.access_res_city_group_all
+NEW ir.access: base_address_extended.access_res_city_group_user
+DEL ir.model.access: base_address_extended.access_res_city_group_all
+DEL ir.model.access: base_address_extended.access_res_city_group_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.ui.menu: base_address_extended.menu_res_city [renamed to contacts module]
+# NOTHING TO DO: the menu moves to contacts, which recreates it under its own id; menus are not referenced by user data
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: base_address_extended.res_city_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: base_address_extended.address_street_extended_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
