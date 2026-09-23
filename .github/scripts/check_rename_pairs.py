@@ -52,18 +52,75 @@ DECLARED = re.compile(
 # "module:model.old -> new (type)" -> why it is not a rename, for pairs that
 # survive the automatic checks and have been looked at by hand.
 ACKNOWLEDGED = {
+    # --- the two sides are simply different fields ---
     "stock:stock.picking.type.show_operations -> auto_show_allocation_report "
     "(boolean)": (
-        "unrelated: 19.0's show_operations controls the detailed operations "
-        "view, 20.0's auto_show_allocation_report pops the allocation report on "
-        "validation"
+        "19.0's show_operations controls the detailed operations view; 20.0's "
+        "auto_show_allocation_report pops the allocation report on validation"
     ),
     "stock:stock.picking.type.show_operations -> wave_group_by_date (boolean)": (
-        "unrelated: wave_group_by_date is a wave-picking grouping option"
+        "wave_group_by_date is a wave-picking grouping option"
     ),
     "pos_restaurant:restaurant.table.shape -> parent_side (selection)": (
-        "unrelated: shape is the table's outline, parent_side is which edge a "
-        "child table joins on"
+        "shape is the table's outline; parent_side is which edge a child table joins on"
+    ),
+    "pos_restaurant:pos.config.iface_splitbill -> use_course_allocation "
+    "(boolean)": "bill splitting and course allocation are unrelated features",
+    "pos_restaurant:pos.config.iface_splitbill -> "
+    "use_show_items_on_course_ticket (boolean)": (
+        "bill splitting and course tickets are unrelated features"
+    ),
+    "account:account.move.checked -> inventory_closing (boolean)": (
+        "checked is 19.0's Reviewed flag; inventory_closing marks a closing entry"
+    ),
+    "hr:hr.version.is_flexible -> fixed_term (boolean)": (
+        "is_flexible was computed from the schedule; fixed_term is related from "
+        "the version and describes the contract's term"
+    ),
+    "hr:hr.version.is_fully_flexible -> fixed_term (boolean)": (
+        "same as is_flexible: a computed schedule flag, not a contract term"
+    ),
+    "hr_holidays:hr.leave.request_unit_half -> is_time_rule_trimmed (boolean)": (
+        "request_unit_half is the granularity of the request; "
+        "is_time_rule_trimmed is about time rules"
+    ),
+    "hr_holidays:hr.leave.request_unit_hours -> is_time_rule_trimmed (boolean)": (
+        "same as request_unit_half"
+    ),
+    "im_livechat:discuss.channel.rating_last_text -> livechat_rating (selection)": (
+        "20.0 has no livechat_rating on discuss.channel; the NEW line is the "
+        "kpi_livechat_rating family on a different model"
+    ),
+    "l10n_in:res.company.l10n_in_is_gst_registered -> "
+    "l10n_in_disable_b2c_hsn_reporting (boolean)": (
+        "registration status and a reporting opt-out are different settings"
+    ),
+    # --- the data is safe somewhere else ---
+    "website_blog:blog.post.post_date -> publish_on (datetime)": (
+        "post_date was a stored mirror of published_date, which 20.0 keeps and "
+        "which is filled for every post; nothing was lost. publish_on is the "
+        "mixin's 'Auto publish on', a future time, not a publication record"
+    ),
+    "website_slides:slide.slide.date_published -> publish_on (datetime)": (
+        "the real rename is date_published -> published_date, handled in this "
+        "module's pre-migration; publish_on is the mixin's 'Auto publish on'"
+    ),
+    "fleet:fleet.vehicle.log.services.date -> date_to (date)": (
+        "19.0's single date became date_from, which is filled for every row; "
+        "date_to is the new end of the range and has no 19.0 source"
+    ),
+    "l10n_ar_withholding:account.tax.l10n_ar_withholding_payment_type -> "
+    "l10n_ar_withholding_tax_type (selection)": (
+        "pairs with the same new field as l10n_ar_tax_type, which is the real "
+        "rename; this one is the payment moment, not the tax type"
+    ),
+    # --- looked at, deliberately not carried ---
+    "purchase_stock:purchase.order.line.location_final_id -> "
+    "forecasted_location_id (many2one)": (
+        "same comodel but a different purpose -- 'Location from procurement' "
+        "against 'Location used in the computation of the forecast' -- and one "
+        "row on the seed. Writing a procurement destination into a forecasting "
+        "field would be a guess; revisit if a real database disagrees"
     ),
 }
 
@@ -92,6 +149,13 @@ def candidate_pairs():
     """
     declared = declared_renames()
     pairs = []
+    # Declared renames are checked too, not just subtracted. rename_fields moves
+    # the column, so afterwards the old name should be gone; if it is still
+    # there holding values while the new one is empty, the rename was declared
+    # and did not happen -- which no other check would notice for a field the
+    # new version does not also make required.
+    for module, model, old_f, new_f in sorted(declared):
+        pairs.append((module, model, old_f, new_f, "declared", None, None))
     for path in sorted(
         glob.glob("openupgrade_scripts/scripts/*/20.0.*/upgrade_analysis.txt")
     ):
@@ -114,7 +178,7 @@ def candidate_pairs():
             for old, old_what in dels[key]:
                 for new, new_what in news[key]:
                     if (module, model, old, new) in declared:
-                        continue
+                        continue  # already queued above, with its own check
                     pairs.append(
                         (
                             module,
@@ -204,7 +268,17 @@ def main():
                 continue
             old_n, new_n = filled(cur, table, old), filled(cur, table, new)
             if old_n is None:
-                cleared.append((label, f"{table}.{old} is gone, so nothing was left"))
+                cleared.append(
+                    (
+                        label,
+                        f"{table}.{old} is gone"
+                        + (
+                            ", as the declared rename intends"
+                            if ftype == "declared"
+                            else ", so nothing was left"
+                        ),
+                    )
+                )
             elif new_n is None:
                 unreadable.append((label, f"{table}.{new} does not exist"))
             elif old_n and not new_n:
