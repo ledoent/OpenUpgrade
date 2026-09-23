@@ -48,3 +48,33 @@ class TestSaleMigration(TransactionCase):
         product = self._product("ou19-sale-delay-default")
         self.assertTrue(product)
         self.assertEqual(product.sale_delay, 0)
+
+    def test_the_reinvoicing_policy_kept_its_19_0_answers(self):
+        """expense_policy -> reinvoice_policy, proved from the seed itself.
+
+        No fixture: the seed already holds the discriminating rows, 197 product
+        templates over three distinct expense_policy values. Without the rename
+        the column is created fresh and every row reads its default, so the
+        whole table comes out on one value -- which is exactly what this counts.
+        """
+        self.env.cr.execute(
+            "SELECT count(DISTINCT reinvoice_policy) FROM product_template"
+        )
+        self.assertGreater(
+            self.env.cr.fetchone()[0],
+            1,
+            "every product template reads the same re-invoicing policy, so the "
+            "19.0 answers were replaced by the new field's default",
+        )
+
+    def test_the_old_column_is_gone_rather_than_left_beside_the_new_one(self):
+        """A rename, not a copy: two columns holding the same thing diverge."""
+        self.env.cr.execute(
+            """
+            SELECT count(*) FROM information_schema.columns
+            WHERE table_name = 'product_template' AND column_name = 'expense_policy'
+            """
+        )
+        self.assertEqual(
+            self.env.cr.fetchone()[0], 0, "expense_policy was copied, not renamed"
+        )
