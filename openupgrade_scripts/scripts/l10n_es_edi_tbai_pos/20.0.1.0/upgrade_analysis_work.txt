@@ -1,0 +1,13 @@
+---Models in module 'l10n_es_edi_tbai_pos'---
+---Fields in module 'l10n_es_edi_tbai_pos'---
+l10n_es_edi_tbai_pos / pos.order                / l10n_es_invoice_type (selection): NEW selection_keys: function
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_es_edi_tbai_pos / pos.order                / l10n_es_tbai_refund_reason (selection): DEL selection_keys: ['R1', 'R2', 'R3', 'R4', 'R5']
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_es_edi_tbai_pos'---
+NEW ir.ui.view: l10n_es_edi_tbai_pos.pos_order_receipt
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
