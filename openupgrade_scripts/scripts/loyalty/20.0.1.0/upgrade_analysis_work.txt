@@ -1,0 +1,69 @@
+---Models in module 'loyalty'---
+---Fields in module 'loyalty'---
+loyalty      / loyalty.card             / points (float)                : not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+loyalty      / loyalty.card             / points (float)                : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+loyalty      / loyalty.card             / program_id (many2one)         : now required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint
+# gate reports none outstanding -- so every row already carries a value
+loyalty      / loyalty.card             / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+loyalty      / loyalty.history          / _order                        : _order is now 'points_changed_date desc, id desc' ('id desc')
+# NOTHING TO DO: the default ordering changed; no column and no value move
+loyalty      / loyalty.history          / expiration_date (date)        : NEW
+loyalty      / loyalty.history          / linked_loyalty_history_id (many2one): NEW relation: loyalty.history
+# NOTHING TO DO: empty is the right value for existing records
+loyalty      / loyalty.history          / points_changed_date (datetime): NEW required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+loyalty      / loyalty.program          / expire_after (integer)        : NEW
+loyalty      / loyalty.program          / once_per_user (boolean)       : NEW
+loyalty      / loyalty.program          / partner_ids (many2many)       : NEW relation: res.partner
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'loyalty'---
+NEW ir.access: loyalty.loyalty_history_company_rule
+NEW ir.access: loyalty.sale_loyalty_card_company_rule
+NEW ir.access: loyalty.sale_loyalty_program_company_rule
+NEW ir.access: loyalty.sale_loyalty_reward_company_rule
+NEW ir.access: loyalty.sale_loyalty_rule_company_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: loyalty.loyalty_card_action (deleted domain)
+ir.actions.act_window: loyalty.loyalty_program_discount_loyalty_action (deleted domain)
+ir.actions.act_window: loyalty.loyalty_program_gift_ewallet_action (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+ir.config_parameter: loyalty.config_online_sync_proxy_mode (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: loyalty.access_loyalty_card
+DEL ir.model.access: loyalty.access_loyalty_card_update_balance_user
+DEL ir.model.access: loyalty.access_loyalty_generate_wizard
+DEL ir.model.access: loyalty.access_loyalty_history
+DEL ir.model.access: loyalty.access_loyalty_mail
+DEL ir.model.access: loyalty.access_loyalty_program
+DEL ir.model.access: loyalty.access_loyalty_reward
+DEL ir.model.access: loyalty.access_loyalty_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: loyalty.constraint_loyalty_card_card_code_unique (changed definition: is now 'False' ('UNIQUE(code)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+NEW ir.model.constraint: loyalty.constraint_loyalty_history_issued_and_used_positive
+NEW ir.model.constraint: loyalty.constraint_loyalty_history_issued_or_used
+NEW ir.model.constraint: loyalty.constraint_loyalty_program_check_expire_after
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: loyalty.constraint_loyalty_program_check_max_usage (changed definition: is now 'False' ('CHECK (limit_usage = False OR max_usage > 0)'))
+ir.model.constraint: loyalty.constraint_loyalty_reward_discount_positive (changed definition: is now 'False' ('CHECK (reward_type != 'discount' OR discount > 0)'))
+ir.model.constraint: loyalty.constraint_loyalty_reward_product_qty_positive (changed definition: is now 'False' ('CHECK (reward_type != 'product' OR reward_product_qty > 0)'))
+ir.model.constraint: loyalty.constraint_loyalty_reward_required_points_positive (changed definition: is now 'False' ('CHECK (required_points > 0)'))
+ir.model.constraint: loyalty.constraint_loyalty_rule_reward_point_amount_positive (changed definition: is now 'False' ('CHECK (reward_point_amount > 0)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: loyalty.loyalty_history_company_rule (noupdate)
+DEL ir.rule: loyalty.sale_loyalty_card_company_rule (noupdate)
+DEL ir.rule: loyalty.sale_loyalty_program_company_rule (noupdate)
+DEL ir.rule: loyalty.sale_loyalty_reward_company_rule (noupdate)
+DEL ir.rule: loyalty.sale_loyalty_rule_company_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+product.product: loyalty.ewallet_product_50 (noupdate switched)
+product.product: loyalty.gift_card_product_50 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

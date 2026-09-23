@@ -1,0 +1,20 @@
+---Models in module 'gamification_sale_crm'---
+---Fields in module 'gamification_sale_crm'---
+---XML records in module 'gamification_sale_crm'---
+gamification.challenge: gamification_sale_crm.challenge_crm_marketing (noupdate switched)
+gamification.challenge: gamification_sale_crm.challenge_crm_sale (noupdate switched)
+gamification.challenge.line: gamification_sale_crm.line_crm_marketing1 (noupdate switched)
+gamification.challenge.line: gamification_sale_crm.line_crm_marketing2 (noupdate switched)
+gamification.challenge.line: gamification_sale_crm.line_crm_marketing3 (noupdate switched)
+gamification.challenge.line: gamification_sale_crm.line_crm_sale1 (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_lead_delay_close (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_lead_delay_open (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_nbr_customer_refunds (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_nbr_new_leads (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_nbr_new_opportunities (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_nbr_paid_sale_order (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_nbr_sale_order_created (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_tot_customer_refunds (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_tot_invoices (noupdate switched)
+gamification.goal.definition: gamification_sale_crm.definition_crm_tot_paid_sale_order (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
