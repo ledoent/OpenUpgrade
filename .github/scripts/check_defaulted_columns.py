@@ -64,13 +64,9 @@ degrades to guessing is worse than no check.
 
 import argparse
 import glob
-import re
 import sys
 
-FIELD = re.compile(
-    r"^(?P<module>\S+)\s*/\s*(?P<model>[\w.]+)\s*/\s*(?P<field>\S+)\s*"
-    r"\((?P<type>[^)]*)\)\s*:\s*(?P<what>.*)$"
-)
+from _gatelib import FIELD, connect
 
 RULE_A_TYPES = {"date", "datetime"}
 RULE_B_TYPES = {"many2one"}
@@ -154,19 +150,6 @@ ACKNOWLEDGED = {
 }
 
 
-def connect(dsn):
-    try:
-        import psycopg2
-    except ImportError:
-        print("::error::psycopg2 is needed to read the migrated database")
-        return None
-    try:
-        return psycopg2.connect(dsn) if dsn else psycopg2.connect("")
-    except Exception as exc:  # noqa: BLE001 - any failure here is fatal alike
-        print(f"::error::cannot reach the migrated database: {exc}")
-        return None
-
-
 def candidates():
     """Every NEW date/datetime or many2one line the analysis reports."""
     found = []
@@ -182,6 +165,20 @@ def candidates():
             elif m["type"] in RULE_B_TYPES:
                 found.append((m["module"], m["model"], m["field"], m["type"], "B"))
     return found
+
+
+def is_stamped(rows, filled, distinct):
+    """Does this column look written once rather than carried?
+
+    Pulled out of `measure` so the rule can be exercised without a database --
+    test_gates.py is the only thing that ever proves it, and a gate whose
+    predicate silently inverts reports a clean run over everything.
+
+    Three things must all hold: the table had rows to be wrong about, the column
+    is not empty (an empty column is the rename gate's rule 1, not this one),
+    and every filled row agrees.
+    """
+    return bool(rows) and bool(filled) and distinct == 1
 
 
 def measure(cur, model, field):
@@ -203,7 +200,7 @@ def measure(cur, model, field):
         f'SELECT count(*), count("{field}"), count(DISTINCT "{field}") FROM "{table}"'
     )
     rows, filled, distinct = cur.fetchone()
-    if not rows or not filled or distinct != 1:
+    if not is_stamped(rows, filled, distinct):
         return (rows, filled, distinct, None)
     cur.execute(
         f'SELECT "{field}"::text FROM "{table}" WHERE "{field}" IS NOT NULL LIMIT 1'

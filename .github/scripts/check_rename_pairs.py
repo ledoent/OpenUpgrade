@@ -81,10 +81,8 @@ import glob
 import re
 import sys
 
-FIELD = re.compile(
-    r"^(?P<module>\S+)\s*/\s*(?P<model>[\w.]+)\s*/\s*(?P<field>\S+)\s*"
-    r"\((?P<type>[^)]*)\)\s*:\s*(?P<what>.*)$"
-)
+from _gatelib import FIELD, connect
+
 # ("res.partner.bank", "res_partner_bank", "acc_number", "account_number")
 DECLARED = re.compile(
     r'\(\s*"(?P<model>[\w.]+)"\s*,\s*"(?P<table>\w+)"\s*,\s*'
@@ -345,19 +343,6 @@ def _same_stem(a, b):
         ):
             return True
     return False
-
-
-def connect(dsn):
-    try:
-        import psycopg2
-    except ImportError:
-        print("::error::psycopg2 is needed to check the migrated database")
-        return None
-    try:
-        return psycopg2.connect(dsn) if dsn else psycopg2.connect("")
-    except Exception as exc:  # noqa: BLE001 - any failure here is fatal alike
-        print(f"::error::cannot reach the migrated database: {exc}")
-        return None
 
 
 def table_of(cur, model):

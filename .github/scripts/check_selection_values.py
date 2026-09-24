@@ -39,6 +39,8 @@ clean sweep it never performed.
 import argparse
 import sys
 
+from _gatelib import connect
+
 # model.field -> {value: why it is acceptable}. Keep this empty if at all
 # possible; a stale entry here hides a real regression.
 ALLOWED = {
@@ -64,19 +66,6 @@ ALLOWED = {
         "be responsible instead is a decision for the administrator"
     },
 }
-
-
-def connect(dsn):
-    try:
-        import psycopg2
-    except ImportError:
-        print("::error::psycopg2 is needed to read the migrated database")
-        return None
-    try:
-        return psycopg2.connect(dsn) if dsn else psycopg2.connect("")
-    except Exception as exc:  # noqa: BLE001 - any failure here is fatal alike
-        print(f"::error::cannot reach the migrated database: {exc}")
-        return None
 
 
 def stored_selections(cur):

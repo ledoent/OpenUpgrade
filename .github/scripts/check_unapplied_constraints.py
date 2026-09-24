@@ -50,6 +50,8 @@ import argparse
 import re
 import sys
 
+from _gatelib import connect
+
 PATTERN = re.compile(r"Constraint not added: (.+?)\s*$", re.MULTILINE)
 NULL_COLUMN = re.compile(
     r'^column "(?P<column>[^"]+)" of relation "(?P<table>[^"]+)" contains null values$'
@@ -63,19 +65,6 @@ UNIQUE_INDEX = re.compile(r'^could not create unique index "(?P<name>[^"]+)"$')
 # Message payload -> why it is acceptable that the constraint is genuinely
 # absent. Keep this empty if at all possible.
 ALLOWED = {}
-
-
-def connect(dsn):
-    try:
-        import psycopg2
-    except ImportError:
-        print("::error::psycopg2 is needed to verify the migrated database")
-        return None
-    try:
-        return psycopg2.connect(dsn) if dsn else psycopg2.connect("")
-    except Exception as exc:  # noqa: BLE001 - any failure here is fatal alike
-        print(f"::error::cannot reach the migrated database: {exc}")
-        return None
 
 
 def count_nulls(cur, table, column):
