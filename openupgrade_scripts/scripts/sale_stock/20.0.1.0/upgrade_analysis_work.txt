@@ -5,10 +5,10 @@ new model return.reason
 sale_stock   / res.company              / allow_spontaneous_returns (boolean): NEW
 # NOTHING TO DO: empty is the right value for existing records
 sale_stock   / res.company              / return_validity_days (integer): NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 20.0 defaults this to 14, NOT to a falsy value, so all 117
+# companies came out holding a 14-day return window rather than a NULL. That is
+# what a fresh 20.0 install gives them too, and 19.0 declared nothing on
+# res.company to carry -- the analysis reports no DEL line for it
 sale_stock   / res.company              / security_lead (float)         : type is now 'integer' ('float')
 # NOTHING TO DO: the ORM converts the column in place. Checked across the
 # upgrade: no field flagged here comes out holding fewer values than it did

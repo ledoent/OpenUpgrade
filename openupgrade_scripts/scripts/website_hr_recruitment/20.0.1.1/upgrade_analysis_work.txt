@@ -14,7 +14,10 @@ website_hr_recruitment / hr.job                   / published_date (date)       
 # NOTHING TO DO: the ORM converts the column in place. Checked across the
 # upgrade: no field flagged here comes out holding fewer values than it did
 website_hr_recruitment / hr.job                   / website_rating (html)         : NEW hasdefault: default, translate
-# NOTHING TO DO: empty is the right value for existing records
+# NOTHING TO DO: the default is a block of HTML from
+# _get_default_website_rating, NOT a falsy value, so all 9 jobs came out
+# carrying it. 19.0 had no rating section, and this is what a fresh 20.0 job
+# gets
 ---XML records in module 'website_hr_recruitment'---
 NEW ir.access: website_hr_recruitment.access_hr_job_public_employee
 NEW ir.access: website_hr_recruitment.hr_department_public

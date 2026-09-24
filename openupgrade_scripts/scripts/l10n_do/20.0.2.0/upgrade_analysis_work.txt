@@ -2,10 +2,11 @@
 ---Fields in module 'l10n_do'---
 l10n_do      / account.move             / l10n_do_payment_type (selection): NEW selection_keys: ['1', '2', '3', '4', '5', '6', '7'], hasdefault: default
 l10n_do      / account.move             / l10n_do_purchase_type (selection): NEW selection_keys: ['1', '10', '11', '2', '3', '4', '5', '6', '7', '8', '9'], hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO -- but read this on a Dominican database. The default is '9',
+# so all 3223 journal entries came out classified as purchase type 9 for the
+# DGII 606 report. 19.0 recorded no purchase type at all, so there is nothing
+# to carry and nothing a script could derive: classifying a move is an
+# accounting decision, not a migration
 l10n_do      / account.tax              / l10n_do_isr_type (selection)  : NEW selection_keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 # NOTHING TO DO: a new field, so empty is the right value for existing records
 ---XML records in module 'l10n_do'---

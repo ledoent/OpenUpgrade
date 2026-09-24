@@ -3,8 +3,8 @@
 l10n_fr_hr_holidays / res.company              / l10n_fr_reference_leave_type (many2one): DEL relation: hr.leave.type
 # NOTHING TO DO: the column is left in place for database_cleanup
 l10n_fr_hr_holidays / res.company              / l10n_fr_reference_work_entry_type (many2one): NEW relation: hr.work.entry.type, hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 1 of 117 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 1 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 ---XML records in module 'l10n_fr_hr_holidays'---

@@ -1,10 +1,10 @@
 ---Models in module 'pos_sale'---
 ---Fields in module 'pos_sale'---
 pos_sale     / pos.config               / default_product_id (many2one) : NEW relation: product.product, hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# DONE: post-migration. This is the field the old marker named as its own
+# exception. Its default names a record (pos_sale.default_sol_product), and a
+# default only runs for rows created after that record exists, so all 6 points
+# of sale came out unable to price a productless line. Backfilled by script
 pos_sale     / sale.order               / amount_unpaid (float)         : module is now 'sale' ('pos_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 ---XML records in module 'pos_sale'---

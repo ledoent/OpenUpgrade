@@ -7,10 +7,10 @@ l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_is_limited_to_optional_
 l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_is_sandwich_leave (boolean): NEW
 # NOTHING TO DO: empty is the right value for existing records
 l10n_in_hr_holidays / hr.work.entry.type       / l10n_in_sandwich_policy (selection): NEW selection_keys: ['full', 'public_holiday', 'weekend'], hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: the default is 'full' (weekends and company holidays), NOT a
+# falsy value, so all 652 work entry types came out on it. 19.0 had no sandwich
+# policy, so 'full' is both the only answer available and what a fresh 20.0
+# install gives
 ---XML records in module 'l10n_in_hr_holidays'---
 NEW ir.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_manager
 NEW ir.access: l10n_in_hr_holidays.access_l10n_in_hr_leave_optional_holiday_user

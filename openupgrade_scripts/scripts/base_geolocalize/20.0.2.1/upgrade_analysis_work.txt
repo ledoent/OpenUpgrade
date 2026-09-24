@@ -1,10 +1,10 @@
 ---Models in module 'base_geolocalize'---
 ---Fields in module 'base_geolocalize'---
 base_geolocalize / res.partner              / should_be_geolocalized (boolean): NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 9 of 291 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 9 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 ---XML records in module 'base_geolocalize'---
 NEW ir.access: base_geolocalize.access_base_geo_provider
 # NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

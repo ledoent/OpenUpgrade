@@ -6,10 +6,10 @@ l10n_account_withholding_tax / account.move             / withholding_total_amou
 l10n_account_withholding_tax / account.payment          / should_withhold_tax (boolean) : DEL
 # NOTHING TO DO: the column is left in place for database_cleanup
 l10n_account_withholding_tax / account.payment          / withhold (selection)          : NEW selection_keys: ['payment', 'withhold', 'withhold_pay'], hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 2 of 2 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 2 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 l10n_account_withholding_tax / account.tax              / is_withholding_tax (boolean)  : NEW
 # NOTHING TO DO: empty is the right value for existing records
 l10n_account_withholding_tax / account.tax              / is_withholding_tax_on_payment (boolean): DEL

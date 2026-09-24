@@ -1,10 +1,9 @@
 ---Models in module 'web_tour'---
 ---Fields in module 'web_tour'---
 web_tour     / web_tour.tour            / active (boolean)              : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: the default is True, so all 18 tour records came out active
+# rather than NULL. 19.0 had no active flag on web_tour.tour, which means every
+# row was effectively active -- True is what preserves that
 ---XML records in module 'web_tour'---
 NEW ir.access: web_tour.access_web_tour_tour_admin
 NEW ir.access: web_tour.access_web_tour_tour_readonly

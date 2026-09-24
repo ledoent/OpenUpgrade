@@ -12,10 +12,9 @@ sale_management / sale.order.template      / name (char)                   : now
 sale_management / sale.order.template      / require_payment (boolean)     : DEL
 # NOTHING TO DO: the column is left in place for database_cleanup
 sale_management / sale.order.template      / share_template (boolean)      : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: the default is True, NOT a falsy value, so the template came
+# out shared. 19.0 had no sharing switch, and True is what a fresh 20.0 template
+# gets
 sale_management / sale.order.template      / team_ids (many2many)          : NEW relation: crm.team
 # NOTHING TO DO: empty is the right value for existing records
 sale_management / sale.order.template      / template_type (selection)     : NEW required, selection_keys: ['quotation', 'section'], hasdefault: default
@@ -36,10 +35,10 @@ sale_management / sale.order.template.line / product_template_id (many2one): NEW
 # NOTHING TO DO: a new stored computed field, the ORM fills it in
 sale_management / sale.order.template.line / section_qty (float)           : NEW hasdefault: compute
 sale_management / sale.order.template.line / section_uom_id (many2one)     : NEW relation: uom.uom, hasdefault: compute
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 1 of 8 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 1 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 sale_management / sale.order.template.line / tax_ids (many2many)           : NEW relation: account.tax
 # NOTHING TO DO: empty is the right value for existing records
 ---XML records in module 'sale_management'---

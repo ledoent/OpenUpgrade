@@ -1,7 +1,10 @@
 ---Models in module 'pos_self_order_sms'---
 ---Fields in module 'pos_self_order_sms'---
 pos_self_order_sms / pos.preset               / sms_receipt_template_id (many2one): NEW relation: sms.template
-# NOTHING TO DO: empty is the right value for existing records
+# NOTHING TO DO: 2 of 3 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 2 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 ---XML records in module 'pos_self_order_sms'---
 NEW ir.ui.view: pos_self_order_sms.view_pos_preset_form_inherit_pos_self_order_sms
 # NOTHING TO DO: the record is not noupdate, so the module update creates it

@@ -37,17 +37,31 @@ stock_account / product.value            / account_move_id (many2one)    : NEW r
 stock_account / product.value            / new_cost (float)              : NEW
 # NOTHING TO DO: empty is the right value for existing records
 stock_account / product.value            / new_value (float)             : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO -- and what is NOT carried is worth naming, because the
+# obvious repair is wrong. 20.0 splits product.value into a before/after pair
+# (old_value/new_value, old_cost/new_cost, quantity) and computes `adjustment`
+# from it: new_value - old_value, or (new_cost - old_cost) * quantity. 19.0
+# recorded only `value`, the delta itself, and that survives intact -- 3683
+# rows, 76 distinct. The pair defaults to 0.0 and quantity stays NULL, so
+# `adjustment` reads 0 for the entire valuation history. It cannot be repaired:
+# setting old_value = 0 and new_value = value would make adjustment come out
+# right while asserting every product had previously been worth nothing. OCA
+# 19.0 #5881 is this same trap one version down -- product.value and
+# stock.valuation.layer do not mean the same thing
 stock_account / product.value            / old_cost (float)              : NEW
 # NOTHING TO DO: empty is the right value for existing records
 stock_account / product.value            / old_value (float)             : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO -- and what is NOT carried is worth naming, because the
+# obvious repair is wrong. 20.0 splits product.value into a before/after pair
+# (old_value/new_value, old_cost/new_cost, quantity) and computes `adjustment`
+# from it: new_value - old_value, or (new_cost - old_cost) * quantity. 19.0
+# recorded only `value`, the delta itself, and that survives intact -- 3683
+# rows, 76 distinct. The pair defaults to 0.0 and quantity stays NULL, so
+# `adjustment` reads 0 for the entire valuation history. It cannot be repaired:
+# setting old_value = 0 and new_value = value would make adjustment come out
+# right while asserting every product had previously been worth nothing. OCA
+# 19.0 #5881 is this same trap one version down -- product.value and
+# stock.valuation.layer do not mean the same thing
 stock_account / product.value            / quantity (float)              : NEW
 # NOTHING TO DO: empty is the right value for existing records
 stock_account / res.company              / account_stock_journal_id (many2one): module is now 'account' ('stock_account')

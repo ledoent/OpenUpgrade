@@ -8,20 +8,18 @@ google_calendar / calendar.calendar        / google_id (char)              : NEW
 google_calendar / calendar.calendar        / is_import_pending (boolean)   : NEW
 # NOTHING TO DO: empty is the right value for existing records
 google_calendar / calendar.calendar        / need_sync (boolean)           : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: the default is True, so both calendars came out flagged as
+# needing a sync rather than NULL -- and that is the safe direction. A record
+# wrongly marked as needing a sync is re-sent; one wrongly marked as synced is
+# never sent again
 google_calendar / calendar.event           / last_google_calendar_sync_path (char): NEW
 google_calendar / calendar.recurrence      / last_google_calendar_sync_path (char): NEW
 # NOTHING TO DO: empty is the right value for existing records
 google_calendar / calendar.user            / access_role (False)           : NEW selection_keys: ['freeBusyReader', 'owner', 'reader', 'writer'], mode: modify
 # NOTHING TO DO: keys were added to the selection, the existing values stay valid
 google_calendar / calendar.user            / google_sync_enabled (boolean) : NEW hasdefault: compute
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: a stored compute, so the ORM fills it -- both calendar.user
+# rows came out carrying the computed value rather than a NULL
 google_calendar / calendar.user            / google_sync_token (char)      : NEW
 google_calendar / res.users.settings       / google_account_email (char)   : NEW
 # NOTHING TO DO: empty is the right value for existing records

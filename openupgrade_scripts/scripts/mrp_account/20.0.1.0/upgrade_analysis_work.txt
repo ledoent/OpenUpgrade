@@ -1,10 +1,9 @@
 ---Models in module 'mrp_account'---
 ---Fields in module 'mrp_account'---
 mrp_account  / mrp.bom                  / extra_cost (float)            : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: here the default really is falsy -- 0.0 -- and all 9 BoMs came
+# out on it. 19.0 carried extra_cost on mrp.production rather than on mrp.bom,
+# so there is no per-BoM value to carry
 ---XML records in module 'mrp_account'---
 NEW ir.access: mrp_account.access_mrp_bom_invoice_bom
 NEW ir.access: mrp_account.access_mrp_bom_invoice_bom_readonly

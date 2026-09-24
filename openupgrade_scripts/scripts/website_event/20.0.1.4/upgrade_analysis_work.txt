@@ -1,10 +1,9 @@
 ---Models in module 'website_event'---
 ---Fields in module 'website_event'---
 website_event / event.event              / breadcrumb_visible (boolean)  : NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: the default is True (website's seo mixin), so all 8 events came
+# out with the breadcrumb shown rather than a NULL. 19.0 had no such switch, and
+# shown is what a fresh 20.0 event gets
 website_event / event.event              / publish_on (datetime)         : NEW
 website_event / event.event              / published_date (datetime)     : NEW
 website_event / event.tag                / publish_on (datetime)         : NEW

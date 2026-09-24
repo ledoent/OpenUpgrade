@@ -10,10 +10,10 @@ l10n_in      / account.account          / l10n_in_tds_tcs_section_id (many2one):
 l10n_in      / account.journal          / l10n_in_self_invoice (boolean): NEW
 # NOTHING TO DO: empty is the right value for existing records
 l10n_in      / account.move             / l10n_in_adjustment_type (selection): NEW selection_keys: ['price_adjustment', 'standard'], hasdefault: compute
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO: 3 of 3223 rows came out holding a value and the rest
+# are NULL, which is what this marker is about. The field is new in 20.0, so
+# whatever filled those 3 came from 20.0's own default or compute -- there
+# was no 19.0 column to carry
 l10n_in      / account.move             / l10n_in_is_gst_registered_enabled (boolean): not related anymore
 # NOTHING TO DO: the field stops reading through a relation and stands on its
 # own. Checked across the upgrade: it comes out with no fewer values than before

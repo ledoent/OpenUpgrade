@@ -128,10 +128,13 @@ hr_attendance / res.company              / attendance_validation_tolerance (floa
 hr_attendance / res.company              / attendance_work_entry_type_id (many2one): NEW relation: hr.work.entry.type, hasdefault: compute
 hr_attendance / res.company              / auto_check_out_mode (selection): NEW selection_keys: ['specific_time', 'tolerance'], hasdefault: default
 hr_attendance / res.company              / auto_check_out_specific_time (float): NEW hasdefault: default
-# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
-# list -- so a NULL left on an existing row already means what the default
-# would have written. The one flagged field whose default names a record,
-# pos.config.default_product_id, has a script instead
+# NOTHING TO DO, and the reason is the sibling field rather than this one. 19.0
+# had auto_check_out plus auto_check_out_tolerance; 20.0 keeps both and adds
+# auto_check_out_mode to choose between them. That mode defaults to 'tolerance'
+# -- the 19.0 behaviour -- so a company that used automatic check-out keeps
+# working the way it did, and this field, which 20.0 consults only in
+# 'specific_time' mode, is never read. All 117 companies came out on the 20.0
+# default of 20.0 hours, unread
 hr_attendance / res.company              / hr_attendance_display_overtime (boolean): DEL
 hr_attendance / res.company              / overtime_company_threshold (integer): DEL
 hr_attendance / res.company              / overtime_employee_threshold (integer): DEL
