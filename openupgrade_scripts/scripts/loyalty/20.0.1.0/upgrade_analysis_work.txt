@@ -15,11 +15,19 @@ loyalty      / loyalty.card             / website_message_ids (one2many): DEL re
 loyalty      / loyalty.history          / _order                        : _order is now 'points_changed_date desc, id desc' ('id desc')
 # NOTHING TO DO: the default ordering changed; no column and no value move
 loyalty      / loyalty.history          / expiration_date (date)        : NEW
+# NOTHING TO DO: the other half of 20.0's FIFO_ORDER, and empty is right. 19.0
+# recorded no expiry, and 20.0 derives one from the programme's new
+# expire_after; writing a date here would expire points on a day nobody chose
 loyalty      / loyalty.history          / linked_loyalty_history_id (many2one): NEW relation: loyalty.history
-# NOTHING TO DO: empty is the right value for existing records
+# NOTHING TO DO: 19.0 had no link between history lines to carry
 loyalty      / loyalty.history          / points_changed_date (datetime): NEW required
-# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
-# reports none outstanding -- so the model is either new or the rows carry a value
+# DONE: post-migration. The NOT NULL applied cleanly, and that is not evidence:
+# it applied BECAUSE the column is full. A required column with a time default
+# is filled once when the ORM creates it, so all 39 lines came out stamped with
+# the moment of the upgrade -- one timestamp where create_date holds 7. 19.0
+# recorded no date at all (_order was 'id desc'), and a history line is written
+# when the points change, so create_date IS the event's date. Restored from it;
+# expiration_date deliberately left empty, see below
 loyalty      / loyalty.program          / expire_after (integer)        : NEW
 loyalty      / loyalty.program          / once_per_user (boolean)       : NEW
 loyalty      / loyalty.program          / partner_ids (many2many)       : NEW relation: res.partner
