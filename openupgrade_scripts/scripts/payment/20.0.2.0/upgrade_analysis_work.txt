@@ -1,0 +1,357 @@
+---Models in module 'payment'---
+new model payment.data
+# NOTHING TO DO: a new model, with no 19.0 counterpart to carry
+---Fields in module 'payment'---
+payment      / payment.data             / error_traceback (text)        : NEW
+payment      / payment.data             / errored (boolean)             : NEW
+payment      / payment.data             / payload (json)                : NEW required
+payment      / payment.data             / transaction_id (many2one)     : NEW relation: payment.transaction, required
+# NOTHING TO DO: a new model, with no 19.0 counterpart to carry
+payment      / payment.method           / allow_amount_selection (boolean): NEW
+# NOTHING TO DO: empty is the right value for existing records
+payment      / payment.method           / provider_id (many2one)        : NEW relation: payment.provider, required
+# DONE: end-migration: every surviving method belongs to a provider, filled by the fan-out below; the agnostic ones that cannot have a provider are removed
+payment      / payment.method           / provider_ids (many2many)      : DEL relation: payment.provider
+# DONE: pre-migration keeps the 19.0 relation table under its legacy name, with its foreign keys dropped so that deleting the obsolete methods cannot cascade it empty; it is the only record of which provider supported which method
+payment      / payment.provider         / _order                        : _order is now 'module_state desc, is_published desc, sequence, name' ('module_state, state desc, sequence, name')
+# NOTHING TO DO: ordering only
+payment      / payment.provider         / active (boolean)              : NEW hasdefault: default
+# NOTHING TO DO: active is already set on every provider, and 19.0's disabled is carried by is_published, which it already had
+payment      / payment.provider         / color (integer)               : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+payment      / payment.provider         / is_live (boolean)             : NEW
+# DONE: post-migration: set from the 19.0 state kept by pre-migration
+payment      / payment.provider         / minimum_amount (float)        : NEW
+# NOTHING TO DO: empty is the right value for existing records
+payment      / payment.provider         / payment_method_ids (many2many): table is now 'False' ('payment_method_payment_provider_rel')
+payment      / payment.provider         / payment_method_ids (many2many): type is now 'one2many' ('many2many')
+# DONE: end-migration replays payment.provider.copy() from the kept relation table, so each provider ends up owning the methods it supported
+payment      / payment.provider         / payment_token_ids (one2many)  : NEW relation: payment.token
+payment      / payment.provider         / payment_transaction_ids (one2many): NEW relation: payment.transaction
+# NOTHING TO DO: a one2many has no column of its own
+payment      / payment.provider         / state (selection)             : DEL required, selection_keys: ['disabled', 'enabled', 'test']
+# DONE: pre-migration keeps state; post-migration puts the providers that were enabled into live mode, is_live being new and defaulting to False
+payment      / payment.transaction      / capture_manually (boolean)    : previously in module payment_demo
+# NOTHING TO DO: the field only changed owning module, the column is the same
+payment      / payment.transaction      / payment_data_ids (one2many)   : NEW relation: payment.data
+# NOTHING TO DO: a one2many has no column of its own
+payment      / res.company              / pay_later_label (char)        : NEW hasdefault: default, translate
+payment      / res.company              / pay_now_label (char)          : NEW hasdefault: default, translate
+# NOTHING TO DO: a new column with a default, which the ORM writes into the existing rows
+---XML records in module 'payment'---
+NEW ir.access: payment.payment_capture_wizard_rule
+NEW ir.access: payment.payment_capture_wizard_user
+NEW ir.access: payment.payment_data_system
+NEW ir.access: payment.payment_method_rule
+NEW ir.access: payment.payment_method_system
+NEW ir.access: payment.payment_provider_company_rule
+NEW ir.access: payment.payment_provider_system
+NEW ir.access: payment.payment_token_admin_rule
+NEW ir.access: payment.payment_token_company_rule
+NEW ir.access: payment.payment_token_public_rule
+NEW ir.access: payment.payment_transaction_system
+NEW ir.access: payment.transaction_company_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: payment.action_payment_method (deleted domain)
+ir.actions.act_window: payment.action_payment_transaction_linked_to_token (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+NEW ir.actions.server: payment.action_add_payment_method
+NEW ir.actions.server: payment.action_confirm_payment_transaction
+NEW ir.cron: payment.post_processing_cron
+NEW ir.cron: payment.processing_cron
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.cron: payment.cron_post_process_payment_tx
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: payment.access_payment_link_wizard
+DEL ir.model.access: payment.payment_capture_wizard_user
+DEL ir.model.access: payment.payment_method_employee
+DEL ir.model.access: payment.payment_method_portal
+DEL ir.model.access: payment.payment_method_public
+DEL ir.model.access: payment.payment_method_system
+DEL ir.model.access: payment.payment_provider_system
+DEL ir.model.access: payment.payment_token_employee
+DEL ir.model.access: payment.payment_token_portal
+DEL ir.model.access: payment.payment_token_public
+DEL ir.model.access: payment.payment_token_system
+DEL ir.model.access: payment.payment_transaction_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: payment.constraint_payment_method_provider_id_code_uniq
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: payment.constraint_payment_transaction_reference_uniq (changed definition: is now 'False' ('unique(reference)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: payment.payment_capture_wizard_rule (noupdate)
+DEL ir.rule: payment.payment_provider_company_rule (noupdate)
+DEL ir.rule: payment.payment_token_company_rule (noupdate)
+DEL ir.rule: payment.payment_token_user_rule (noupdate)
+DEL ir.rule: payment.transaction_company_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: payment.amount_input
+NEW ir.ui.view: payment.generic_redirect_form
+NEW ir.ui.view: payment.payment_data_form
+NEW ir.ui.view: payment.payment_data_list
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: payment.payment_transaction_graph
+DEL ir.ui.view: payment.payment_transaction_kanban
+DEL ir.ui.view: payment.payment_transaction_pivot
+DEL ir.ui.view: payment.portal_my_home_payment
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL payment.method: payment.payment_method_7eleven [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_abitab [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_ach_direct_debit [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_affirm [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_afterpay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_afterpay_riverty [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_akulaku [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_alipay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_alipay_hk [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_alipay_plus [renamed to payment_worldline module] (noupdate)
+DEL payment.method: payment.payment_method_alma [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_aman (noupdate)
+DEL payment.method: payment.payment_method_amazon_pay [renamed to payment_stripe module] (noupdate)
+DEL payment.method: payment.payment_method_amex [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_appota [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_argencard [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_astropay [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_atome [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_bacs_direct_debit [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_bancnet (noupdate)
+DEL payment.method: payment.payment_method_banco_de_bogota [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_banco_guayaquil [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_banco_pichincha [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_bancolombia [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_bancontact [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_bangkok_bank [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_bank_account [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_bank_bca [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_bank_of_ayudhya [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_bank_permata [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_bank_reference [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_bank_transfer [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_becs_direct_debit [renamed to payment_stripe module] (noupdate)
+DEL payment.method: payment.payment_method_belfius [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_benefit [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_bharatqr (noupdate)
+DEL payment.method: payment.payment_method_billease [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_billink [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_bizum [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_blik [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_bni [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_boleto [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_boost (noupdate)
+DEL payment.method: payment.payment_method_bri [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_bsi [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_cabal [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_caixa [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_card [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_carnet [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_cartes_bancaires [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_cash_app_pay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_cashalo [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_cebuana [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_cencosud [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_cimb_niaga [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_cirrus [renamed to payment_worldline module] (noupdate)
+DEL payment.method: payment.payment_method_clearpay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_cmr (noupdate)
+DEL payment.method: payment.payment_method_codensa [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_cofidis [renamed to payment_worldline module] (noupdate)
+DEL payment.method: payment.payment_method_contact (noupdate)
+DEL payment.method: payment.payment_method_cordial [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_cordobesa [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_credit [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_cvs (noupdate)
+DEL payment.method: payment.payment_method_dana [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_dankort [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_davivienda [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_diners [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_discover [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_dpo (noupdate)
+DEL payment.method: payment.payment_method_duitnow [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_elo [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_emi_india [renamed to payment_razorpay module] (noupdate)
+DEL payment.method: payment.payment_method_enets [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_eps [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_facilito [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_family_mart (noupdate)
+DEL payment.method: payment.payment_method_floa_bank [renamed to payment_worldline module] (noupdate)
+DEL payment.method: payment.payment_method_forsa (noupdate)
+DEL payment.method: payment.payment_method_fps [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_fpx [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_gcash [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_gopay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_grabpay [renamed to payment_stripe module] (noupdate)
+DEL payment.method: payment.payment_method_halan (noupdate)
+DEL payment.method: payment.payment_method_hd (noupdate)
+DEL payment.method: payment.payment_method_hi_life (noupdate)
+DEL payment.method: payment.payment_method_hipercard [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_hoolah [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_humm [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_ideal [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_ideal_brand [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_in3 [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_installments_eg (noupdate)
+DEL payment.method: payment.payment_method_ipass_money (noupdate)
+DEL payment.method: payment.payment_method_jcb [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_jeniuspay [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_jkopay [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_kakaopay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_kasikorn_bank (noupdate)
+DEL payment.method: payment.payment_method_kbc_cbc [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_kfh [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_kiosk (noupdate)
+DEL payment.method: payment.payment_method_klarna [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_klarna_pay_over_time [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_klarna_paynow [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_knet [renamed to payment_aps module] (noupdate)
+DEL payment.method: payment.payment_method_kredivo [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_krungthai_bank [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_lider [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_linepay [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_linkaja [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_mada [renamed to payment_aps module] (noupdate)
+DEL payment.method: payment.payment_method_maestro [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_magna [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_mandiri [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_mastercard [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_maya [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_maybank [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_mbway [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_meeza [renamed to payment_aps module] (noupdate)
+DEL payment.method: payment.payment_method_mercado_livre [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_mercado_pago_wallet [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_mobile (noupdate)
+DEL payment.method: payment.payment_method_mobile_money [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_mobile_pay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_mobile_wallet (noupdate)
+DEL payment.method: payment.payment_method_mobile_wallet_eg (noupdate)
+DEL payment.method: payment.payment_method_momo [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_mpesa [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_multibanco [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_mybank [renamed to payment_paypal module] (noupdate)
+DEL payment.method: payment.payment_method_napas_card [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_naps [renamed to payment_aps module] (noupdate)
+DEL payment.method: payment.payment_method_naranja [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_nativa [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_netbanking [renamed to payment_razorpay module] (noupdate)
+DEL payment.method: payment.payment_method_nuvei_local [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_oca [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_octopus [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_ok_mart (noupdate)
+DEL payment.method: payment.payment_method_omannet [renamed to payment_aps module] (noupdate)
+DEL payment.method: payment.payment_method_online_banking_czech_republic [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_online_banking_india [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_online_banking_slovakia [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_online_banking_thailand [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_open_banking [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_ovo [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_oxxopay [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_p24 [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_pace [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_pay_id [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_paybright [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_paylater_india [renamed to payment_razorpay module] (noupdate)
+DEL payment.method: payment.payment_method_payme [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_paynow [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_paypal [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_paysafecard [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_paytm [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_paytrail [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_pix [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_poli [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_post_finance [renamed to payment_worldline module] (noupdate)
+DEL payment.method: payment.payment_method_poste_pay [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_pps (noupdate)
+DEL payment.method: payment.payment_method_premium_card (noupdate)
+DEL payment.method: payment.payment_method_presto [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_promptpay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_pse [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_qris [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_rabbit_line_pay (noupdate)
+DEL payment.method: payment.payment_method_ratepay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_redpagos [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_revolut_pay [renamed to payment_stripe module] (noupdate)
+DEL payment.method: payment.payment_method_rupay [renamed to payment_razorpay module] (noupdate)
+DEL payment.method: payment.payment_method_samsung_pay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_scb [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_sepa_direct_debit [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_shopback (noupdate)
+DEL payment.method: payment.payment_method_shopeepay [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_shopping [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_sofort (noupdate)
+DEL payment.method: payment.payment_method_souhoola (noupdate)
+DEL payment.method: payment.payment_method_spei [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_stcpay (noupdate)
+DEL payment.method: payment.payment_method_swish [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_sympl (noupdate)
+DEL payment.method: payment.payment_method_tabby (noupdate)
+DEL payment.method: payment.payment_method_tamara (noupdate)
+DEL payment.method: payment.payment_method_tarjeta_mercadopago [renamed to payment_mercado_pago module] (noupdate)
+DEL payment.method: payment.payment_method_techcom (noupdate)
+DEL payment.method: payment.payment_method_tendopay [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_tenpay [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_tienphong (noupdate)
+DEL payment.method: payment.payment_method_tinka [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_tmb [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_touch_n_go [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_troy [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_truemoney [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_trustly [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_ttb [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_twint [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_twqr (noupdate)
+DEL payment.method: payment.payment_method_uatp (noupdate)
+DEL payment.method: payment.payment_method_unionpay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_unknown [renamed to payment_demo module] (noupdate)
+DEL payment.method: payment.payment_method_uob [renamed to payment_asiapay module] (noupdate)
+DEL payment.method: payment.payment_method_upi [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_ussd [renamed to payment_flutterwave module] (noupdate)
+DEL payment.method: payment.payment_method_valu (noupdate)
+DEL payment.method: payment.payment_method_venmo [renamed to payment_paypal module] (noupdate)
+DEL payment.method: payment.payment_method_vietcapital [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_vietcom (noupdate)
+DEL payment.method: payment.payment_method_viettelpay [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_vipps [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_visa [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_vnptwallet [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_vpay (noupdate)
+DEL payment.method: payment.payment_method_vpbank [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_wallets_india [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_walley [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_webpay [renamed to payment_nuvei module] (noupdate)
+DEL payment.method: payment.payment_method_wechat_pay [renamed to payment_adyen module] (noupdate)
+DEL payment.method: payment.payment_method_welend (noupdate)
+DEL payment.method: payment.payment_method_wero [renamed to payment_buckaroo module] (noupdate)
+DEL payment.method: payment.payment_method_woori [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_zalopay [renamed to payment_xendit module] (noupdate)
+DEL payment.method: payment.payment_method_zip [renamed to payment_adyen module] (noupdate)
+# DONE: end-migration: the 19.0 methods are provider-agnostic, which 20.0's required provider_id has no place for; they are removed once transactions and tokens are retargeted, and the provider modules ship their own
+payment.provider: payment.payment_provider_adyen (noupdate switched)
+payment.provider: payment.payment_provider_aps (noupdate switched)
+payment.provider: payment.payment_provider_asiapay (noupdate switched)
+payment.provider: payment.payment_provider_authorize (noupdate switched)
+payment.provider: payment.payment_provider_buckaroo (noupdate switched)
+payment.provider: payment.payment_provider_demo (noupdate switched)
+payment.provider: payment.payment_provider_dpo (noupdate switched)
+payment.provider: payment.payment_provider_ecpay (noupdate switched)
+payment.provider: payment.payment_provider_flutterwave (noupdate switched)
+payment.provider: payment.payment_provider_iyzico (noupdate switched)
+payment.provider: payment.payment_provider_mercado_pago (noupdate switched)
+payment.provider: payment.payment_provider_mollie (noupdate switched)
+payment.provider: payment.payment_provider_nuvei (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml
+NEW payment.provider: payment.payment_provider_pay_on_invoice
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_paymob (noupdate switched)
+payment.provider: payment.payment_provider_paypal (noupdate switched)
+payment.provider: payment.payment_provider_payu (noupdate switched)
+payment.provider: payment.payment_provider_razorpay (noupdate switched)
+payment.provider: payment.payment_provider_redsys (noupdate switched)
+payment.provider: payment.payment_provider_sepa_direct_debit (noupdate switched)
+payment.provider: payment.payment_provider_stripe (noupdate switched)
+payment.provider: payment.payment_provider_toss_payments (noupdate switched)
+payment.provider: payment.payment_provider_transfer (noupdate switched)
+payment.provider: payment.payment_provider_worldline (noupdate switched)
+payment.provider: payment.payment_provider_xendit (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml
+NEW portal.entry: payment.payment_methods_portal_entry
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
