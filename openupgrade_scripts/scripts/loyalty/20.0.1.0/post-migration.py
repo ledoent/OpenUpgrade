@@ -29,9 +29,13 @@ def _date_the_points_from_when_they_changed(env):
     which is why 19.0 never needed a separate column. On the seed it restores
     **7 distinct timestamps** in place of one.
 
-    Only rows still carrying the stamp are touched, identified as "every row
-    sharing the single most common value", so a line written after the upgrade
-    keeps its own date and a second run changes nothing.
+    Every line whose two dates disagree is corrected, which is the whole rule:
+    for a history line they are the same event by construction, so a divergence
+    can only be the stamp this repairs. An earlier version narrowed that to rows
+    sharing a timestamp with another row, on the theory that a stamp is always
+    shared -- which silently skipped a database holding a SINGLE history line,
+    where the stamp is just as wrong and shares with nothing. A second run
+    changes nothing either way, since by then the dates agree.
 
     `expiration_date` is deliberately NOT filled. It is the other half of
     FIFO_ORDER, but 19.0 recorded no expiry and 20.0 derives it from the
@@ -44,11 +48,7 @@ def _date_the_points_from_when_they_changed(env):
         UPDATE loyalty_history
         SET points_changed_date = create_date
         WHERE create_date IS NOT NULL
-          AND points_changed_date IN (
-              SELECT points_changed_date FROM loyalty_history
-              GROUP BY points_changed_date HAVING count(*) > 1
-          )
-          AND points_changed_date <> create_date
+          AND points_changed_date IS DISTINCT FROM create_date
         """,
     )
     env.cr.execute("SELECT count(*) FROM loyalty_history WHERE create_date IS NULL")
