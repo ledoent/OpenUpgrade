@@ -2,7 +2,14 @@
 ---Fields in module 'pos_event'---
 pos_event    / event.registration       / uuid (char)                   : NEW
 pos_event    / event.registration.answer / uuid (char)                   : NEW
-# NOTHING TO DO: empty is the right value for existing records
+# DONE: post-migration. Empty is NOT what existing records got. The default is
+# `lambda self: str(uuid4())`, and a column default is evaluated ONCE when the
+# ORM creates the column, so every pre-existing row is written the SAME value --
+# all 29 registrations on one uuid and all 12 answers on another, with no unique
+# index to raise. Both fields are in `_load_pos_data_fields`, the payload the
+# point of sale matches records by, and `copy=False` says the same thing: this
+# is an identity. Regenerated per row, which is safe here only because 19.0 had
+# no such column and so there is no 19.0 answer being overwritten
 ---XML records in module 'pos_event'---
 NEW ir.access: pos_event.access_event_event
 NEW ir.access: pos_event.access_event_event_ticket
