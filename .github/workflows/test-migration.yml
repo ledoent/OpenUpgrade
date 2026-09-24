@@ -103,6 +103,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: openupgrade
+      - name: The gates' own verdict logic
+        # Runs before the upgrade on purpose: it needs no database, and a gate
+        # whose predicate has inverted would otherwise report a clean run over
+        # everything the 20-minute migration below produces.
+        run: python3 openupgrade/.github/scripts/test_gates.py
       - name: Configuration
         run: |
           sudo apt update
