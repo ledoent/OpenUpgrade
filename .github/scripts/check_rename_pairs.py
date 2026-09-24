@@ -53,8 +53,17 @@ WHAT THIS STILL CANNOT SEE, SO ITS SILENCE IS NOT A VERDICT
     kanban_state -> state pair is reported cleared for exactly that reason: all
     five seed requests are on 'normal', so the data cannot tell a carried value
     from a defaulted one. That is a statement about the seed, not the code.
-  * A change of type. user_id (many2one) -> user_ids (many2many) is a real
-    succession that pairing on equal types never proposes.
+  * A pair where BOTH columns are filled and varied. Neither rule can fire, and
+    the database genuinely cannot settle it: res.partner.peppol_eas ->
+    routing_scheme is filled 73/44 distinct against 72/33, because BOTH versions
+    declare it a stored compute with readonly=False. Whether the gap is 20.0
+    deriving differently or a hand-entered override being lost is not a question
+    any column can answer -- it needs a person. See ACKNOWLEDGED.
+
+  * A cross-MODULE pair is proposed and works (peppol above is one, DEL and NEW
+    both declared by account_edi_ubl_cii). Pairing across DIFFERENT modules is
+    deliberately not done: measured over this corpus it adds 732 pairs, of which
+    the first is iface_splitbill against seven unrelated pos.config booleans.
 
 Usage:  check_rename_pairs.py [--dsn DSN] [--all]
 
@@ -90,6 +99,20 @@ MODEL_RENAME = re.compile(r'"([\w.]+)"\s*[,:]\s*"([\w.]+)"')
 # "module:model.old -> new (type)" -> why it is not a rename, for pairs that
 # survive the automatic checks and have been looked at by hand.
 ACKNOWLEDGED = {
+    # --- looked at, and declined on purpose ---------------------------------
+    # 19 of 73 partners differ: 16 have an EAS and no routing scheme, 3 carry a
+    # different one. It is NOT carried, decided by the maintainer. Both versions
+    # declare the field a stored compute with readonly=False, so most of the gap
+    # is 20.0's own _compute_routing_scheme_endpoint deriving differently, and
+    # nothing in the database distinguishes a hand-entered override -- the only
+    # thing that would be real data -- from a value the compute produced.
+    "account_edi_ubl_cii:res.partner.peppol_eas -> routing_scheme (selection)": (
+        "both sides are stored computes; the difference is 20.0 re-deriving, "
+        "and an override cannot be told from a computed value"
+    ),
+    "account_edi_ubl_cii:res.partner.peppol_endpoint -> routing_endpoint (char)": (
+        "same pair, same reason: routing_endpoint is computed alongside routing_scheme"
+    ),
     # --- the two sides are simply different fields ---
     "stock:stock.picking.type.show_operations -> auto_show_allocation_report "
     "(boolean)": (
@@ -265,7 +288,63 @@ def candidate_pairs():
                             relation_of(new_what),
                         )
                     )
+        pairs.extend(stem_pairs(module, dels, news, declared))
     return pairs
+
+
+def stem_pairs(module, dels, news, declared):
+    """DEL/NEW on one model whose TYPES differ but whose names are the same stem.
+
+    The pass above groups by (model, type), so a field that changes type is
+    never proposed -- and one that does is a succession like any other.
+    maintenance.request.user_id (many2one) became user_ids (many2many), which is
+    a real one this check missed until it was found by hand.
+
+    Only the one-to-many shape is paired: `x` against `x_ids`, or `x_id` against
+    `x_ids`, in either direction. That is deliberately narrow. Across the whole
+    19->20 corpus it proposes SIX pairs, where pairing on differing types alone
+    would propose hundreds -- and six is a triage list rather than noise.
+    """
+    by_model = collections.defaultdict(lambda: ([], []))
+    for (model, ftype), fields in dels.items():
+        for field, what in fields:
+            by_model[model][0].append((field, ftype, what))
+    for (model, ftype), fields in news.items():
+        for field, what in fields:
+            by_model[model][1].append((field, ftype, what))
+
+    out = []
+    for model, (old_fields, new_fields) in by_model.items():
+        for old, old_type, old_what in old_fields:
+            for new, new_type, new_what in new_fields:
+                if old_type == new_type:
+                    continue  # the pass above already had this one
+                if not _same_stem(old, new):
+                    continue
+                if (module, model, old, new) in declared:
+                    continue
+                out.append(
+                    (
+                        module,
+                        model,
+                        old,
+                        new,
+                        f"{old_type}->{new_type}",
+                        relation_of(old_what),
+                        relation_of(new_what),
+                    )
+                )
+    return out
+
+
+def _same_stem(a, b):
+    """True when one name is the plural many2many form of the other."""
+    for one, other in ((a, b), (b, a)):
+        if other in (f"{one}_ids", f"{one}s") or (
+            one.endswith("_id") and other == f"{one[: -len('_id')]}_ids"
+        ):
+            return True
+    return False
 
 
 def connect(dsn):
@@ -302,6 +381,32 @@ def filled(cur, table, column):
     if not cur.fetchone():
         return None
     cur.execute(f'SELECT count(*) FROM "{table}" WHERE "{column}" IS NOT NULL')
+    return cur.fetchone()[0]
+
+
+def filled_m2m(cur, model, field):
+    """Rows in a many2many's relation table, or None when there is no such field.
+
+    A many2many has no column on its own model's table, so `filled` answers None
+    for one and the pair reads as unmeasurable -- which is exactly the shape the
+    name-stem rule proposes (user_id -> user_ids). The relation table is not
+    guessed from the names: 20.0 records it on ir_model_fields.relation_table,
+    so this reads the same answer the ORM uses.
+    """
+    cur.execute(
+        """
+        SELECT relation_table FROM ir_model_fields
+        WHERE model = %s AND name = %s AND ttype = 'many2many'
+        """,
+        (model, field),
+    )
+    row = cur.fetchone()
+    if not row or not row[0]:
+        return None
+    cur.execute("SELECT to_regclass(%s)", (row[0],))
+    if not cur.fetchone()[0]:
+        return None
+    cur.execute(f'SELECT count(*) FROM "{row[0]}"')
     return cur.fetchone()[0]
 
 
@@ -355,7 +460,24 @@ def classify(cur, pair, model_renames):
         )
         return "cleared", label, f"{table}.{old} is gone{tail}"
     if new_n is None:
-        return "unreadable", label, f"{table}.{new} does not exist"
+        # A many2many keeps its data in a relation table rather than a column,
+        # which is the shape the name-stem rule proposes. Read that instead of
+        # reporting the pair unmeasurable.
+        new_n = filled_m2m(cur, model, new)
+        if new_n is None:
+            return "unreadable", label, f"{table}.{new} does not exist"
+        if old_n and not new_n:
+            return (
+                "suspect",
+                label,
+                f"{table}.{old} holds {old_n} value(s) and the {new} relation "
+                f"table is empty",
+            )
+        return (
+            "cleared",
+            label,
+            f"{old}={old_n} filled, {new} relation table holds {new_n} row(s)",
+        )
     if old_n and not new_n:
         # Rule 1.
         return (
