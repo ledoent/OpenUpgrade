@@ -239,6 +239,16 @@ jobs:
           PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USERNAME \
           PGPASSWORD=$DB_PASSWORD PGDATABASE=$DB \
               python3 openupgrade/.github/scripts/check_selection_values.py
+      - name: Check for new columns the upgrade filled with one value
+        if: ${{ steps.run_migration.outputs.modules_new != '' }}
+        run: |
+          # From openupgrade/, like the rename check: the analysis files are
+          # found relative to the working directory, and from anywhere else this
+          # finds none and reports a cheerful pass.
+          cd openupgrade
+          PGHOST=$DB_HOST PGPORT=$DB_PORT PGUSER=$DB_USERNAME \
+          PGPASSWORD=$DB_PASSWORD PGDATABASE=$DB \
+              python3 .github/scripts/check_defaulted_columns.py
       - name: Generate coverage.xml
         if: ${{ steps.run_migration.outputs.modules_new != '' }}
         run: coverage xml
