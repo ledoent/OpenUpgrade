@@ -1,0 +1,106 @@
+---Models in module 'survey'---
+---Fields in module 'survey'---
+survey       / digest.digest            / kpi_nbr_of_answers (boolean)  : NEW
+survey       / digest.digest            / kpi_nbr_of_certified_participants (boolean): NEW
+# NEEDS A VERDICT: the database cannot settle this one
+survey       / survey.question          / scale_mid_label (char)        : DEL
+# NOTHING TO DO: the column held nothing on any of the 42 rows, so its removal carries nothing away
+survey       / survey.survey            / background_image_filename (char): NEW
+# NOTHING TO DO: empty on all 4 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+survey       / survey.survey            / certification_report_layout (selection): selection_keys added: [classic-1_black, classic-1_company, classic-2_black, classic-2_company, minimal_black, minimal_company, modern_black, modern_company], removed: [classic_blue, classic_gold, classic_purple, modern_blue, modern_gold, modern_purple]
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+survey       / survey.survey            / session_question_can_answer (boolean): NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+survey       / survey.survey            / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on survey.survey, so nothing was left behind
+survey       / survey.user_input        / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on survey.user_input, so nothing was left behind
+---XML records in module 'survey'---
+NEW ir.access: survey.access_gamification_badge_survey_user
+NEW ir.access: survey.survey_invite_survey_manager
+NEW ir.access: survey.survey_invite_survey_user
+NEW ir.access: survey.survey_question_answer_rule_survey_manager
+NEW ir.access: survey.survey_question_answer_rule_survey_user
+NEW ir.access: survey.survey_question_rule_survey_manager
+NEW ir.access: survey.survey_question_rule_survey_user
+NEW ir.access: survey.survey_survey_rule_survey_manager
+NEW ir.access: survey.survey_survey_rule_survey_user
+NEW ir.access: survey.survey_user_input_line_rule_survey_manager
+NEW ir.access: survey.survey_user_input_line_rule_survey_user
+NEW ir.access: survey.survey_user_input_line_rule_survey_user_1
+NEW ir.access: survey.survey_user_input_rule_survey_manager
+NEW ir.access: survey.survey_user_input_rule_survey_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: survey.action_survey_question_form (deleted domain)
+ir.actions.act_window: survey.action_survey_user_input (deleted domain)
+NEW ir.actions.act_window: survey.survey_user_input_action_certified
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: survey.survey_user_input_line_action (deleted domain)
+DEL ir.model.access: survey.access_gamification_badge_survey_user
+DEL ir.model.access: survey.access_survey_all
+DEL ir.model.access: survey.access_survey_invite
+DEL ir.model.access: survey.access_survey_question_all
+DEL ir.model.access: survey.access_survey_question_answer_all
+DEL ir.model.access: survey.access_survey_question_answer_survey_manager
+DEL ir.model.access: survey.access_survey_question_answer_survey_user
+DEL ir.model.access: survey.access_survey_question_answer_user
+DEL ir.model.access: survey.access_survey_question_survey_manager
+DEL ir.model.access: survey.access_survey_question_survey_user
+DEL ir.model.access: survey.access_survey_question_user
+DEL ir.model.access: survey.access_survey_survey_manager
+DEL ir.model.access: survey.access_survey_survey_user
+DEL ir.model.access: survey.access_survey_user
+DEL ir.model.access: survey.access_survey_user_input_all
+DEL ir.model.access: survey.access_survey_user_input_line_all
+DEL ir.model.access: survey.access_survey_user_input_line_survey_manager
+DEL ir.model.access: survey.access_survey_user_input_line_survey_user
+DEL ir.model.access: survey.access_survey_user_input_line_user
+DEL ir.model.access: survey.access_survey_user_input_survey_manager
+DEL ir.model.access: survey.access_survey_user_input_survey_user
+DEL ir.model.access: survey.access_survey_user_input_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: survey.constraint_survey_question_answer_value_not_empty (changed definition: is now 'False' ('CHECK (value IS NOT NULL OR value_image_filename IS NOT NULL)'))
+ir.model.constraint: survey.constraint_survey_question_is_time_limited_have_time_limit (changed definition: is now 'False' ('CHECK (is_time_limited != TRUE OR time_limit IS NOT NULL AND time_limit > 0)'))
+ir.model.constraint: survey.constraint_survey_question_positive_answer_score (changed definition: is now 'False' ('CHECK (answer_score >= 0)'))
+ir.model.constraint: survey.constraint_survey_question_positive_len_max (changed definition: is now 'False' ('CHECK (validation_length_max >= 0)'))
+ir.model.constraint: survey.constraint_survey_question_positive_len_min (changed definition: is now 'False' ('CHECK (validation_length_min >= 0)'))
+ir.model.constraint: survey.constraint_survey_question_scale (changed definition: is now 'False' ('CHECK (question_type != 'scale' OR (scale_min >= 0 AND scale_max <= 10 AND scale_min < scale_max))'))
+ir.model.constraint: survey.constraint_survey_question_scored_date_have_answers (changed definition: is now 'False' ('CHECK (is_scored_question != True OR question_type != 'date' OR answer_date is not null)'))
+ir.model.constraint: survey.constraint_survey_question_scored_datetime_have_answers (changed definition: is now 'False' ('CHECK (is_scored_question != True OR question_type != 'datetime' OR answer_datetime is not null)'))
+ir.model.constraint: survey.constraint_survey_question_validation_date (changed definition: is now 'False' ('CHECK (validation_min_date <= validation_max_date)'))
+ir.model.constraint: survey.constraint_survey_question_validation_datetime (changed definition: is now 'False' ('CHECK (validation_min_datetime <= validation_max_datetime)'))
+ir.model.constraint: survey.constraint_survey_question_validation_float (changed definition: is now 'False' ('CHECK (validation_min_float_value <= validation_max_float_value)'))
+ir.model.constraint: survey.constraint_survey_question_validation_length (changed definition: is now 'False' ('CHECK (validation_length_min <= validation_length_max)'))
+ir.model.constraint: survey.constraint_survey_survey_access_token_unique (changed definition: is now 'False' ('unique(access_token)'))
+ir.model.constraint: survey.constraint_survey_survey_attempts_limit_check (changed definition: is now 'False' ('CHECK( (is_attempts_limited=False) OR (attempts_limit is not null AND attempts_limit > 0) )'))
+ir.model.constraint: survey.constraint_survey_survey_badge_uniq (changed definition: is now 'False' ('unique (certification_badge_id)'))
+ir.model.constraint: survey.constraint_survey_survey_certification_check (changed definition: is now 'False' ('CHECK( scoring_type!='no_scoring' OR certification=False )'))
+ir.model.constraint: survey.constraint_survey_survey_scoring_success_min_check (changed definition: is now 'False' ('CHECK( scoring_success_min IS NULL OR (scoring_success_min>=0 AND scoring_success_min<=100) )'))
+ir.model.constraint: survey.constraint_survey_survey_session_code_unique (changed definition: is now 'False' ('unique(session_code)'))
+ir.model.constraint: survey.constraint_survey_survey_session_speed_rating_has_time_limit (changed definition: is now 'False' ('CHECK (session_speed_rating != TRUE OR session_speed_rating_time_limit IS NOT NULL AND session_speed_rating_time_limit > 0)'))
+ir.model.constraint: survey.constraint_survey_survey_time_limit_check (changed definition: is now 'False' ('CHECK( (is_time_limited=False) OR (time_limit is not null AND time_limit > 0) )'))
+ir.model.constraint: survey.constraint_survey_user_input_unique_token (changed definition: is now 'False' ('UNIQUE (access_token)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: survey.survey_invite_survey_manager (noupdate)
+DEL ir.rule: survey.survey_invite_survey_user (noupdate)
+DEL ir.rule: survey.survey_question_answer_rule_survey_manager (noupdate)
+DEL ir.rule: survey.survey_question_answer_rule_survey_user (noupdate)
+DEL ir.rule: survey.survey_question_rule_survey_manager (noupdate)
+DEL ir.rule: survey.survey_question_rule_survey_user (noupdate)
+DEL ir.rule: survey.survey_survey_rule_survey_manager (noupdate)
+DEL ir.rule: survey.survey_survey_rule_survey_user (noupdate)
+DEL ir.rule: survey.survey_user_input_line_rule_survey_manager (noupdate)
+DEL ir.rule: survey.survey_user_input_line_rule_survey_user (noupdate)
+DEL ir.rule: survey.survey_user_input_rule_survey_manager (noupdate)
+DEL ir.rule: survey.survey_user_input_rule_survey_user (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: survey.digest_digest_view_form
+NEW ir.ui.view: survey.survey_brand_message
+NEW ir.ui.view: survey.survey_toolbar
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+mail.message.subtype: survey.mt_survey_survey_user_input_completed (noupdate switched)
+mail.message.subtype: survey.mt_survey_user_input_completed (noupdate switched)
+res.groups: survey.group_survey_manager (noupdate switched)
+res.groups: survey.group_survey_user (noupdate switched)
+res.groups.privilege: survey.res_groups_privilege_surveys (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

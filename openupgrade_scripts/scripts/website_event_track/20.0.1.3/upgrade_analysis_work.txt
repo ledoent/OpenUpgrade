@@ -1,0 +1,77 @@
+---Models in module 'website_event_track'---
+---Fields in module 'website_event_track'---
+website_event_track / event.event              / location_display_background (binary): NEW attachment: True
+# NOTHING TO DO: 20.0 has no location_display_background column on event.event, so nothing was left behind
+website_event_track / event.event              / location_display_upcoming_track_count (selection): NEW required, selection_keys: ['2', '3', '4', '5'], hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+website_event_track / event.track              / publish_on (datetime)         : NEW
+website_event_track / event.track              / published_date (datetime)     : NEW
+# NOTHING TO DO: empty on all 60 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+website_event_track / event.track              / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on event.track, so nothing was left behind
+---XML records in module 'website_event_track'---
+event.track.stage: website_event_track.event_track_stage0 (noupdate switched)
+event.track.stage: website_event_track.event_track_stage1 (noupdate switched)
+event.track.stage: website_event_track.event_track_stage2 (noupdate switched)
+event.track.stage: website_event_track.event_track_stage3 (noupdate switched)
+event.track.stage: website_event_track.event_track_stage4 (noupdate switched)
+event.track.stage: website_event_track.event_track_stage5 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: website_event_track.access_event_track_employee
+NEW ir.access: website_event_track.access_event_track_location_manager
+NEW ir.access: website_event_track.access_event_track_location_user
+NEW ir.access: website_event_track.access_event_track_manager
+NEW ir.access: website_event_track.access_event_track_stage_manager
+NEW ir.access: website_event_track.access_event_track_stage_public
+NEW ir.access: website_event_track.access_event_track_tag_category_user
+NEW ir.access: website_event_track.access_event_track_tag_employee
+NEW ir.access: website_event_track.access_event_track_tag_manager
+NEW ir.access: website_event_track.access_event_track_tag_user
+NEW ir.access: website_event_track.access_event_track_user
+NEW ir.access: website_event_track.access_event_track_visitor_manager
+NEW ir.access: website_event_track.event_track_public
+NEW ir.access: website_event_track.ir_rule_event_track_tag_public
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: website_event_track.event_track_action_from_visitor (deleted domain)
+ir.actions.act_window: website_event_track.website_visitor_action_from_track (deleted domain)
+DEL ir.asset: website_event_track.s_searchbar_000_xml
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: website_event_track.access_event_track_employee
+DEL ir.model.access: website_event_track.access_event_track_location_manager
+DEL ir.model.access: website_event_track.access_event_track_location_user
+DEL ir.model.access: website_event_track.access_event_track_manager
+DEL ir.model.access: website_event_track.access_event_track_portal
+DEL ir.model.access: website_event_track.access_event_track_public
+DEL ir.model.access: website_event_track.access_event_track_stage_employee
+DEL ir.model.access: website_event_track.access_event_track_stage_manager
+DEL ir.model.access: website_event_track.access_event_track_stage_portal
+DEL ir.model.access: website_event_track.access_event_track_stage_public
+DEL ir.model.access: website_event_track.access_event_track_tag_category_user
+DEL ir.model.access: website_event_track.access_event_track_tag_employee
+DEL ir.model.access: website_event_track.access_event_track_tag_manager
+DEL ir.model.access: website_event_track.access_event_track_tag_portal
+DEL ir.model.access: website_event_track.access_event_track_tag_public
+DEL ir.model.access: website_event_track.access_event_track_tag_user
+DEL ir.model.access: website_event_track.access_event_track_user
+DEL ir.model.access: website_event_track.access_event_track_visitor
+DEL ir.model.access: website_event_track.access_event_track_visitor_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: website_event_track.constraint_event_track_tag_name_uniq (changed definition: is now 'False' ('unique (name)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: website_event_track.event_track_public (noupdate)
+DEL ir.rule: website_event_track.ir_rule_event_track_tag_public (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: website_event_track.event_track_location_display
+NEW ir.ui.view: website_event_track.event_track_location_display_content
+NEW ir.ui.view: website_event_track.event_track_location_display_empty_state
+NEW ir.ui.view: website_event_track.event_track_location_display_no_cookies_bar
+NEW ir.ui.view: website_event_track.event_track_location_display_speaker
+NEW ir.ui.view: website_event_track.event_track_location_display_track
+NEW ir.ui.view: website_event_track.website_event_track_favorite_submenu
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+mail.message.subtype: website_event_track.mt_event_track (noupdate switched)
+mail.message.subtype: website_event_track.mt_track_blocked (noupdate switched)
+mail.message.subtype: website_event_track.mt_track_ready (noupdate switched)
+mail.template: website_event_track.mail_template_data_track_confirmation (noupdate switched)
+mail.template: website_event_track.mail_template_data_track_reminder (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

@@ -1,0 +1,84 @@
+---Models in module 'hr_timesheet'---
+---Fields in module 'hr_timesheet'---
+hr_timesheet / account.analytic.applicability / business_domain (False)       : selection_keys removed: [purchase_order]
+# NOTHING TO DO: no row holds purchase_order any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
+hr_timesheet / account.analytic.line    / sequence (integer)            : NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+hr_timesheet / project.task             / portal_timesheet_ids (one2many): NEW relation: account.analytic.line
+# NOTHING TO DO: 20.0 has no portal_timesheet_ids column on project.task, so nothing was left behind
+hr_timesheet / project.task             / show_portal_timesheets (boolean): NEW hasdefault: default, stored: False
+# NOTHING TO DO: 20.0 has no show_portal_timesheets column on project.task, so nothing was left behind
+---XML records in module 'hr_timesheet'---
+DEL digest.tip: hr_timesheet.digest_tip_hr_timesheet_0
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.access: hr_timesheet.access_account_analytic_line_calendar_employee
+NEW ir.access: hr_timesheet.access_account_analytic_user
+NEW ir.access: hr_timesheet.access_hr_employee_delete_wizard_hr_user
+NEW ir.access: hr_timesheet.access_uom_uom_hr_timesheet
+NEW ir.access: hr_timesheet.project_project_manager_rule
+NEW ir.access: hr_timesheet.project_public_members_rule
+NEW ir.access: hr_timesheet.timesheet_analysis_report_approver
+NEW ir.access: hr_timesheet.timesheet_analysis_report_department_manager
+NEW ir.access: hr_timesheet.timesheet_analysis_report_manager
+NEW ir.access: hr_timesheet.timesheet_analysis_report_manager_1
+NEW ir.access: hr_timesheet.timesheet_analysis_report_user
+NEW ir.access: hr_timesheet.timesheet_line_rule_approver
+NEW ir.access: hr_timesheet.timesheet_line_rule_manager
+NEW ir.access: hr_timesheet.timesheet_line_rule_manager_1
+NEW ir.access: hr_timesheet.timesheet_line_rule_portal_user
+NEW ir.access: hr_timesheet.timesheet_line_rule_user
+NEW ir.access: hr_timesheet.timesheets_analysis_report_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: hr_timesheet.act_hr_timesheet_line (deleted domain)
+ir.actions.act_window: hr_timesheet.act_hr_timesheet_line_by_project (deleted domain)
+ir.actions.act_window: hr_timesheet.act_hr_timesheet_report (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_all (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_from_employee (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_project (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_report_by_project (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_report_by_task (deleted domain)
+ir.actions.act_window: hr_timesheet.timesheet_action_task (deleted domain)
+ir.actions.act_window: project.open_view_project_all (deleted domain)
+ir.actions.act_window: project.open_view_project_all_group_stage (deleted domain)
+NEW ir.actions.server: hr_timesheet.action_server_print_project_timesheets
+NEW ir.actions.server: hr_timesheet.action_server_print_task_timesheets
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: hr_timesheet.access_account_analytic_line_calendar_employee
+DEL ir.model.access: hr_timesheet.access_account_analytic_line_portal_user (noupdate)
+DEL ir.model.access: hr_timesheet.access_account_analytic_line_user
+DEL ir.model.access: hr_timesheet.access_account_analytic_user
+DEL ir.model.access: hr_timesheet.access_hr_employee_delete_wizard
+DEL ir.model.access: hr_timesheet.access_project_project
+DEL ir.model.access: hr_timesheet.access_timesheets_analysis_report
+DEL ir.model.access: hr_timesheet.access_uom_uom_hr_timesheet
+DEL ir.rule: hr_timesheet.timesheet_analysis_report_approver (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_analysis_report_department_manager (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_analysis_report_manager (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_analysis_report_user (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_line_rule_approver (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_line_rule_manager (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_line_rule_portal_user (noupdate)
+DEL ir.rule: hr_timesheet.timesheet_line_rule_user (noupdate)
+DEL ir.rule: hr_timesheet.timesheets_analysis_report_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: hr_timesheet.portal_timesheet_table_with_total
+NEW ir.ui.view: hr_timesheet.project_sharing_inherit_project_task_view_card
+NEW ir.ui.view: hr_timesheet.quick_create_account_analytic_line_form
+NEW ir.ui.view: hr_timesheet.view_project_card_inherited
+NEW ir.ui.view: hr_timesheet.view_task_card_inherited_progress
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: hr_timesheet.portal_my_home_timesheet
+DEL ir.ui.view: hr_timesheet.project_project_view_form_simplified_inherit_timesheet
+DEL ir.ui.view: hr_timesheet.project_sharing_kanban_inherit_project_task_view_kanban
+DEL ir.ui.view: hr_timesheet.view_project_kanban_inherited
+DEL ir.ui.view: hr_timesheet.view_task_kanban_inherited_progress
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW portal.entry: hr_timesheet.portal_timesheets
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+res.groups: hr_timesheet.group_hr_timesheet_approver (noupdate switched)
+res.groups: hr_timesheet.group_hr_timesheet_user (noupdate switched)
+res.groups: hr_timesheet.group_timesheet_manager (noupdate switched)
+res.groups.privilege: hr_timesheet.res_groups_privilege_timesheets (noupdate switched)
+uom.uom: uom.product_uom_day (noupdate switched)
+uom.uom: uom.product_uom_hour (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

@@ -1,0 +1,159 @@
+---Models in module 'calendar'---
+obsolete model calendar.popover.delete.wizard [transient]
+obsolete model calendar.provider.config [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+new model calendar.calendar
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+new model calendar.event.archive.or.unlink.wizard [transient]
+new model calendar.event.multi.archive.or.unlink.wizard [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+new model calendar.user
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+---Fields in module 'calendar'---
+calendar     / calendar.calendar        / calendar_default_privacy (selection): NEW required, selection_keys: ['confidential', 'members_only', 'private', 'public'], hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+calendar     / calendar.calendar        / calendar_user_ids (one2many)  : NEW relation: calendar.user, hasdefault: default
+# NOTHING TO DO: 20.0 has no calendar_user_ids column on calendar.calendar, so nothing was left behind
+calendar     / calendar.calendar        / event_ids (one2many)          : NEW relation: calendar.event
+# NOTHING TO DO: 20.0 has no event_ids column on calendar.calendar, so nothing was left behind
+calendar     / calendar.calendar        / name (char)                   : NEW
+# NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 2 rows, so a compute or a related field did the work
+calendar     / calendar.calendar        / recurrence_ids (one2many)     : NEW relation: calendar.recurrence
+# NOTHING TO DO: 20.0 has no recurrence_ids column on calendar.calendar, so nothing was left behind
+calendar     / calendar.event           / calendar_id (many2one)        : NEW relation: calendar.calendar, hasdefault: compute
+# NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 13 of 21 rows, so a compute or a related field did the work
+calendar     / calendar.event           / effective_privacy (selection) : selection_keys added: [members_only] (most likely nothing to do)
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+calendar     / calendar.event           / is_draft (boolean)            : NEW
+# NOTHING TO DO: empty on all 21 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+calendar     / calendar.event           / meeting_activity_ids (one2many): NEW relation: mail.activity
+# NOTHING TO DO: 20.0 has no meeting_activity_ids column on calendar.event, so nothing was left behind
+calendar     / calendar.event           / privacy (selection)           : selection_keys added: [members_only] (most likely nothing to do)
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+calendar     / calendar.filters         / partner_checked (boolean)     : DEL
+# NOTHING TO DO: 20.0 removes the concept -- there is no field anywhere in 20.0
+# to carry this into, so there is nothing a script could write
+calendar     / calendar.user            / access_role (selection)       : NEW required, selection_keys: ['owner', 'writer']
+# NEEDS A VERDICT: the database cannot settle this one
+calendar     / calendar.user            / calendar_id (many2one)        : NEW relation: calendar.calendar, required
+calendar     / calendar.user            / filter_color (integer)        : NEW hasdefault: default
+# NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 2 rows, so a compute or a related field did the work
+calendar     / calendar.user            / is_filter_active (boolean)    : NEW hasdefault: default
+calendar     / calendar.user            / is_filter_checked (boolean)   : NEW hasdefault: default
+calendar     / calendar.user            / is_primary (boolean)          : NEW
+# NEEDS A VERDICT: the database cannot settle this one
+calendar     / calendar.user            / name (char)                   : NEW
+calendar     / calendar.user            / user_id (many2one)            : NEW relation: res.users, required
+# NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 2 rows, so a compute or a related field did the work
+calendar     / res.users                / activity_calendar_event_id (many2one): not related anymore
+calendar     / res.users                / activity_calendar_event_id (many2one): now a function
+# NOTHING TO DO: 20.0 has no activity_calendar_event_id column on res.users, so nothing was left behind
+calendar     / res.users                / calendar_ids (one2many)       : NEW relation: calendar.calendar, hasdefault: compute, stored: False
+# NOTHING TO DO: 20.0 has no calendar_ids column on res.users, so nothing was left behind
+calendar     / res.users                / calendar_user_ids (one2many)  : NEW relation: calendar.user
+# NOTHING TO DO: 20.0 has no calendar_user_ids column on res.users, so nothing was left behind
+calendar     / res.users                / primary_calendar_id (many2one): NEW relation: calendar.calendar, isfunction: function, stored
+# NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 6 rows, so a compute or a related field did the work
+calendar     / res.users.settings       / calendar_default_privacy (selection): DEL required, selection_keys: ['confidential', 'private', 'public']
+# NOTHING TO DO: moved to calendar.calendar, where it is filled on both rows.
+# One distinct value either way, so this seed cannot discriminate
+calendar     / res.users.settings       / calendar_show_activities (boolean): NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+---XML records in module 'calendar'---
+calendar.alarm: calendar.alarm_mail_1 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW calendar.alarm: calendar.alarm_mail_1_day
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+calendar.alarm: calendar.alarm_mail_2 (noupdate switched)
+calendar.alarm: calendar.alarm_notif_1 (noupdate switched)
+calendar.alarm: calendar.alarm_notif_2 (noupdate switched)
+calendar.alarm: calendar.alarm_notif_3 (noupdate switched)
+calendar.alarm: calendar.alarm_notif_4 (noupdate switched)
+calendar.alarm: calendar.alarm_notif_5 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: calendar.access_calendar_alarm
+NEW ir.access: calendar.access_calendar_alarm_manager
+NEW ir.access: calendar.access_calendar_attendee_employee
+NEW ir.access: calendar.access_calendar_attendee_employee_archive_or_unlink_wizard
+NEW ir.access: calendar.access_calendar_attendee_employee_multi_archive_or_unlink_wizard
+NEW ir.access: calendar.access_calendar_event_type_all
+NEW ir.access: calendar.access_calendar_event_type_manager
+NEW ir.access: calendar.access_calendar_filters_all
+NEW ir.access: calendar.access_calendar_recurrence
+NEW ir.access: calendar.calendar_calendar_rule_system
+NEW ir.access: calendar.calendar_calendar_rule_users_create_and_read
+NEW ir.access: calendar.calendar_calendar_rule_users_update
+NEW ir.access: calendar.calendar_event_rule_employee
+NEW ir.access: calendar.calendar_event_rule_my
+NEW ir.access: calendar.calendar_event_rule_private
+NEW ir.access: calendar.calendar_user_rule_create
+NEW ir.access: calendar.calendar_user_rule_own_or_owner
+NEW ir.access: calendar.calendar_user_rule_read
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: calendar.action_calendar_calendar
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.act_window: calendar.action_event_delete_wizard
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+ir.config_parameter: calendar.default_privacy (noupdate switched)
+ir.cron: calendar.ir_cron_scheduler_alarm (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: calendar.access_calendar_alarm
+DEL ir.model.access: calendar.access_calendar_alarm_manager
+DEL ir.model.access: calendar.access_calendar_attendee_employee
+DEL ir.model.access: calendar.access_calendar_attendee_employee_delete_wizard
+DEL ir.model.access: calendar.access_calendar_attendee_portal
+DEL ir.model.access: calendar.access_calendar_event_all_employee
+DEL ir.model.access: calendar.access_calendar_event_all_user
+DEL ir.model.access: calendar.access_calendar_event_partner_manager
+DEL ir.model.access: calendar.access_calendar_event_type_all
+DEL ir.model.access: calendar.access_calendar_event_type_manager
+DEL ir.model.access: calendar.access_calendar_filters
+DEL ir.model.access: calendar.access_calendar_filters_all
+DEL ir.model.access: calendar.access_calendar_provider_config_all
+DEL ir.model.access: calendar.access_calendar_provider_config_manager
+DEL ir.model.access: calendar.access_calendar_recurrence
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: calendar.constraint_calendar_event_access_token_unique
+NEW ir.model.constraint: calendar.constraint_calendar_event_check_no_recurrent_draft
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: calendar.constraint_calendar_event_type_name_uniq (changed definition: is now 'False' ('unique (name)'))
+ir.model.constraint: calendar.constraint_calendar_filters_user_id_partner_id_unique (changed definition: is now 'False' ('UNIQUE(user_id, partner_id)'))
+ir.model.constraint: calendar.constraint_calendar_recurrence_month_day (changed definition: is now 'False' ('CHECK (  rrule_type != 'monthly'  OR month_by != 'day'  OR day >= 1 AND day <= 31  OR weekday IN ('MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN') AND byday IN ('1', '2', '3', '4', '-1'))'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+NEW ir.model.constraint: calendar.constraint_calendar_user_single_primary_calendar_per_user
+NEW ir.model.constraint: calendar.constraint_calendar_user_unique_user_per_calendar
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.rule: calendar.calendar_attendee_rule_my (noupdate)
+DEL ir.rule: calendar.calendar_event_rule_employee (noupdate)
+DEL ir.rule: calendar.calendar_event_rule_my (noupdate)
+DEL ir.rule: calendar.calendar_event_rule_private (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.menu: calendar.calendar_submenu_event_type
+NEW ir.ui.menu: calendar.menu_calendar_calendars
+NEW ir.ui.view: calendar.calendar_alarm_view_kanban
+NEW ir.ui.view: calendar.calendar_alarm_view_search
+NEW ir.ui.view: calendar.calendar_calendar_view_form
+NEW ir.ui.view: calendar.calendar_calendar_view_list
+NEW ir.ui.view: calendar.calendar_event_archive_or_unlink_wizard_view_form
+NEW ir.ui.view: calendar.calendar_event_multi_archive_or_unlink_wizard_view_form
+NEW ir.ui.view: calendar.calendar_user_view_form
+NEW ir.ui.view: calendar.message_meeting_activity_done
+NEW ir.ui.view: calendar.res_partner_view_form_simplified
+NEW ir.ui.view: calendar.res_users_form_view_calendars
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: calendar.calendar_popover_delete_view
+DEL ir.ui.view: calendar.calendar_provider_config_view_form
+DEL ir.ui.view: calendar.res_users_form_view_calendar_default_privacy
+DEL ir.ui.view: calendar.view_event_delete_wizard_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+mail.activity.type: mail.mail_activity_data_meeting (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW mail.message.subtype: calendar.mt_calendar_event_updated
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+mail.message.subtype: calendar.subtype_invitation (noupdate switched)
+mail.template: calendar.calendar_template_delete_event (noupdate switched)
+mail.template: calendar.calendar_template_meeting_changedate (noupdate switched)
+mail.template: calendar.calendar_template_meeting_invitation (noupdate switched)
+mail.template: calendar.calendar_template_meeting_reminder (noupdate switched)
+mail.template: calendar.calendar_template_meeting_update (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
