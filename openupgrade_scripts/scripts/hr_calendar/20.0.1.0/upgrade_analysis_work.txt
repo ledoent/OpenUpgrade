@@ -1,0 +1,15 @@
+---Models in module 'hr_calendar'---
+model homework.location.wizard (moved from hr_homeworking_calendar) [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'hr_calendar'---
+---XML records in module 'hr_calendar'---
+NEW ir.access: hr_calendar.homeworking_location_wizard_admin_rule
+NEW ir.access: hr_calendar.homeworking_location_wizard_own_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: hr_calendar.set_location_wizard_action [renamed from hr_homeworking_calendar module]
+# NOTHING TO DO: the record changes owning module, which apriori declares and
+# base's update_module_names performs -- it re-points every ir_model_data row
+# rather than recreating the record, so the ids and the data survive
+NEW ir.ui.menu: hr_calendar.menu_hr_homeworking_location_menu
+NEW ir.ui.view: hr_calendar.homework_location_wizard_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

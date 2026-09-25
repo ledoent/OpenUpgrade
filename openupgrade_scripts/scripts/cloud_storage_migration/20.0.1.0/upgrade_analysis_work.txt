@@ -1,0 +1,13 @@
+---Models in module 'cloud_storage_migration'---
+---Fields in module 'cloud_storage_migration'---
+---XML records in module 'cloud_storage_migration'---
+NEW ir.access: cloud_storage_migration.access_cloud_storage_migration_report
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_all_models (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_max_batch_file_size (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_max_file_size (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_message_models (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_min_attachment_id (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: cloud_storage_migration.access_cloud_storage_migration_report
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

@@ -1,0 +1,32 @@
+---Models in module 'analytic'---
+---Fields in module 'analytic'---
+analytic     / account.analytic.distribution.model / analytic_distribution (json)  : now required
+# NOTHING TO DO: account.analytic.distribution.model holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+analytic     / account.analytic.line    / x_plan1_id (many2one)         : NEW relation: account.analytic.account
+# NOTHING TO DO: 20.0 has no x_plan1_id column on account.analytic.line, so nothing was left behind
+---XML records in module 'analytic'---
+account.analytic.plan: analytic.analytic_plan_projects (noupdate switched)
+decimal.precision: analytic.decimal_percentage_analytic (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: analytic.access_account_analytic_account
+NEW ir.access: analytic.access_account_analytic_applicability
+NEW ir.access: analytic.access_account_analytic_distribution_model
+NEW ir.access: analytic.access_account_analytic_plan
+NEW ir.access: analytic.analytic_applicability_comp_rule
+NEW ir.access: analytic.analytic_comp_rule
+NEW ir.access: analytic.analytic_distribution_model_comp_rule
+NEW ir.access: analytic.analytic_line_analytic
+NEW ir.access: analytic.analytic_line_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: analytic.account_analytic_line_action (deleted domain)
+ir.actions.act_window: analytic.account_analytic_plan_action (deleted domain)
+DEL ir.model.access: analytic.access_account_analytic_account
+DEL ir.model.access: analytic.access_account_analytic_applicability
+DEL ir.model.access: analytic.access_account_analytic_distribution_model
+DEL ir.model.access: analytic.access_account_analytic_line
+DEL ir.model.access: analytic.access_account_analytic_plan
+DEL ir.rule: analytic.analytic_applicability_comp_rule (noupdate)
+DEL ir.rule: analytic.analytic_comp_rule (noupdate)
+DEL ir.rule: analytic.analytic_distribution_model_comp_rule (noupdate)
+DEL ir.rule: analytic.analytic_line_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

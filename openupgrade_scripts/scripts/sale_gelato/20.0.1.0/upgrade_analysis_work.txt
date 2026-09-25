@@ -1,0 +1,15 @@
+---Models in module 'sale_gelato'---
+---Fields in module 'sale_gelato'---
+sale_gelato  / product.product          / gelato_variant_image_ids (one2many): NEW relation: product.document
+# NOTHING TO DO: a one2many has no column of its own
+---XML records in module 'sale_gelato'---
+delivery.carrier: sale_gelato.express_delivery (noupdate switched)
+delivery.carrier: sale_gelato.standard_delivery (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.ui.view: sale_gelato.product_product_easy_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+mail.template: sale_gelato.order_status_update (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml
+product.product: sale_gelato.express_delivery_product (noupdate switched)
+product.product: sale_gelato.standard_delivery_product (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

@@ -1,0 +1,54 @@
+---Models in module 'purchase_requisition'---
+obsolete model purchase.order.group
+# NOTHING TO DO: the table is left in place for database_cleanup rather than dropped during an upgrade, which is the anti-pattern upstream rejected in #5630-5632
+obsolete model purchase.requisition.alternative.warning [transient]
+obsolete model purchase.requisition.create.alternative [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'purchase_requisition'---
+purchase_requisition / purchase.order           / purchase_group_id (many2one)  : DEL relation: purchase.order.group
+# NEEDS A VERDICT: the database cannot settle this one
+purchase_requisition / purchase.order.group     / order_ids (one2many)          : DEL relation: purchase.order
+# NOTHING TO DO: 20.0 has no order_ids column on purchase.order.group, so nothing was left behind
+purchase_requisition / purchase.order.line      / price_total_cc (float)        : DEL
+# NEEDS A VERDICT: the database cannot settle this one
+purchase_requisition / purchase.requisition     / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on purchase.requisition, so nothing was left behind
+purchase_requisition / purchase.requisition.line / _order                        : _order is now 'sequence, id' ('id')
+purchase_requisition / purchase.requisition.line / display_type (selection)      : NEW selection_keys: ['line_note', 'line_section', 'line_subsection'], hasdefault: default
+purchase_requisition / purchase.requisition.line / name (text)                   : NEW
+# NOTHING TO DO: empty on all 1 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+purchase_requisition / purchase.requisition.line / price_subtotal (float)        : NEW isfunction: function, stored
+# NEEDS A VERDICT: the database cannot settle this one
+purchase_requisition / purchase.requisition.line / product_uom_id (many2one)     : DEL relation: uom.uom
+# NOTHING TO DO: 20.0 has no product_uom_id column on purchase.requisition.line, so nothing was left behind
+purchase_requisition / purchase.requisition.line / sequence (integer)            : NEW hasdefault: default
+purchase_requisition / purchase.requisition.line / uom_id (many2one)             : NEW relation: uom.uom, hasdefault: compute
+# NEEDS A VERDICT: the database cannot settle this one
+---XML records in module 'purchase_requisition'---
+NEW ir.access: purchase_requisition.access_purchase_requisition
+NEW ir.access: purchase_requisition.access_purchase_requisition_line_purchase_user
+NEW ir.access: purchase_requisition.purchase_requisition_comp_rule
+NEW ir.access: purchase_requisition.purchase_requisition_line_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: purchase_requisition.action_purchase_requisition_list (deleted domain)
+ir.actions.act_window: purchase_requisition.action_purchase_requisition_to_so (deleted domain)
+DEL ir.model.access: purchase_requisition.access_purchase_requisition
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_alternative_warning
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_create_alternative
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_line_manager
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_line_purchase_user
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_manager
+DEL ir.model.access: purchase_requisition.access_purchase_requisition_purchase_order_group
+DEL ir.rule: purchase_requisition.purchase_requisition_comp_rule (noupdate)
+DEL ir.rule: purchase_requisition.purchase_requisition_line_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.sequence: purchase_requisition.seq_blanket_order (noupdate switched)
+ir.sequence: purchase_requisition.seq_purchase_template (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.ui.view: purchase_requisition.purchase_order_line_compare_tree
+DEL ir.ui.view: purchase_requisition.purchase_requisition_alternative_warning_form
+DEL ir.ui.view: purchase_requisition.purchase_requisition_create_alternative_form
+DEL ir.ui.view: purchase_requisition.res_config_settings_view_form_purchase_requisition
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL res.groups: purchase_requisition.group_purchase_alternatives (noupdate)
+# NOTHING TO DO: left alone. _process_end only removes a stale row whose noupdate is false, and writing an orphan cleanup is the anti-pattern upstream rejected in #5630-5632

@@ -1,0 +1,47 @@
+---Models in module 'website_hr_recruitment'---
+---Fields in module 'website_hr_recruitment'---
+website_hr_recruitment / hr.job                   / description (False)           : NEW mode: modify, hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+website_hr_recruitment / hr.job                   / publish_on (datetime)         : NEW
+# NOTHING TO DO: empty is the right value for existing records
+website_hr_recruitment / hr.job                   / published_date (date)         : not a function anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+website_hr_recruitment / hr.job                   / published_date (date)         : type is now 'datetime' ('date')
+# NOTHING TO DO: the ORM converts the column in place. Checked across the
+# upgrade: no field flagged here comes out holding fewer values than it did
+website_hr_recruitment / hr.job                   / website_rating (html)         : NEW hasdefault: default, translate
+# NOTHING TO DO: the default is a block of HTML from
+# _get_default_website_rating, NOT a falsy value, so all 9 jobs came out
+# carrying it. 19.0 had no rating section, and this is what a fresh 20.0 job
+# gets
+---XML records in module 'website_hr_recruitment'---
+NEW ir.access: website_hr_recruitment.access_hr_job_public_employee
+NEW ir.access: website_hr_recruitment.hr_department_public
+NEW ir.access: website_hr_recruitment.hr_job_public
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_url: website_hr_recruitment.action_open_website (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.filters: website_hr_recruitment.dynamic_snippet_latest_job_positions_filter
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: website_hr_recruitment.access_hr_department_public
+DEL ir.model.access: website_hr_recruitment.access_hr_job_public_employee
+DEL ir.model.access: website_hr_recruitment.access_hr_job_public_portal
+DEL ir.model.access: website_hr_recruitment.access_hr_job_public_public
+DEL ir.rule: website_hr_recruitment.hr_department_public (noupdate)
+DEL ir.rule: website_hr_recruitment.hr_job_officer (noupdate)
+DEL ir.rule: website_hr_recruitment.hr_job_portal (noupdate)
+DEL ir.rule: website_hr_recruitment.hr_job_public (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: website_hr_recruitment.default_website_rating
+NEW ir.ui.view: website_hr_recruitment.dynamic_filter_template_hr_job_card
+NEW ir.ui.view: website_hr_recruitment.job_card
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+res.groups: hr_recruitment.group_hr_recruitment_user (noupdate switched)
+website.menu: website_hr_recruitment.website_menu_jobs (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW website.snippet.filter: website_hr_recruitment.dynamic_filter_latest_job_positions
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

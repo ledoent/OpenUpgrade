@@ -1,0 +1,239 @@
+## Verdicts for analysis lines the migrated database cannot settle.
+##
+## bootstrap_work_file.py classifies most lines mechanically -- an XML record
+## from its own text, a field line from a measurement against the migrated
+## database. What is left is a DEL field whose column still holds its 19.0
+## values, or a NEW one uniform on a populated table: a QUESTION, which only
+## reading 20.0's source can answer.
+##
+## Each verdict below was reached that way and says what was FOUND, not that
+## somebody looked. A line with no entry here is written into the work file as
+## "# NEEDS A VERDICT", so `grep -c "NEEDS A VERDICT"` counts exactly the debt.
+##
+## Format: a module:model.field key on its own line, its marker lines, a blank
+## line. Lines starting ## are comments and are not part of any marker.
+
+## ---------------------------------------------------------------------------
+## 20.0 removes the concept: there is no field anywhere in 20.0 to carry into
+## ---------------------------------------------------------------------------
+
+calendar:calendar.filters.partner_checked
+# NOTHING TO DO: 20.0 removes the concept -- there is no field anywhere in 20.0
+# to carry this into, so there is nothing a script could write
+
+fleet:fleet.vehicle.model.horsepower_tax
+# NOTHING TO DO: 20.0 removes the concept -- there is no field anywhere in 20.0
+# to carry this into, so there is nothing a script could write
+
+hr_recruitment:hr.recruitment.stage.legend_blocked
+# NOTHING TO DO: 20.0 drops the per-stage kanban legends; no successor field
+
+hr_recruitment:hr.recruitment.stage.legend_done
+# NOTHING TO DO: 20.0 drops the per-stage kanban legends; no successor field
+
+hr_recruitment:hr.recruitment.stage.legend_normal
+# NOTHING TO DO: 20.0 drops the per-stage kanban legends; no successor field
+
+hr_recruitment:hr.recruitment.stage.legend_waiting
+# NOTHING TO DO: 20.0 drops the per-stage kanban legends; no successor field
+
+hr_recruitment:hr.applicant.user_id
+# NOTHING TO DO: 19.0's Recruiter has no successor. 20.0's hr.applicant carries
+# only interviewer_ids, which is a different concept, and hr.job carries no
+# recruiter either -- so there is nowhere to put it. It was a stored compute
+# with readonly=False as well, so most values were derived rather than chosen
+
+hr_work_entry:hr.version.date_generated_from
+# NOTHING TO DO: 20.0 reworked work-entry generation around
+# has_static_work_entries() and keeps no generated-from/to window
+
+hr_work_entry:hr.version.date_generated_to
+# NOTHING TO DO: 20.0 reworked work-entry generation around
+# has_static_work_entries() and keeps no generated-from/to window
+
+hr_work_entry:hr.version.work_entry_source
+# NOTHING TO DO: 20.0 derives the source through
+# _get_work_entry_source_fields() rather than storing it
+
+hr_work_entry:hr.work.entry.type.is_extra_hours
+# NOTHING TO DO: 20.0 has no such flag on the work entry type
+
+hr_work_entry:hr.work.entry.type.is_leave
+# NOTHING TO DO: 20.0 has no such flag on the work entry type. Writing to it is
+# also what hr_holidays' migration test caught once -- it is a 19.0 column
+
+mail:discuss.channel.member.fetched_message_id
+# NOTHING TO DO: 20.0 tracks read state without a fetched pointer
+
+mail:mail.activity.type.chaining_type
+# NOTHING TO DO: 20.0 has no chaining_type on the activity type
+
+maintenance:maintenance.request.archive
+# NOTHING TO DO: 20.0 drops `archive` and adds no `active` to
+# maintenance.request either, so there is no flag to carry it into. Mapping it
+# to the new 'cancelled' state would claim a cancellation nobody made
+
+maintenance:maintenance.request.instruction_type
+# NOTHING TO DO: 20.0 drops the instruction fields entirely
+
+maintenance:maintenance.request.request_date
+# NOTHING TO DO: 20.0 drops request_date; create_date already records when the
+# request was raised
+
+pos_restaurant:pos.config.iface_splitbill
+# NOTHING TO DO: 20.0 has no bill-splitting switch on pos.config
+
+project:project.collaborator.limited_access
+# NOTHING TO DO: 20.0 replaces it with access_mode, a selection whose values it
+# writes itself; there is no boolean to carry
+
+sale_timesheet:account.analytic.line.timesheet_invoice_type
+# NOTHING TO DO: 20.0 has no timesheet_invoice_type; it was a stored compute
+# classifying a line for invoicing, and 20.0 derives that where it needs it
+
+## ---------------------------------------------------------------------------
+## A module or model MOVE, which the analysis reports as a DEL
+## ---------------------------------------------------------------------------
+
+mail:mail.tracking.value.field_id
+# NOTHING TO DO: a module move. mail.tracking.value keeps its name and table and
+# simply belongs to 20.0's new mail_tracking module; all 2,044 rows are intact
+
+mail:mail.tracking.value.mail_message_id
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.currency_id
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.new_value_char
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.old_value_char
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.new_value_integer
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.old_value_integer
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.new_value_float
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.old_value_float
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.new_value_datetime
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+mail:mail.tracking.value.old_value_datetime
+# NOTHING TO DO: a module move to mail_tracking; the column is untouched
+
+website:website.social_discord
+# NOTHING TO DO: moved to res.company in social_media, where 20.0 reads it --
+# and every website's value is IDENTICAL to its company's, because 19.0's
+# website field defaulted from the company. Nothing is lost
+
+website:website.social_facebook
+# NOTHING TO DO: moved to res.company in social_media; the website value equals
+# the company's on every row, because 19.0's default came from the company
+
+website:website.social_github
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website:website.social_instagram
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website:website.social_linkedin
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website:website.social_tiktok
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website:website.social_twitter
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website:website.social_youtube
+# NOTHING TO DO: moved to res.company in social_media; value already there
+
+website_blog:blog.post.post_date
+# NOTHING TO DO: 20.0 spells it published_date, which is filled on all 7 posts
+# and EQUAL to post_date on every one of them. Nothing is lost
+
+sale_timesheet:account.analytic.line.so_line
+# NOTHING TO DO: so_line is alive and well in 20.0 -- it moved to the sale
+# module, which the analysis reports here as a DEL
+
+calendar:res.users.settings.calendar_default_privacy
+# NOTHING TO DO: moved to calendar.calendar, where it is filled on both rows.
+# One distinct value either way, so this seed cannot discriminate
+
+fleet:fleet.vehicle.model.trailer_hook
+# NOTHING TO DO: moved from the model to fleet.vehicle. Every row is false on
+# both sides, so this seed cannot tell a carried value from a defaulted one
+
+hr_work_entry_holidays:hr.leave.type.work_entry_type_id
+# NOTHING TO DO: this is the 19.0 pairing hr_holidays' own post-migration READS
+# to fold hr.leave.type into hr.work.entry.type. An input, not a loss
+
+## ---------------------------------------------------------------------------
+## Looked at and DECLINED, which is not the same as overlooked
+## ---------------------------------------------------------------------------
+
+account_edi_ubl_cii:res.partner.peppol_eas
+# NOTHING TO DO -- DECLINED, not overlooked. 16 of 73 partners came out with no
+# routing_scheme and 3 more carry a different one, but BOTH versions declare the
+# field a stored compute with readonly=False: most of the gap is 20.0
+# re-deriving rather than data being lost, and nothing in the database tells a
+# hand-entered override from a computed value. check_rename_pairs carries the
+# same decision in its ACKNOWLEDGED list
+
+account_edi_ubl_cii:res.partner.peppol_endpoint
+# NOTHING TO DO -- DECLINED with peppol_eas above: routing_endpoint is computed
+# alongside routing_scheme, so the same reasoning applies
+
+## ---------------------------------------------------------------------------
+## Handled by a script in this branch
+## ---------------------------------------------------------------------------
+
+maintenance:maintenance.request.kanban_state
+# DONE: post-migration reports it. 20.0 has no value that certainly means 19.0's
+# 'blocked' -- blocked says the work cannot proceed where 'changes_requested'
+# says a reviewer asked for something -- so the count is reported and the column
+# is left where an administrator can act on it
+
+maintenance:maintenance.request.user_id
+# DONE: post-migration carries it into user_ids. 20.0's _compute_user_ids adds
+# only the equipment's technician, so an assignee who is anyone else is lost --
+# which this seed cannot show, because every request is assigned to exactly its
+# equipment's technician
+
+maintenance:maintenance.stage.done
+# DONE: post-migration reads it. 19.0 recorded completion HERE, on the stage;
+# 20.0 records it on maintenance.request.state, and no DEL/NEW pairing on one
+# model could have reached across to see that
+
+pos_restaurant:restaurant.table.position_h
+# DONE: post-migration rebuilds floor_plan_layout from all six columns. 20.0
+# replaced them with one Json field and nothing carried the floor plan
+
+pos_restaurant:restaurant.table.position_v
+# DONE: carried into floor_plan_layout as 'top' by post-migration
+
+pos_restaurant:restaurant.table.width
+# DONE: carried into floor_plan_layout by post-migration
+
+pos_restaurant:restaurant.table.height
+# DONE: carried into floor_plan_layout by post-migration
+
+pos_restaurant:restaurant.table.shape
+# DONE: carried into floor_plan_layout by post-migration
+
+pos_restaurant:restaurant.table.color
+# DONE: carried into floor_plan_layout by post-migration, as a CSS value, which
+# is what 19.0 already stored
+
+pos_restaurant:restaurant.floor.background_color
+# NOTHING TO DO: reported, not carried. 20.0 gives the floor the same Json field
+# but references neither background_color nor background_image anywhere, in
+# Python or in the front end, so there is no key to carry it into

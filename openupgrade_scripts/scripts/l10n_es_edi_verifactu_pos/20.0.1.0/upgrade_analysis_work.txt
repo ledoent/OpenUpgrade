@@ -1,0 +1,10 @@
+---Models in module 'l10n_es_edi_verifactu_pos'---
+---Fields in module 'l10n_es_edi_verifactu_pos'---
+l10n_es_edi_verifactu_pos / pos.order                / l10n_es_edi_verifactu_refund_reason (selection): DEL selection_keys: ['R1', 'R2', 'R3', 'R4', 'R5']
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'l10n_es_edi_verifactu_pos'---
+NEW ir.access: l10n_es_edi_verifactu_pos.access_l10n_es_edi_verifactu_document
+DEL ir.model.access: l10n_es_edi_verifactu_pos.access_l10n_es_edi_verifactu_document
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: l10n_es_edi_verifactu_pos.pos_order_receipt
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

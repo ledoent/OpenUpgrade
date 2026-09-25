@@ -5,101 +5,89 @@ to help the matching process
 # Renamed modules is a mapping from old module name to new module name
 renamed_modules = {
     # odoo
-    "l10n_ec_website_sale": "l10n_ec_sale",
-    "l10n_in_edi_ewaybill": "l10n_in_ewaybill",
-    "pos_viva_wallet": "pos_viva_com",
+    # the feature outgrew website_sale and is now usable outside the shop
+    "website_sale_autocomplete": "website_address_autocomplete",
+    # purchase_requisition_sale -> purchase_alternative_sale looks right by name
+    # but is not: treating it as a rename leaves the upgrade building a foreign
+    # key on purchase_alternative_warning_id, a column nothing creates. Left out
+    # until someone works out what actually became of it.
     # odoo/enterprise
-    # OCA/mail
-    "mail_debrand": "mail_debranding",
-    # OCA/timesheet
-    "project_timesheet_time_control": "hr_timesheet_time_control",
-    # OCA/server-brand
-    "portal_odoo_debranding": "portal_debranding",
-    # OCA/website
-    "website_odoo_debranding": "website_debranding",
     # OCA/...
 }
 
 # Merged modules contain a mapping from old module names to other,
 # preexisting module names
+#
+# Derived from the 19.0 -> 20.0 upgrade analysis: each entry below is a module
+# that no longer exists in 20.0 and whose stored fields the analysis reports as
+# "previously in module <old>" under exactly one new owner. Entries attributed
+# only through res.partner.invoice_edi_format are deliberately absent -- that
+# selection is contributed by every l10n EDI module, so its ownership says
+# nothing about where a module went.
 merged_modules = {
     # odoo
-    "account_edi_ubl_cii_tax_extension": "account_edi_ubl_cii",
-    "account_peppol_selfbilling": "account_peppol",
-    "auth_totp_mail_enforce": "auth_totp_mail",
-    "hr_contract": "hr",
-    "hr_holidays_contract": "hr_holidays",
-    "hr_work_entry_contract": "hr_work_entry",
-    "l10n_es_modelo130": "l10n_es",
-    "l10n_id_efaktur": "l10n_id_efaktur_coretax",
-    "l10n_in_gstin_status": "l10n_in",
-    "l10n_in_withholding": "l10n_in",
-    "l10n_in_withholding_payment": "l10n_in",
-    "l10n_it_edi_ndd": "l10n_it_edi",
-    "l10n_it_edi_ndd_account_dn": "l10n_it_edi",
-    "l10n_it_edi_website_sale": "l10n_it_edi",
-    "l10n_it_edi_withholding": "l10n_it_edi",
-    "l10n_jo_edi_extended": "l10n_jo_edi",
-    "l10n_my_edi_extended": "l10n_my_edi",
-    "l10n_pe_website_sale": "l10n_pe",
-    "l10n_pl_taxable_supply_date": "l10n_pl",
-    "l10n_ro_efactura_synchronize": "l10n_ro_edi",
-    "payment_razorpay_oauth": "payment_razorpay",
-    "pos_epson_printer": "point_of_sale",
-    "pos_self_order_epson_printer": "pos_self_order",
-    "sale_async_emails": "sale",
-    "web_editor": "html_editor",
+    "account_add_gln": "account",
+    "account_peppol_response": "account_peppol",
+    # partner VAT validation, every check_vat_* method, is now in base; only
+    # res.company.vat_check_vies landed in account
+    "base_vat": "base",
+    "delivery_stock_picking_batch": "stock_delivery",
+    "hr_homeworking": "hr",
+    "hr_hourly_cost": "hr",
+    "hr_org_chart": "hr",
+    "l10n_dk_nemhandel": "l10n_dk",
+    "l10n_dk_nemhandel_response": "l10n_dk",
+    "l10n_pl_bank_verification": "l10n_pl",
+    "l10n_ro_cpv_code": "l10n_ro_edi",
+    "l10n_ro_edi_stock_batch": "l10n_ro_edi_stock",
+    "l10n_tr_nilvera_einvoice_extended": "l10n_tr",
+    "pos_restaurant_adyen": "pos_adyen",
+    "stock_picking_batch": "stock",
+    "website_sale_comparison": "website_sale",
+    "website_sale_wishlist": "website_sale",
+    # absorbed modules with no field of their own left to trace, matched to the
+    # module that carries their feature in 20.0 and confirmed to exist there
+    "base_iban": "base",
+    "hr_holidays_homeworking": "hr_holidays",
+    "hr_homeworking_calendar": "hr",
+    "hr_work_entry_holidays": "hr_work_entry",
+    "iot_base": "iot_drivers",
+    "l10n_cn_city": "l10n_cn",
+    "l10n_dk_oioubl": "l10n_dk",
+    "l10n_ec_stock": "l10n_ec",
+    "l10n_fr_hr_work_entry_holidays": "l10n_fr_hr_holidays",
+    "l10n_latam_base": "l10n_latam_invoice_document",
+    "l10n_sa_withholding_tax": "l10n_sa",
+    "l10n_tr_nilvera": "l10n_tr",
+    "l10n_tr_nilvera_base_vat": "l10n_tr",
+    "l10n_tr_nilvera_edispatch": "l10n_tr",
+    "l10n_tr_nilvera_einvoice": "l10n_tr",
+    "l10n_uy_pos": "l10n_uy",
+    "mrp_subcontracting_repair": "mrp_subcontracting",
+    "pos_restaurant_stripe": "pos_stripe",
+    "pos_self_order_adyen": "pos_adyen",
+    "pos_self_order_stripe": "pos_stripe",
+    "website_sale_collect_wishlist": "website_sale",
+    "website_sale_comparison_wishlist": "website_sale",
+    "website_sale_stock_wishlist": "website_sale_stock",
+    # delivery_mondialrelay, website_sale_mondialrelay and transifex are simply
+    # gone in 20.0 with nothing carrying them, so there is nothing to merge into
     # odoo/enterprise
-    # OCA/account-invoicing
-    "account_tax_legal_notes_translate": "account",
-    # OCA/account-reconcile
-    "account_reconcile_model_oca": "account_reconcile_oca",
-    # OCA/bank-payment
-    "account_payment_partner": "account_payment_mode",
-    # OCA/hr
-    "hr_employee_document_from_applicant": "hr_recruitment",
-    # OCA/hr-holidays
-    "hr_holidays_calendar_planning": "hr_employee_calendar_planning",
-    # OCA/partner-contact
-    "partner_contact_lang": "base",
-    # OCA/project
-    "project_task_add_very_high": "project",
-    # OCA/purchase-workflow
-    "purchase_order_qty_change_no_recompute": "purchase",
-    # OCA/sale-workflow
-    "sale_order_warn_message": "sale",
-    # OCA/stock-logistics-workflow
-    "stock_picking_show_return": "stock",
-    "stock_picking_mass_action": "stock",
-    # OCA/vertical-association
-    "membership_extension": "membership",
-    # OCA/website
-    "website_login_page_editable": "web",
+    # OCA/...
 }
 
-# only used here for upgrade_analysis
+# Renamed models is a mapping from old model name to new model name
 renamed_models = {
     # odoo
-    "account_peppol.service.wizard": "peppol.config.wizard",
-    "hr.attendance.overtime": "hr.attendance.overtime.line",
-    "hr.candidate.skill": "hr.applicant.skill",
-    "hr.contract": "hr.version",
-    "mail.wizard.invite": "mail.followers.edit",
-    "mrp.batch.produce": "mrp.production.serials",
-    "procurement.group": "stock.reference",
-    "product.packaging": "product.uom",
-    "stock.package_level": "stock.package.history",
-    "stock.quant.package": "stock.package",
-    "stock.valuation.layer": "product.value",
-    "web_editor.assets": "website.assets",
-    "web_editor.converter.test": "html_editor.converter.test",
-    "web_editor.converter.test.sub": "html_editor.converter.test.sub",
+    # the valuation report moved from stock_account into account
+    "stock_account.stock.valuation.report": "account.stock.valuation.report",
+    "hr.contract.type": "hr.employee.type",
+    "l10n_tr_nilvera_einvoice_extended.tax.office": "l10n_tr.tax.office",
     # OCA/...
 }
 
 # only used here for upgrade_analysis
 merged_models = {
     # odoo
-    "hr.candidate": "hr.applicant",
     # OCA/...
 }

@@ -1,0 +1,8 @@
+---Models in module 'account_fleet'---
+---Fields in module 'account_fleet'---
+account_fleet / account.account          / is_vehicle_account (boolean)  : NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'account_fleet'---
+NEW ir.ui.view: account_fleet.report_invoice_document
+NEW ir.ui.view: account_fleet.view_account_form_fleet_inherit
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

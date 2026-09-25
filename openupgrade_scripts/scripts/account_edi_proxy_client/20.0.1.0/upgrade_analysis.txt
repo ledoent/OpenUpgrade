@@ -1,0 +1,11 @@
+---Models in module 'account_edi_proxy_client'---
+---Fields in module 'account_edi_proxy_client'---
+---XML records in module 'account_edi_proxy_client'---
+NEW ir.access: account_edi_proxy_client.access_account_edi_proxy_manager
+NEW ir.access: account_edi_proxy_client.access_account_edi_proxy_user
+NEW ir.access: account_edi_proxy_client.account_edi_proxy_client_user_comp_rule
+DEL ir.model.access: account_edi_proxy_client.access_account_edi_proxy_manager
+DEL ir.model.access: account_edi_proxy_client.access_account_edi_proxy_user
+ir.model.constraint: account_edi_proxy_client.constraint_account_edi_proxy_client_user_unique_active_company_proxy (changed definition: is now 'False' ('UNIQUE INDEX (company_id, proxy_type, edi_mode) WHERE (active IS TRUE)'))
+ir.model.constraint: account_edi_proxy_client.constraint_account_edi_proxy_client_user_unique_id_client (changed definition: is now 'False' ('unique(id_client)'))
+DEL ir.rule: account_edi_proxy_client.account_edi_proxy_client_user_comp_rule

@@ -1,0 +1,7 @@
+---Models in module 'mysubscription'---
+new model mysubscription.mysubscription [abstract]
+# NOTHING TO DO: an abstract model has no table
+---Fields in module 'mysubscription'---
+---XML records in module 'mysubscription'---
+NEW ir.actions.client: mysubscription.action_mysubscription_dashboard
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

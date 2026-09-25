@@ -1,0 +1,10 @@
+---Models in module 'project_timesheet_holidays'---
+---Fields in module 'project_timesheet_holidays'---
+---XML records in module 'project_timesheet_holidays'---
+NEW ir.access: project_timesheet_holidays.access_account_analytic_account_leaves_manager
+DEL ir.model.access: project_timesheet_holidays.access_account_analytic_account_leaves_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: project_timesheet_holidays.constraint_account_analytic_line_is_timeoff_task_idx
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: project_timesheet_holidays.constraint_account_analytic_line_timeoff_timesheet_idx (changed definition: is now 'False' ('INDEX (task_id) WHERE (global_leave_id IS NOT NULL OR holiday_id IS NOT NULL) AND project_id IS NOT NULL'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
