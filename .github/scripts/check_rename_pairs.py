@@ -104,6 +104,23 @@ ACKNOWLEDGED = {
     # is 20.0's own _compute_routing_scheme_endpoint deriving differently, and
     # nothing in the database distinguishes a hand-entered override -- the only
     # thing that would be real data -- from a value the compute produced.
+    # The same pair is proposed once per module that declares either side, and
+    # the type token differs between them ('selection' where the analysis knows
+    # the type, 'False' where it does not). Acknowledging one variant leaves the
+    # others live -- found on a prod-copy run, where only the account_peppol one
+    # fired.
+    "account_peppol:res.partner.peppol_eas -> routing_scheme (False)": (
+        "same decision as the account_edi_ubl_cii variant below: both sides are "
+        "stored computes, so the gap is 20.0 re-deriving rather than data lost"
+    ),
+    # --- proposed but simply not related ------------------------------------
+    "resource:resource.calendar.tz -> calendar_type (selection)": (
+        "tz is a timezone (America/New_York, UTC); calendar_type is fixed / "
+        "variable / undefined. They pair only because both are selections on "
+        "one model and calendar_type is legitimately uniform -- every calendar "
+        "on the database this fired against is schedule_type='fully_fixed' and "
+        "not two-week, which IS 'fixed'"
+    ),
     "account_edi_ubl_cii:res.partner.peppol_eas -> routing_scheme (selection)": (
         "both sides are stored computes; the difference is 20.0 re-deriving, "
         "and an override cannot be told from a computed value"

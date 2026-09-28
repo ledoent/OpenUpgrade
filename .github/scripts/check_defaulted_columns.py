@@ -75,6 +75,22 @@ RULE_B_TYPES = {"many2one"}
 # Keep each reason specific enough that a reader can check it. A reason that
 # would fit any field is the boilerplate this gate exists to prevent.
 ACKNOWLEDGED = {
+    # --- seen on the sanitised PROD COPY, not the OCA seed --------------------
+    # The seed never exercised these, so the reasons name the database they were
+    # measured on: a US-only company with 19 bank accounts and 2 employees.
+    "base:res.partner.bank.country_id": (
+        "all 19 bank accounts are US; one country is the data, not a default"
+    ),
+    "base:res.partner.bank.clearing_label_id": (
+        "follows country_id -- one clearing label because every account is US"
+    ),
+    "hr:hr.employee.first_contract_date": (
+        "a STORED COMPUTE, and 20.0 computed it correctly: both employees were "
+        "created 2026-03-05 and that is their first contract date. Uniform "
+        "because there are two of them, not because anything defaulted -- note "
+        "the value is not the upgrade's own timestamp, which is what rule A "
+        "usually catches"
+    ),
     # --- the product_uom_id -> uom_id family -------------------------------
     # The rename DID happen: the 19.0 column is gone from every one of these
     # tables. What is uniform is the seed, not the migration -- the catalogue

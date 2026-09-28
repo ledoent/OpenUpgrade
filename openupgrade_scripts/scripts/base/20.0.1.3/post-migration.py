@@ -145,6 +145,30 @@ def _compose(platform, browser):
     return " ".join(parts)
 
 
+def _translate_boolean_to_selection(env):
+    """`ir.model.fields.translate` was a boolean before it was a selection.
+
+    20.0 declares standard / html_translate / xml_translate. A row still holding
+    the string 'true' predates that -- it is the boolean form, which meant
+    exactly "translate this field as a whole", i.e. `standard`. Nothing raises,
+    because a selection is enforced in Python rather than by the database; the
+    row simply reads blank in the interface and matches neither branch of a
+    domain over the field.
+
+    Found on a real database rather than the test seed: one row, `date.range`'s
+    type_name, left behind by a module whose own definitions would have been
+    rewritten on reinstall anyway -- but a stale row is still a row the ORM will
+    read.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE ir_model_fields SET translate = 'standard'
+        WHERE translate = 'true'
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "base", "20.0.1.3/noupdate_changes.xml")
@@ -155,3 +179,4 @@ def migrate(env, version):
         ["vat_label"],
     )
     _synthesise_device_user_agent(env)
+    _translate_boolean_to_selection(env)
