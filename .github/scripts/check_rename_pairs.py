@@ -112,6 +112,16 @@ ACKNOWLEDGED = {
         "same pair, same reason: routing_endpoint is computed alongside routing_scheme"
     ),
     # --- the two sides are simply different fields ---
+    # Measured on the prod copy 2026-09-29: tz holds America/New_York, US/Eastern
+    # and UTC; calendar_type holds 'fixed' on every row. 20.0 added calendar_type
+    # as a fixed/flexible selection -- unrelated to the timezone, and 'fixed' is
+    # the correct value for every calendar that predates the flexible concept.
+    "resource:resource.calendar.tz -> calendar_type (selection)": (
+        "19.0's tz is the calendar's timezone; 20.0's calendar_type is the new "
+        "fixed/flexible mode. Different fields, and every pre-existing calendar "
+        "is genuinely 'fixed'"
+    ),
+
     "stock:stock.picking.type.show_operations -> auto_show_allocation_report "
     "(boolean)": (
         "19.0's show_operations controls the detailed operations view; 20.0's "
@@ -420,6 +430,19 @@ def classify(cur, pair, model_renames):
     label = f"{module}:{model}.{old} -> {new} ({ftype})"
     if label in ACKNOWLEDGED:
         return "cleared", label, f"acknowledged: {ACKNOWLEDGED[label]}"
+    # Fall back to matching on the FIELD PAIR alone. The same pair is reported
+    # under different module attributions and different type tokens depending on
+    # which module's analysis file it was read from -- res.partner.peppol_eas ->
+    # routing_scheme arrives as `account_edi_ubl_cii:… (selection)` from one and
+    # `account_peppol:… (False)` from another. Keying on the full label meant an
+    # entry a maintainer had already adjudicated silently stopped matching and
+    # the gate failed the prod-copy run on a settled question. Module and type
+    # stay in the label because they are useful to read; they are just not
+    # identity.
+    pair_key = f"{model}.{old} -> {new}"
+    for known, why in ACKNOWLEDGED.items():
+        if known.split(":", 1)[-1].rsplit(" (", 1)[0] == pair_key:
+            return "cleared", label, f"acknowledged (pair match): {why}"
     if (
         old_rel
         and new_rel
