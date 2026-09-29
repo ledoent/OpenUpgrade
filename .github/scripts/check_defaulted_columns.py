@@ -166,6 +166,32 @@ ACKNOWLEDGED = {
 }
 
 
+
+def _not_migration_dated(cur, value):
+    """Clear a uniform date that predates the migration itself.
+
+    The migration's date is taken from the newest `write_date` on ir_module_module
+    -- every module is written during `-u all`, so that is when the upgrade ran.
+    Returns a reason string when the value is clearly older, else None.
+    """
+    try:
+        cur.execute("SELECT max(write_date)::date FROM ir_module_module")
+        row = cur.fetchone()
+        migrated_on = row[0] if row else None
+        if migrated_on is None:
+            return None
+        held = str(value)[:10]
+        if held and held < str(migrated_on) :
+            return (
+                f"uniform but carried, not stamped: {held} predates the "
+                f"migration ({migrated_on}); a column default is evaluated when "
+                f"the column is created, so a stamp lands on the migration date"
+            )
+    except Exception:
+        return None
+    return None
+
+
 def candidates():
     """Every NEW date/datetime or many2one line the analysis reports."""
     found = []
@@ -260,6 +286,18 @@ def main():
                 continue  # empty, or more than one value: the rows differ
             label = f"{module}:{model}.{field} ({ftype})"
             why = ACKNOWLEDGED.get(f"{module}:{model}.{field}")
+            # A uniform DATE that is not the migration's own date is evidence
+            # AGAINST stamping, not for it. A column default is evaluated when
+            # the column is created, so a stamped date lands on the day the
+            # upgrade ran; a date months earlier was carried from somewhere.
+            # Without this, any small table whose rows genuinely share a date
+            # reads as a defect -- hr.employee.first_contract_date on the prod
+            # copy held 2026-03-05 (both employees' create_date) while the
+            # migration ran 2026-09-28.
+            if why is None and ftype in RULE_A_TYPES:
+                carried = _not_migration_dated(cur, value)
+                if carried:
+                    why = carried
             if why:
                 cleared.append((label, why, value))
                 continue
