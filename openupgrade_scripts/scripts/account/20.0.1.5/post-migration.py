@@ -81,6 +81,77 @@ def _carry_a_deliberate_not_reviewed_into_the_review_queue(env):
         )
 
 
+def _modernise_reconcile_model_rule_type(env):
+    """20.0 re-introduces rule_type with a new vocabulary and makes it the master.
+
+    The field has an unusual history, and reading it as a 19->20 rename gets it
+    wrong. 18.0 had `rule_type` as writeoff_button / writeoff_suggestion /
+    invoice_matching. **19.0 core removed it entirely**, replacing it with
+    `trigger` (manual / auto_reconcile) -- and because a removed field's column
+    is left in place, the 18.0 values sat dormant in the table for the whole 19.0
+    cycle. 20.0 then brings `rule_type` BACK, as matching_rule / reco_model.
+
+    So the values being mapped here are 18.0's, not 19.0's, and 20.0 inverts
+    which field is authoritative::
+
+        @api.depends('rule_type')
+        def _compute_trigger(self):
+            model.trigger = ('auto_reconcile'
+                             if model.rule_type == 'matching_rule' else 'manual')
+
+    `trigger` is now a stored compute over `rule_type`, with a constraint that
+    "Matching rules must be automatic". Left alone, every row takes 20.0's
+    default of reco_model and every trigger recomputes to `manual` -- automatic
+    bank reconciliation silently stops for rules that had been doing it.
+
+    The mapping follows 18.0's own meaning rather than the current trigger:
+
+        invoice_matching    -> matching_rule   (the rule that matches invoices)
+        writeoff_button     -> reco_model      (a manual write-off preset)
+        writeoff_suggestion -> reco_model      (a suggested write-off preset)
+
+    `trigger` is then written to agree with what `_compute_trigger` would
+    produce. That consistency is the point: leaving a reco_model row on
+    auto_reconcile violates no constraint, so it would survive the upgrade and
+    then flip to manual the first time anyone edited the model -- a silent change
+    weeks later instead of a visible one now.
+    """
+    if not openupgrade.column_exists(env.cr, "account_reconcile_model", "rule_type"):
+        return
+    mapping = {
+        "invoice_matching": ("matching_rule", "auto_reconcile"),
+        "writeoff_button": ("reco_model", "manual"),
+        "writeoff_suggestion": ("reco_model", "manual"),
+    }
+    for legacy, (rule_type, trigger) in mapping.items():
+        openupgrade.logged_query(
+            env.cr,
+            """
+            UPDATE account_reconcile_model
+            SET rule_type = %s, trigger = %s
+            WHERE rule_type = %s
+            """,
+            (rule_type, trigger, legacy),
+        )
+    env.cr.execute(
+        """
+        SELECT count(*) FROM account_reconcile_model
+        WHERE rule_type NOT IN ('matching_rule', 'reco_model')
+        """
+    )
+    left = env.cr.fetchone()[0]
+    if left:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "%s account.reconcile.model row(s) hold a rule_type neither 18.0 nor "
+            "20.0 declares, so they were left as they are rather than guessed at",
+            left,
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "account", "20.0.1.5/noupdate_changes.xml")
@@ -98,3 +169,4 @@ def migrate(env, version):
     )
     _settle_in_process_payments(env)
     _carry_a_deliberate_not_reviewed_into_the_review_queue(env)
+    _modernise_reconcile_model_rule_type(env)

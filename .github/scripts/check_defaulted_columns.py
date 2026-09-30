@@ -75,21 +75,24 @@ RULE_B_TYPES = {"many2one"}
 # Keep each reason specific enough that a reader can check it. A reason that
 # would fit any field is the boilerplate this gate exists to prevent.
 ACKNOWLEDGED = {
-    # --- one value really is right for every row, measured on the prod copy
-    #     2026-09-29 -------------------------------------------------------
+    # --- one value really is right for every row, measured on the sanitised
+    #     PROD COPY 2026-09-29 (a US-only company, 19 bank accounts, 2
+    #     employees). The OCA seed never exercised any of these. ------------
     "base:res.partner.bank.country_id": (
         "233 is US and every partner behind all 19 bank accounts is US -- the "
         "column is uniform because the data is, not because it was stamped"
     ),
     "base:res.partner.bank.clearing_label_id": (
-        "same all-US bank set: one national clearing system across 19 accounts"
+        "follows country_id -- one national clearing system across 19 all-US "
+        "accounts"
     ),
     "hr:hr.employee.first_contract_date": (
-        "not a stamp -- the value equals each employee's create_date, and the "
-        "migration ran months later (2026-09-28 vs a 2026-03-05 value). "
-        "hr_contract is not installed, so create_date was the only answer the "
-        "data held. The uniform-date heuristic misreads a 2-row table whose "
-        "employees were created the same day"
+        "a STORED COMPUTE, and 20.0 computed it correctly: the value equals "
+        "each employee's create_date (2026-03-05) while the migration ran "
+        "months later (2026-09-28), so it is not the upgrade's own timestamp "
+        "-- which is what rule A usually catches. hr_contract is not "
+        "installed, so create_date was the only answer the data held, and the "
+        "column is uniform because both employees were created the same day"
     ),
     # --- the product_uom_id -> uom_id family -------------------------------
     # The rename DID happen: the 19.0 column is gone from every one of these
