@@ -1,7 +1,12 @@
 # Copyright 2026 Don Kendall
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import csv
+import os
+
 from openupgradelib import openupgrade
+
+from odoo.modules.module import get_module_path
 
 # pylint: disable=odoo-addons-relative-import
 from odoo.addons.openupgrade_scripts.apriori import merged_modules, renamed_modules
@@ -158,6 +163,68 @@ def _convert_rules(env):
     )
 
 
+def _release_noupdate_on_csv_access(env):
+    """Let 20.0's security data reassert itself over the converted rows.
+
+    19.0 declared most of its ir.rule records inside <data noupdate="1">, so
+    their ir_model_data rows carry noupdate. 20.0 ships the same xml_ids as
+    rows of security/ir.access.csv, and a CSV loads updatable. _convert_rules
+    re-points the existing ir_model_data row rather than letting the new CSV
+    create one, so the flag is inherited and the loader then declines to write
+    the 20.0 definition over it: every such rule keeps enforcing its 19.0
+    domain. Measured on a production copy: 271 rows flagged noupdate that 20.0
+    ships updatable, 22 of them with a domain that no longer matches core.
+
+    That is not only drift. project.project_task_rule_portal is the clear case:
+    19.0 filtered collaborators on project.collaborator.limited_access, a field
+    20.0 replaced with access_mode, and 20.0's CSV rewrote the domain to suit.
+    Keeping the 19.0 text leaves a rule naming a field that does not exist, so
+    reading project.task as a portal user raises
+    "Invalid field project.collaborator.limited_access in condition" -- project
+    sharing is simply broken for portal users, and nothing in the upgrade says
+    so. The other twenty-one are silent: they enforce 19.0's access logic on a
+    20.0 database, which for hr.hr_employee_comp_rule,
+    calendar.calendar_event_rule_private and sale.sale_order_line_rule_portal
+    decides who may read what.
+
+    So the flag is cleared only where the module that owns the xml_id ships it
+    in an ir.access.csv -- i.e. where 20.0 has itself declared the record
+    updatable. A rule 20.0 still declares noupdate, or one a user created, is
+    left alone. Clearing it here in base, before any other module's data is
+    loaded, is what makes the subsequent load pick the records up.
+    """
+    env.cr.execute(
+        """
+        SELECT DISTINCT module FROM ir_model_data
+        WHERE model = 'ir.access' AND noupdate IS TRUE
+        """
+    )
+    xmlids = []
+    for (module,) in env.cr.fetchall():
+        path = get_module_path(module, display_warning=False)
+        if not path:
+            continue
+        csv_path = os.path.join(path, "security", "ir.access.csv")
+        if not os.path.isfile(csv_path):
+            continue
+        with open(csv_path, encoding="utf-8") as fobj:
+            for row in csv.DictReader(fobj):
+                # An id with a dot already names another module's record.
+                if row.get("id"):
+                    xmlids.append(f"{module}.{row['id']}")
+    if not xmlids:
+        return
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE ir_model_data SET noupdate = false
+        WHERE model = 'ir.access' AND noupdate IS TRUE
+          AND module || '.' || name IN %s
+        """,
+        (tuple(xmlids),),
+    )
+
+
 def _convert_field_index_to_selection(env):
     """ir.model.fields.index was a boolean in 19.0 and is a selection in 20.0.
 
@@ -213,3 +280,6 @@ def migrate(env, version):
     openupgrade.rename_xmlids(env.cr, _renamed_xmlids)
     _convert_model_access(env)
     _convert_rules(env)
+    # Must follow _convert_rules: it operates on the xml_ids that function
+    # re-points, and must run before any other module loads its security data.
+    _release_noupdate_on_csv_access(env)
