@@ -152,6 +152,55 @@ def _modernise_reconcile_model_rule_type(env):
         )
 
 
+def _drop_obsolete_journal_group_company_rule(env):
+    """Delete a 19.0 record rule whose field 20.0 removed.
+
+    19.0 shipped account.journal_group_comp_rule, a GLOBAL rule on
+    account.journal.group with
+        ['|', ('company_id', '=', False), ('company_id', 'parent_of', company_ids)]
+    20.0 drops company_id from account.journal.group entirely -- the model has no
+    company field at all now -- and deletes the rule along with it. Its
+    security/ir.access.csv keeps only three plain group rows for that model.
+
+    The rule survives the upgrade anyway, and that is not cosmetic. Every
+    non-superuser search on account.journal.group then dies in domain
+    optimisation with KeyError: 'company_id'. Core itself searches that model
+    while building a view: account.move.line._get_view does
+    `self.env['account.journal.group'].search([])` to add the Ledger filters to
+    the SEARCH view. So loading any account.move.line search view raises for an
+    ordinary user -- Journal Items, and anything that drills into move lines.
+    Measured on a production copy: mis_builder's report preview 500s, and the
+    only reason it looks like a mis_builder bug is that mis_builder is what
+    happened to open the view first.
+
+    WHY NOTHING ELSE CLEANS THIS UP, which is the part worth remembering: the
+    ir.model.access + ir.rule -> ir.access conversion writes its ir_model_data
+    rows with noupdate=true, and _process_end's obsolete-record sweep selects
+    `COALESCE(noupdate, false) != true` (odoo/addons/base/models/ir_model.py).
+    It skips noupdate records by design. So an obsolete SECURITY record can
+    never be removed by the normal mechanism -- it has to be deleted here.
+
+    Written against the field rather than the id: if a database somehow still
+    has company_id on that model, its rule is still meaningful and is left
+    alone.
+    """
+    if "company_id" in env["account.journal.group"]._fields:
+        return
+    rule = env.ref("account.journal_group_comp_rule", raise_if_not_found=False)
+    if not rule:
+        return
+    openupgrade.logged_query(
+        env.cr,
+        "DELETE FROM ir_access WHERE id = %s",
+        (rule.id,),
+    )
+    openupgrade.logged_query(
+        env.cr,
+        "DELETE FROM ir_model_data WHERE model = 'ir.access' AND res_id = %s",
+        (rule.id,),
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "account", "20.0.1.5/noupdate_changes.xml")
@@ -170,3 +219,4 @@ def migrate(env, version):
     _settle_in_process_payments(env)
     _carry_a_deliberate_not_reviewed_into_the_review_queue(env)
     _modernise_reconcile_model_rule_type(env)
+    _drop_obsolete_journal_group_company_rule(env)
