@@ -11,30 +11,28 @@ from openupgradelib import openupgrade
 # writes the fields the record carries, and `action` is not among them. So the
 # upgrade deletes the server action and leaves ir_ui_menu.action naming it.
 #
-# That is not cosmetic. Anything that resolves a menu's action raises
-# "Record does not exist or has been deleted" -- including website.layout, so
-# EVERY frontend page 500s, /web/login included, and nobody can sign in.
-# Measured on a 19.0 production copy: one stale row, and the whole website down.
+# That is not cosmetic. ir.ui.menu.load_web_menus() raises MissingError on the
+# dangling row, and two things call it: the backend home controller
+# (web/controllers/home.py:102), so /odoo is dead for every internal user; and
+# website.layout's frontend-to-backend app switcher, via load_menus_root with
+# force_action=True (website/views/website_templates.xml:399), so frontend pages
+# 500 as well -- though only for users in base.group_user, since the groups
+# attribute on that div removes the node for anyone else. Reading menu.action
+# through the ORM raises nothing: Reference browses the id without checking it.
 #
 # WHY THIS KEYS ON IDENTITY AND NOT ON EXISTENCE
 #
-# The first version of this script asked "does the action this menu names still
-# exist?" and returned early if it did. That can never fire. Odoo deletes
-# obsolete ir_model_data records in a single sweep AFTER every migration stage
-# has run -- post-migration AND end-migration -- so the target is always still
-# present while any script can see it, and always gone by the time anything
-# renders a menu. Measured on the 2026-10-01 prod-copy run:
+# The first version asked "does the action this menu names still exist?" and
+# returned early if it did. That can never fire: Odoo deletes obsolete
+# ir_model_data in one sweep AFTER every migration stage, so the target is
+# always present while a script can see it and always gone by the time anything
+# builds a menu. Measured on the 2026-10-01 prod-copy run:
 #
 #     15:18:13  crm post-migration runs, sees action 501, returns
-#     15:18:58  every end-migration script runs (still too early)
 #     15:19:41  Deleting 501@ir.actions.server (crm.action_your_pipeline)
-#     15:20:03  Modules loaded
 #
-# So the condition is not "is it dangling yet" but "is it the record 20.0
-# removes". We resolve crm.action_your_pipeline by xmlid -- which is still
-# resolvable at this point, for exactly the same reason -- and clear the menu
-# only when that is what it names. An installation that points its CRM root
-# menu at something else is left alone, which was the original intent.
+# So the condition is "is it the record 20.0 removes", resolved by xmlid. A
+# database pointing its CRM root menu at something else is left alone.
 ACTION_TABLES = {
     "ir.actions.act_window": "ir_act_window",
     "ir.actions.server": "ir_act_server",

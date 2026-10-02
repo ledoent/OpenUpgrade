@@ -49,28 +49,32 @@ def _carry_the_timezone_the_relation_stopped_deriving(env):
     """Fill hr_version.tz from the resource, which is where 19.0 kept it.
 
     The relation inverted. 19.0 declared `tz = fields.Selection(
-    related='employee_id.tz')` on hr.version (hr_version.py:153) and nothing was
-    stored there: hr.employee.tz is resource.mixin's related to
-    resource_id.tz, so the value lived in resource_resource.tz. 20.0 makes
-    hr_version.tz stored and REQUIRED with `default=lambda self:
-    self.env.context.get('tz') or self.env.user.tz or 'UTC'`
-    (hr_version.py:162), and turns hr.employee.tz into
-    related="version_id.tz" (hr_employee.py:309) -- the employee now reads from
-    the version rather than the other way round.
+    related='employee_id.tz')` on hr.version with no store, so there was no
+    column: hr.employee.tz is resource.mixin's related to resource_id.tz and the
+    value lived in resource_resource.tz. 20.0 makes hr_version.tz a stored,
+    REQUIRED column and turns hr.employee.tz into related="version_id.tz"
+    (hr_employee.py:309) -- the employee now reads from the version.
 
-    So the upgrade had to materialise the value and instead took the default.
-    Measured on the sanitised prod copy 2026-10-02: both versions came out
-    'UTC' while the resources behind their employees hold 'America/New_York'.
+    Nothing materialised the value, so the new column took its default::
 
-    Nothing re-derives it afterwards -- _get_tz() returns `self.tz or ...`
-    first (hr_version.py:715-717) -- so the wrong zone reaches
-    _get_resources_per_tz and every working-hours and attendance calculation
-    downstream, a four or five hour shift that no error reports.
+        default=lambda self: (self.env.context.get('tz')
+                              or self.env.user.tz or 'UTC')   # hr_version.py:154
 
-    Only rows still sitting on the bare 'UTC' default are touched, and only
-    where the resource actually names a zone, so a deliberate UTC that came
-    from a UTC resource is written back identically and a version whose
-    resource says nothing is left alone and reported.
+    which is the timezone of **whoever ran the upgrade**, written to every
+    employee. Measured: the sanitised prod copy came out 'UTC' on both versions
+    (admin has no tz) against resources holding 'America/New_York'; the 19.0 seed
+    came out 'Europe/Brussels' on all 31. Same defect, and the difference is only
+    which account started the migration.
+
+    Nothing re-derives it afterwards -- _get_tz() returns `self.tz` first
+    (hr_version.py:715-717) -- so the wrong zone reaches every working-hours and
+    attendance calculation downstream, with no error.
+
+    The write is unconditional wherever the resource names a zone, because no
+    19.0 value exists to protect: a non-stored related field left no column, so
+    every tz now in the table was invented seconds ago by that default. An
+    earlier version of this guarded on `tz = 'UTC'` and silently did nothing on
+    any database whose admin had a timezone set.
     """
     openupgrade.logged_query(
         env.cr,
@@ -81,8 +85,7 @@ def _carry_the_timezone_the_relation_stopped_deriving(env):
         WHERE e.id = v.employee_id
           AND r.id = e.resource_id
           AND r.tz IS NOT NULL AND r.tz != ''
-          AND v.tz = 'UTC'
-          AND r.tz != 'UTC'
+          AND v.tz != r.tz
         """,
     )
     carried = env.cr.rowcount
@@ -93,8 +96,9 @@ def _carry_the_timezone_the_relation_stopped_deriving(env):
             False,
             False,
             "hr.version: carried the timezone of %s version(s) from their "
-            "resource, which 19.0 read through a related field that 20.0 "
-            "stores instead; they would otherwise have kept the 'UTC' default",
+            "resource, which 19.0 read through a related field that 20.0 stores "
+            "instead; they would otherwise have kept the timezone of the user "
+            "who ran the upgrade",
             carried,
         )
     env.cr.execute(
@@ -103,7 +107,7 @@ def _carry_the_timezone_the_relation_stopped_deriving(env):
         FROM hr_version v
         JOIN hr_employee e ON e.id = v.employee_id
         LEFT JOIN resource_resource r ON r.id = e.resource_id
-        WHERE v.tz = 'UTC' AND (r.tz IS NULL OR r.tz = '')
+        WHERE r.tz IS NULL OR r.tz = ''
         """
     )
     unsourced = env.cr.fetchone()[0]
@@ -113,9 +117,9 @@ def _carry_the_timezone_the_relation_stopped_deriving(env):
             "hr",
             False,
             False,
-            "hr.version: %s version(s) are on the 'UTC' default and their "
-            "resource names no timezone, so there was nothing to carry; check "
-            "them if the company does not actually run on UTC",
+            "hr.version: %s version(s) have a resource that names no timezone, "
+            "so there was nothing to carry and they keep the timezone of the "
+            "user who ran the upgrade; check them",
             unsourced,
         )
 
