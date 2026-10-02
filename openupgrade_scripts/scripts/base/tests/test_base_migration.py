@@ -237,3 +237,17 @@ class TestBaseMigration(TransactionCase):
             self.env["res.partner.bank"].search_count([("account_number", "=", False)]),
             0,
         )
+
+    def test_the_company_kept_the_table_style_of_its_19_layout(self):
+        """19.0 baked the table style into the layout; 20.0 made it a field.
+
+        The style has to be read in PRE-migration, and the fixture's choice of
+        'bold' is what proves it: 20.0 does not ship external_layout_bold, so
+        web's data load deletes that view and the company's
+        external_report_layout_id is NULL by the time post-migration runs. A
+        script reading the layout at that point would find nothing and leave
+        every such company on the 'light' default, restyling its documents.
+        """
+        company = self.env.ref("__ou19__.ou19_layout_company", raise_if_not_found=False)
+        self.assertTrue(company, "the fixture's company is gone")
+        self.assertEqual(company.report_tables_id, "bold")

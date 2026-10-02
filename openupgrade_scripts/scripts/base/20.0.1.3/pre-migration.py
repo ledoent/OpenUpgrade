@@ -277,6 +277,85 @@ def _convert_field_index_to_selection(env):
     )
 
 
+# 19.0 baked one table style into each report layout template; 20.0 lifts it out
+# into res.company.report_tables_id. The mapping is read off the 19.0 classes
+# (web/views/report_templates.xml) and inverted through 20.0's own derivation in
+# external_layout_body (:447-453), which is the only consumer of the new field:
+#
+#     19.0 template              19.0 class              20.0 key
+#     external_layout_striped    o_table_striped         striped
+#     external_layout_boxed      o_table_boxed           boxed
+#     external_layout_bold       o_table_bold            bold
+#     external_layout_standard   o_table_standard        light
+#     external_layout_folder     o_table_striped         striped
+#     external_layout_wave       o_table_striped         striped
+#     external_layout_bubble     o_table_boxed-rounded   bubble
+_LAYOUT_TABLE_STYLE = {
+    "web.external_layout_striped": "striped",
+    "web.external_layout_boxed": "boxed",
+    "web.external_layout_bold": "bold",
+    "web.external_layout_standard": "light",
+    "web.external_layout_folder": "striped",
+    "web.external_layout_wave": "striped",
+    "web.external_layout_bubble": "bubble",
+}
+
+_legacy_report_tables = openupgrade.get_legacy_name("report_tables_id")
+
+
+def _remember_the_table_style_the_layout_implied(env):
+    """Record each company's table style while its layout is still readable.
+
+    This has to happen in pre-migration, and not because the new column is
+    missing -- post-migration cannot answer the question at all. 20.0 ships only
+    standard, wave, bubble, folder, center and dual; it DELETES
+    external_layout_striped, external_layout_boxed and external_layout_bold,
+    so web's data load takes those view records with it and every company that
+    printed with one is left with external_report_layout_id NULL. By
+    post-migration there is nothing to map.
+
+    The style is resolved to the 20.0 key here and kept in a legacy column,
+    rather than copying the view id, for the same reason: the id would no longer
+    resolve to an xmlid afterwards.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        f"ALTER TABLE res_company ADD COLUMN IF NOT EXISTS {_legacy_report_tables} varchar",
+    )
+    for xmlid, style in _LAYOUT_TABLE_STYLE.items():
+        module, _, name = xmlid.partition(".")
+        openupgrade.logged_query(
+            env.cr,
+            f"""
+            UPDATE res_company c
+            SET {_legacy_report_tables} = %s
+            FROM ir_model_data d
+            WHERE d.module = %s AND d.name = %s AND d.model = 'ir.ui.view'
+              AND d.res_id = c.external_report_layout_id
+            """,
+            (style, module, name),
+        )
+    env.cr.execute(
+        f"""
+        SELECT count(*) FROM res_company
+        WHERE external_report_layout_id IS NOT NULL
+          AND {_legacy_report_tables} IS NULL
+        """
+    )
+    unmapped = env.cr.fetchone()[0]
+    if unmapped:
+        openupgrade.message(
+            env.cr,
+            "base",
+            False,
+            False,
+            "res.company: %s company(ies) print with a report layout that is not "
+            "one of the seven 19.0 core layouts, so no table style could be "
+            "derived and 20.0's 'light' default applies; check their documents",
+            unmapped,
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     # Stale transient rows are recomputed during init_models, and a leftover
@@ -306,3 +385,5 @@ def migrate(env, version):
     # Must follow _convert_rules: it operates on the xml_ids that function
     # re-points, and must run before any other module loads its security data.
     _release_noupdate_on_csv_access(env)
+    # Before web's data load deletes the striped, boxed and bold layout views.
+    _remember_the_table_style_the_layout_implied(env)

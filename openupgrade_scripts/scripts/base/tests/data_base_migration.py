@@ -220,4 +220,24 @@ env["res.partner"].create(
     }
 )
 
+
+# 19.0 baked the table style into the report layout template; 20.0 moves it to
+# res.company.report_tables_id, whose 'light' default restyles the documents of
+# any company that printed with something else. 'bold' is planted because 20.0
+# does not ship external_layout_bold at all -- web's data load deletes the view,
+# so by post-migration the company's layout is NULL and the style is
+# unrecoverable unless pre-migration read it first. That is the whole point of
+# the test.
+layout_company = env["res.company"].search([], order="id", limit=1)
+assert layout_company, "there is always at least one company"
+layout_company.external_report_layout_id = env.ref("web.external_layout_bold").id
+env["ir.model.data"].create(
+    {
+        "module": "__ou19__",
+        "name": "ou19_layout_company",
+        "model": "res.company",
+        "res_id": layout_company.id,
+    }
+)
+
 env.cr.commit()

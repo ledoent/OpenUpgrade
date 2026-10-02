@@ -380,6 +380,47 @@ def _carry_the_company_registry_into_additional_identifiers(env):
         )
 
 
+def _apply_the_remembered_table_style(env):
+    """Write the table style pre-migration resolved into report_tables_id.
+
+    19.0 hardcoded one table class per report layout and 20.0 lifts it into a
+    field of its own, so the documents of every company that did not print with
+    the standard layout are restyled by the new field's 'light' default.
+
+    The value comes from the legacy column rather than from
+    external_report_layout_id, which by now may be NULL: 20.0 does not ship the
+    striped, boxed or bold layouts and web's data load deletes those views. See
+    pre-migration for the mapping and its sources.
+
+    The guard is a comparison, not a NULL check. report_tables_id declares a
+    default, so adding the column stamped every row -- the same shape as
+    hr.version.tz and hr.job.recruiter_id, where guarding on emptiness means
+    doing nothing at all.
+    """
+    legacy = openupgrade.get_legacy_name("report_tables_id")
+    if not openupgrade.column_exists(env.cr, "res_company", legacy):
+        return
+    openupgrade.logged_query(
+        env.cr,
+        f"""
+        UPDATE res_company SET report_tables_id = {legacy}
+        WHERE {legacy} IS NOT NULL
+          AND report_tables_id IS DISTINCT FROM {legacy}
+        """,
+    )
+    if env.cr.rowcount:
+        openupgrade.message(
+            env.cr,
+            "base",
+            False,
+            False,
+            "res.company: restored the table style of %s company(ies) from the "
+            "report layout they printed with in 19.0; 20.0 moved the style into "
+            "report_tables_id, whose default would have restyled their documents",
+            env.cr.rowcount,
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "base", "20.0.1.3/noupdate_changes.xml")
@@ -393,3 +434,4 @@ def migrate(env, version):
     _translate_boolean_to_selection(env)
     _carry_the_bank_record_onto_the_account(env)
     _carry_the_company_registry_into_additional_identifiers(env)
+    _apply_the_remembered_table_style(env)
