@@ -56,6 +56,8 @@ website_sale / product.product          / show_availability (boolean)   : previo
 website_sale / product.product          / variant_image_ids (many2many) : NEW relation: product.image, isfunction: function, stored
 # NOTHING TO DO: 20.0 has no variant_image_ids column on product.product, so nothing was left behind
 website_sale / product.public.category  / align_category_content (boolean): DEL
+# DONE: renamed to its legacy name in pre-migration with the other two flags --
+# see website_sale:product.public.category.show_category_title
 website_sale / product.public.category  / not_in_shop (boolean)         : NEW hasdefault: compute
 # NOTHING TO DO: a new 20.0 concept with nothing in 19.0 to carry. It hides a
 # category from the unfiltered /shop listing -- 20.0's controllers/main.py:573
@@ -67,14 +69,9 @@ website_sale / product.public.category  / published_date (datetime)     : NEW
 # NOTHING TO DO: empty on all 48 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / product.public.category  / show_category_description (boolean): DEL
 website_sale / product.public.category  / show_category_title (boolean) : DEL
-# SCRIPT NEEDED: this column is the only record of a per-category choice that
-# 20.0 now keeps once per website, and post-migration has to read it. 19.0 wrote
-# the three flags through the /shop/config/category route
-# (controllers/main.py:1872); 20.0 writes them through /shop/config/website and
-# has no per-category route left. This line's part is to keep the column
-# readable -- rename it to its legacy name in pre-migration, as this branch
-# already does for product.image.product_variant_id. The aggregation itself is
-# under website.show_category_description above
+# DONE: pre-migration renames the three columns to their legacy names so
+# post-migration can still read them. The aggregation itself is under
+# website_sale:website.show_category_description
 website_sale / product.ribbon           / assign (selection)            : selection_keys added: [out_of_stock] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 website_sale / product.stock.notification / partner_id (many2one)         : NEW relation: res.partner, required
@@ -145,19 +142,14 @@ website_sale / website                  / add_to_cart_action (selection): DEL se
 # loses that behaviour and no 20.0 field could record the choice. The 19.0
 # column is left for database_cleanup
 website_sale / website                  / align_category_content (boolean): NEW hasdefault: default
-# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+# DONE: carried by the per-website aggregation -- see
+# website_sale:website.show_category_description
 website_sale / website                  / contact_us_button_url (char)  : DEL
 website_sale / website                  / contact_us_link_url (char)    : NEW hasdefault: default, translate
-# SCRIPT NEEDED: a rename, and a default that silently overwrites it if nobody
-# renames it. 19.0: contact_us_button_url = Char(translate=True,
-# default="/contactus") (models/website.py:104). 20.0: contact_us_link_url =
-# Char(translate=True, default="/contactus") (models/website.py:92), read by
-# _get_contact_us_url() at :1213 -- same purpose, new name. Because the new
-# column is created with its default, a site that pointed the button at /help
-# or an external form gets "/contactus" back while its own value sits in the DEL
-# column. pre-migration must openupgrade.rename_fields website
-# contact_us_button_url -> contact_us_link_url before the ORM adds the column,
-# which also carries the jsonb translations both versions store
+# DONE: pre-migration renames the field -- see _renamed_fields. Both versions
+# declare default="/contactus", so the new column is created already holding it
+# and a site pointing anywhere else loses its own value in silence; the rename
+# carries the jsonb translations with it. Confirmed on the seed
 website_sale / website                  / enabled_gmc_src (boolean)     : DEL
 # NOTHING TO DO: the column held nothing on any of the 3 rows, so its removal carries nothing away
 website_sale / website                  / extra_step_category_ids (many2many): NEW relation: product.public.category
@@ -196,36 +188,24 @@ website_sale / website                  / send_order_rating_emails (boolean): NE
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / website                  / shop_default_sort (selection) : selection_keys is now '['list_price asc', 'list_price desc', 'name asc', 'publish_date desc', 'website_sequence asc']' ('function')
 website_sale / website                  / show_category_description (boolean): NEW hasdefault: default
-# SCRIPT NEEDED: the setting moved from per-category to per-website, and 20.0's
-# default silently re-enables it. 19.0 held show_category_title /
-# show_category_description / align_category_content on product.public.category
-# (models/product_public_category.py:75-91), read off the browsed category
-# (views/templates.xml:538-540); 20.0 holds all three on website
-# (models/website.py:290-308) and reads website.show_category_*
-# (templates/shop_page_templates.xml:144-146). The ORM wrote default True into
-# show_category_description and left the other two NULL, a falsy default not
-# being written. So a site that unticked "Show Description" gets descriptions
-# back, and one that ticked "Show Title" loses titles. post-migration should set
-# each website's three flags from the 19.0 columns of the categories that
-# website shows, when those categories agree, and REPORT the websites whose
-# categories disagree -- one website-wide flag cannot faithfully answer for
-# categories that differ, and claiming a value nobody chose is worse than
-# reporting it
+# DONE: post-migration aggregates them.
+# _aggregate_the_category_display_flags_per_website carries a flag onto a website
+# only where every category that website shows agrees on it -- its own plus the
+# global ones, which is 19.0's own _get_available_category_domain -- and REPORTS
+# the websites whose categories disagree rather than imposing one category's
+# choice on the rest. A NULL legacy column is read as that field's 19.0 default.
+# Confirmed on the seed: three websites carried, one disagreement reported
 website_sale / website                  / show_category_title (boolean) : NEW hasdefault: default
-# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+# DONE: carried by the per-website aggregation -- see
+# website_sale:website.show_category_description
 website_sale / website                  / show_line_subtotals_tax_selection (selection): now required
 website_sale / website                  / show_product_reference_price (boolean): NEW
-# SCRIPT NEEDED: the $/kg switch moved from a feature group to a per-website
-# boolean, and the new column starts False. 19.0 gated the reference price on
-# the group alone -- _is_feature_enabled('website_sale.group_show_uom_price')
-# put base_unit_price into combination_info (product_template.py:675). 20.0
-# keeps the group but ALSO requires the website flag: product_template.py:765
-# and :1035 only add base_unit_price when website.show_product_reference_price.
-# With the flag False everywhere, a 19.0 site that had "Base Unit Price" on
-# loses $/kg on the tiles, the product page and the cart. post-migration should
-# set it TRUE on every website when the 19.0 feature was on -- base.group_user
-# implies group_show_uom_price in res_groups_implied_rel, which is what
-# _is_feature_enabled tested
+# DONE: post-migration enables it.
+# _enable_the_reference_price_the_group_used_to_gate sets the flag on every
+# website when _is_feature_enabled('website_sale.group_show_uom_price') is true,
+# read through core's own predicate rather than by inspecting implied_ids. The
+# 19.0 setting had no per-website dimension, so "on everywhere" is its 20.0
+# spelling. Confirmed on the seed: 3 websites
 website_sale / website.base.unit        / name (char)                   : DEL required
 # NOTHING TO DO: website.base.unit holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
 website_sale / website.checkout.step    / publish_on (datetime)         : NEW

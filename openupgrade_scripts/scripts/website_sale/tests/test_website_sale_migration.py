@@ -113,3 +113,56 @@ class TestWebsiteSaleMigration(TransactionCase):
             0,
             "an image that could have been carried was left without a template",
         )
+
+    def test_the_contact_us_url_survived_its_own_default(self):
+        """contact_us_button_url -> contact_us_link_url, same default both sides.
+
+        Both versions declare default="/contactus", so the new column is created
+        already holding it. Without the rename a site that pointed the button
+        anywhere else reads "/contactus" while its own value sits in a column
+        20.0 never looks at -- nothing fails, the link is just wrong.
+        """
+        website = self.env.ref("__ou19__.ou19_website_disagreeing")
+        self.assertEqual(website.contact_us_link_url, "/ou19-contact-somewhere-else")
+
+    def test_a_website_whose_categories_agree_takes_their_flag(self):
+        """The setting moved from product.public.category to website.
+
+        show_category_description defaults True on the website, so a shop that
+        had turned descriptions off gets them back. This website sees only the
+        global categories, which all say False, so False is what it must read --
+        a value 20.0's default cannot produce.
+        """
+        website = self.env.ref("__ou19__.ou19_website_agreeing")
+        self.assertFalse(website.show_category_description)
+
+    def test_a_website_whose_categories_disagree_is_left_alone(self):
+        """One website-wide flag cannot answer for categories that differ.
+
+        This website's own category says True while every global one says False.
+        Imposing either would claim a choice nobody made, so the flag keeps
+        20.0's default and the disagreement is reported instead.
+        """
+        website = self.env.ref("__ou19__.ou19_website_disagreeing")
+        self.assertTrue(website.show_category_description)
+
+    def test_the_reference_price_is_still_shown(self):
+        """19.0 gated it on a group; 20.0 also needs a per-website flag.
+
+        The flag is a plain Boolean with no default, so it arrives False and the
+        $/kg price disappears from a shop that was showing it. The fixture
+        enables the group, which is the whole of what 19.0 required.
+        """
+        self.assertTrue(
+            self.env["res.groups"]._is_feature_enabled(
+                "website_sale.group_show_uom_price"
+            ),
+            "the fixture's feature group did not survive",
+        )
+        websites = self.env["website"].search([])
+        self.assertTrue(websites)
+        self.assertEqual(
+            websites.filtered(lambda w: not w.show_product_reference_price),
+            self.env["website"],
+            "a website stopped showing the reference price",
+        )
