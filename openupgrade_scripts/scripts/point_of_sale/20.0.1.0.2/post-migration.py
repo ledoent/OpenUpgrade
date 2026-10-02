@@ -54,14 +54,18 @@ def _swap_the_two_journals_back_into_their_20_meanings(env):
     `closing_journal_id` (pos_session.py:988). Nothing moved the values, so
     after the upgrade both are wrong at once:
 
-      * POS invoices are cut from the old CLOSING journal. On the sanitised
-        prod copy 2026-10-02 that is POSS, which holds 0 moves, while all 88
-        POS invoices to date sit in INV -- the journal still named by
-        invoice_journal_id.
+      * POS invoices are cut from the old CLOSING journal. Measured on a 19->20
+        run over the sanitised prod copy 2026-10-02: that journal is POSS, which
+        holds 0 moves of any kind, while INV -- the journal still named by
+        invoice_journal_id -- holds 508. So the unfixed upgrade cuts invoices
+        into a journal with no history while the one actually used for
+        invoicing goes unreferenced. (The copy carries no pos.order rows, so the
+        argument rests on which journal is which, not on a count of POS
+        invoices.)
       * closing_journal_id was filled by _compute_closing_journal_id, which
-        calls _ensure_company_closing_journal() and CREATES a POSC journal.
-        The copy's row points at journal 88, whose create_date is the
-        migration run itself.
+        calls _ensure_company_closing_journal() and CREATES a POSC journal. The
+        copy ends up pointing at a journal whose create_date is the migration
+        run itself -- a journal invented by the upgrade, not chosen by anyone.
 
     So this is a swap, written in one statement because each half reads the
     column the other half overwrites.
