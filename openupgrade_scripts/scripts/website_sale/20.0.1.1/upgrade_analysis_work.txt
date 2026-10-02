@@ -11,7 +11,11 @@ new model withdrawal.request
 sale_pdf_quote_builder / product.document         / attached_on_sale (False)      : selection_keys added: [shown_on_product_page], removed: [inside]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 website_sale / account.move             / website_id (many2one)         : not a function anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the same stored column, minus its compute. 19.0 declared it
+# compute='_compute_website_id', store=True, readonly=True and created the
+# column by hand in _auto_init; 20.0 declares a plain stored readonly Many2one
+# with the same comodel and help text. Dropping a compute neither moves nor
+# rewrites what is already in account_move.website_id
 website_sale / delivery.carrier         / delivery_calendar_id (many2one): NEW relation: resource.calendar
 website_sale / delivery.carrier         / delivery_estimate_lead_days (integer): NEW
 website_sale / delivery.carrier         / delivery_estimate_range_days (integer): NEW
@@ -53,13 +57,24 @@ website_sale / product.product          / variant_image_ids (many2many) : NEW re
 # NOTHING TO DO: 20.0 has no variant_image_ids column on product.product, so nothing was left behind
 website_sale / product.public.category  / align_category_content (boolean): DEL
 website_sale / product.public.category  / not_in_shop (boolean)         : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a new 20.0 concept with nothing in 19.0 to carry. It hides a
+# category from the unfiltered /shop listing -- 20.0's controllers/main.py:573
+# adds Domain("not_in_shop","=",False) where 19.0's :426 had only the parent
+# test -- and _compute_not_in_shop only copies parent_id.not_in_shop, so a root
+# category has no source and stays False, exactly 19.0's behaviour
 website_sale / product.public.category  / publish_on (datetime)         : NEW
 website_sale / product.public.category  / published_date (datetime)     : NEW
 # NOTHING TO DO: empty on all 48 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / product.public.category  / show_category_description (boolean): DEL
 website_sale / product.public.category  / show_category_title (boolean) : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: this column is the only record of a per-category choice that
+# 20.0 now keeps once per website, and post-migration has to read it. 19.0 wrote
+# the three flags through the /shop/config/category route
+# (controllers/main.py:1872); 20.0 writes them through /shop/config/website and
+# has no per-category route left. This line's part is to keep the column
+# readable -- rename it to its legacy name in pre-migration, as this branch
+# already does for product.image.product_variant_id. The aggregation itself is
+# under website.show_category_description above
 website_sale / product.ribbon           / assign (selection)            : selection_keys added: [out_of_stock] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 website_sale / product.stock.notification / partner_id (many2one)         : NEW relation: res.partner, required
@@ -87,17 +102,31 @@ website_sale / product.template         / show_availability (boolean)   : previo
 website_sale / product.template         / suggest_accessory_products (boolean): NEW hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 199 of 199 rows, so a compute or a related field did the work
 website_sale / product.template         / suggest_alternative_products (boolean): NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a flag for 20.0's new "Automate suggested products" cron, with
+# no 19.0 counterpart. _compute_suggest_alternative_products sets it to `not
+# template.alternative_product_ids` whenever
+# _is_automate_suggested_product_feature_enabled() is false, and that tests a
+# group 20.0 introduces -- so it is off right after an upgrade and the computed
+# column states the 19.0 fact: alternative products were either chosen by hand
+# or never chosen
 website_sale / product.template         / suggest_optional_products (boolean): NEW hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 199 of 199 rows, so a compute or a related field did the work
 website_sale / product.template         / suggested_products_last_update (datetime): NEW
 # NOTHING TO DO: empty on all 199 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / res.company              / free_order_label (char)       : NEW hasdefault: default, translate
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 had no field -- the label was a literal in the template,
+# views/templates.xml:3425 `<t t-set="submit_button_label">Confirm Order</t>` in
+# the zero-total branch. 20.0 moves it to res.company with default="Confirm
+# Order" (models/res_company.py:10). The new column's default reproduces the
+# 19.0 wording word for word
 website_sale / sale.order               / alerts (json)                 : NEW
 # NOTHING TO DO: empty on all 58 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / sale.order               / assigned_website_id (many2one): NEW relation: website, isfunction: function, stored
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself from a column 19.0 already had.
+# _compute_assigned_website_id is @api.depends("website_id") and copies
+# website_id onto every row when the stored column is added
+# (models/sale_order.py:69-72); website_id is unchanged in 20.0. The compute is
+# write-once, which is what lets a user retarget an order later
 website_sale / sale.order               / is_rating_email_sent (boolean): NEW
 # NOTHING TO DO: empty on all 58 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / sale.order               / shop_warning (char)           : DEL
@@ -107,12 +136,28 @@ website_sale / sale.order.line          / alerts (json)                 : NEW
 website_sale / sale.order.line          / shop_warning (char)           : DEL
 # NOTHING TO DO: the column held nothing on any of the 111 rows, so its removal carries nothing away
 website_sale / website                  / add_to_cart_action (selection): DEL selection_keys: ['go_to_cart', 'stay']
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 removes the preference outright and there is no field to
+# carry it into. Every piece of the 19.0 wiring is gone -- no field on website,
+# no 'add_to_cart_action' session key in ir_http, no "Add to Cart" radio in
+# res_config_settings_views, and cart_service.js no longer tests
+# session.add_to_cart_action; in 20.0 shouldRedirectToCart comes only from
+# isBuyNow or an explicit options.goToCart. A site that chose 'go_to_cart'
+# loses that behaviour and no 20.0 field could record the choice. The 19.0
+# column is left for database_cleanup
 website_sale / website                  / align_category_content (boolean): NEW hasdefault: default
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / website                  / contact_us_button_url (char)  : DEL
 website_sale / website                  / contact_us_link_url (char)    : NEW hasdefault: default, translate
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: a rename, and a default that silently overwrites it if nobody
+# renames it. 19.0: contact_us_button_url = Char(translate=True,
+# default="/contactus") (models/website.py:104). 20.0: contact_us_link_url =
+# Char(translate=True, default="/contactus") (models/website.py:92), read by
+# _get_contact_us_url() at :1213 -- same purpose, new name. Because the new
+# column is created with its default, a site that pointed the button at /help
+# or an external form gets "/contactus" back while its own value sits in the DEL
+# column. pre-migration must openupgrade.rename_fields website
+# contact_us_button_url -> contact_us_link_url before the ORM adds the column,
+# which also carries the jsonb translations both versions store
 website_sale / website                  / enabled_gmc_src (boolean)     : DEL
 # NOTHING TO DO: the column held nothing on any of the 3 rows, so its removal carries nothing away
 website_sale / website                  / extra_step_category_ids (many2many): NEW relation: product.public.category
@@ -121,14 +166,27 @@ website_sale / website                  / journal_id (many2one)         : NEW re
 website_sale / website                  / prevent_sale (boolean)        : NEW
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / website                  / prevent_sale_for (selection)  : NEW selection_keys: ['specific_categories', 'zero_price'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO for this field: its default already says what 19.0 said. 19.0
+# had one boolean, prevent_zero_price_sale. 20.0 splits it into the gate
+# prevent_sale, this selection (default 'zero_price') and
+# prevent_sale_for_categories; _prevent_product_sale() returns False unless
+# prevent_sale is set and only then applies the zero-price test
+# (models/website.py:1180-1204). 'zero_price' is 19.0's only mode. The choice a
+# 19.0 administrator actually made lives in prevent_sale, which the mechanical
+# marker wrongly reports as settled -- it is the successor of
+# prevent_zero_price_sale and deserves a pre-migration rename
 website_sale / website                  / prevent_sale_for_categories (many2many): NEW relation: product.public.category
 # NOTHING TO DO: 20.0 has no prevent_sale_for_categories column on website, so nothing was left behind
 website_sale / website                  / prevent_zero_price_sale (boolean): DEL
 # NOTHING TO DO: the column held nothing on any of the 3 rows, so its removal carries nothing away
 website_sale / website                  / rating_email_delay (integer)  : NEW hasdefault: default
 website_sale / website                  / rating_email_template_id (many2one): NEW relation: mail.template, hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 has no post-order rating feature to carry. Nothing named
+# rating_email_template_id, rating_email_delay, send_order_rating_emails or
+# sale.order.is_rating_email_sent exists in 19.0's website_sale. The uniform
+# value is the field's own default, prepopulated for a feature that stays off:
+# send_order_rating_emails defaults to False and sale_order.py:1210 only sends
+# when a template is set on a website that has the feature on
 website_sale / website                  / restricted_uom_ids (many2many): NEW relation: uom.uom
 # NOTHING TO DO: 20.0 has no restricted_uom_ids column on website, so nothing was left behind
 website_sale / website                  / send_abandoned_cart_email (boolean): DEL
@@ -138,12 +196,36 @@ website_sale / website                  / send_order_rating_emails (boolean): NE
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / website                  / shop_default_sort (selection) : selection_keys is now '['list_price asc', 'list_price desc', 'name asc', 'publish_date desc', 'website_sequence asc']' ('function')
 website_sale / website                  / show_category_description (boolean): NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: the setting moved from per-category to per-website, and 20.0's
+# default silently re-enables it. 19.0 held show_category_title /
+# show_category_description / align_category_content on product.public.category
+# (models/product_public_category.py:75-91), read off the browsed category
+# (views/templates.xml:538-540); 20.0 holds all three on website
+# (models/website.py:290-308) and reads website.show_category_*
+# (templates/shop_page_templates.xml:144-146). The ORM wrote default True into
+# show_category_description and left the other two NULL, a falsy default not
+# being written. So a site that unticked "Show Description" gets descriptions
+# back, and one that ticked "Show Title" loses titles. post-migration should set
+# each website's three flags from the 19.0 columns of the categories that
+# website shows, when those categories agree, and REPORT the websites whose
+# categories disagree -- one website-wide flag cannot faithfully answer for
+# categories that differ, and claiming a value nobody chose is worse than
+# reporting it
 website_sale / website                  / show_category_title (boolean) : NEW hasdefault: default
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website_sale / website                  / show_line_subtotals_tax_selection (selection): now required
 website_sale / website                  / show_product_reference_price (boolean): NEW
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: the $/kg switch moved from a feature group to a per-website
+# boolean, and the new column starts False. 19.0 gated the reference price on
+# the group alone -- _is_feature_enabled('website_sale.group_show_uom_price')
+# put base_unit_price into combination_info (product_template.py:675). 20.0
+# keeps the group but ALSO requires the website flag: product_template.py:765
+# and :1035 only add base_unit_price when website.show_product_reference_price.
+# With the flag False everywhere, a 19.0 site that had "Base Unit Price" on
+# loses $/kg on the tiles, the product page and the cart. post-migration should
+# set it TRUE on every website when the 19.0 feature was on -- base.group_user
+# implies group_show_uom_price in res_groups_implied_rel, which is what
+# _is_feature_enabled tested
 website_sale / website.base.unit        / name (char)                   : DEL required
 # NOTHING TO DO: website.base.unit holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
 website_sale / website.checkout.step    / publish_on (datetime)         : NEW

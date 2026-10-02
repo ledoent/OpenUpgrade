@@ -237,3 +237,396 @@ pos_restaurant:restaurant.floor.background_color
 # NOTHING TO DO: reported, not carried. 20.0 gives the floor the same Json field
 # but references neither background_color nor background_image anywhere, in
 # Python or in the front end, so there is no key to carry it into
+
+## ---------------------------------------------------------------------------
+## hr -- measured against erp_mig20test (the sanitised prod copy) 2026-10-02.
+## That database carries 2 employees, 2 versions and 0 jobs, which is thinner
+## than the seed this work file was bootstrapped against (siblings above cite
+## 25 / 31 / 9). Where a verdict rests on counted rows it says so; where the
+## seed is too thin to prove anything, it says that instead.
+## ---------------------------------------------------------------------------
+
+hr:hr.version.tz
+# SCRIPT NEEDED: every version came out UTC where every employee is
+# America/New_York, and the real value is still in the database. 19.0 declared
+# hr.version.tz related='employee_id.tz' (hr_version.py:153), so nothing was
+# stored on the version -- the value lived in resource_resource.tz. 20.0
+# inverts the relation: hr.version.tz is stored and required with
+# default=env.context tz or env.user.tz or 'UTC' (hr_version.py:162), and
+# hr.employee.tz becomes related="version_id.tz" (hr_employee.py:309). So the
+# upgrade had to materialise it and took the default instead. Measured: both
+# migrated versions hold 'UTC' while the resources behind their employees hold
+# 'America/New_York'. Nothing re-derives it -- _get_tz() returns self.tz first
+# (hr_version.py:715-717) -- so the wrong zone reaches _get_resources_per_tz
+# and every working-hours and attendance calculation downstream, a four or five
+# hour shift. post-migration must fill hr_version.tz from resource_resource.tz
+# through hr_employee.resource_id, and report any version it cannot source
+
+hr:hr.job.user_id
+# SCRIPT NEEDED: 20.0's recruiter_id is this field retyped, not a new one. Both
+# are labelled "Recruiter" and carry the same help text word for word; only the
+# comodel changed, res.users -> hr.employee. The 19.0 column survives in
+# hr_job, so pre-migration should keep it under a legacy name and
+# post-migration set recruiter_id to the hr.employee whose user_id matches,
+# reporting any recruiter with no employee record. hr_job holds 0 rows on this
+# copy, so nothing here exercises it
+
+hr:hr.version.departure_reason_id
+# SCRIPT NEEDED: what stops is the reading, not the data. 19.0 stored
+# departure_reason_id, departure_description and departure_date on hr_version;
+# 20.0 moves all three onto the new hr.employee.departure and makes
+# hr.version's related through departure_id, so the surviving hr_version
+# columns go invisible to the ORM -- hr_employee_departure holds 0 rows and
+# every hr_version.departure_id is NULL. post-migration should create one
+# hr.employee.departure per version holding any of the three and point
+# hr_version.departure_id at it. All three are NULL on both copies' versions,
+# so this copy cannot show the loss
+
+hr:hr.version.departure_description
+# SCRIPT NEEDED: carried by the same script as departure_reason_id above. 20.0
+# reads it through departure_id.departure_description, so the 19.0 hr_version
+# column is orphaned unless an hr.employee.departure row is built from it
+
+hr:hr.employee.study_school
+# NOTHING TO DO: nothing was entered. 20.0 keeps study_field ("Field of Study")
+# but has no School field, and count(*), count(study_school) on hr_employee is
+# 2|0 before the upgrade and 2|0 after -- the column survives, because the ORM
+# does not drop it, holding NULL on every row
+
+hr:hr.employee.birthday_month
+# NOTHING TO DO: 20.0 fills it itself. It is store=True
+# compute='_compute_birthday_month', writing str(birthday.month) or else '0'
+# (hr_employee.py:589-591). birthday is NULL on both employees and
+# birthday_month came out '0', the "Not specified" key -- the right answer for
+# an unknown birthday, so the compute ran
+
+hr:hr.employee.contract_template_id
+# NOTHING TO DO: 19.0 had no column here -- hr.employee got the field by
+# _inherits from hr.version, and the 19.0 hr_employee table carries no
+# contract_template_id. The value lived in hr_version.contract_template_id,
+# which survives untouched and is NULL on both versions either side of the
+# upgrade. 20.0's own stored Many2one on hr.employee is UI staging for the
+# template button rather than a record of truth, so a NULL is correct
+
+hr:hr.employee.hr_presence_state
+# NOTHING TO DO: nothing was ever stored for the dropped key to invalidate.
+# Both versions declare it compute='_compute_presence_state' with no store, and
+# information_schema returns 0 columns named hr_presence_state across
+# hr_employee and hr_employee_public. 19.0's 'archive' value was derived from
+# the employee being inactive, which `active` still records
+
+hr:hr.departure.reason.active
+# NOTHING TO DO: 20.0 adds the archive flag where 19.0 had none, and its
+# default True is what every carried row holds -- count(*), count(active),
+# count(*) where active is 4|4|4, so the upgrade archived no reason
+
+hr:hr.job.company_id
+# NOTHING TO DO on this data, and it cannot be proven in general here: hr_job
+# holds 0 rows either side, so the NOT NULL applied over an empty table and
+# defaulted nothing. 19.0 already defaulted company_id to env.company
+# (hr_job.py:39), so a NULL was only reachable by writing one deliberately
+
+hr:hr.version.resource_calendar_id
+# NOTHING TO DO: no row came out wrong -- both versions hold
+# resource_calendar_id = 1 before and after, matching
+# resource_resource.calendar_id = 1 for both employees' resources. The copy
+# cannot prove the mechanism, because res_company 1's resource_calendar_id is
+# also 1, so the 20.0 default would have written the same number
+
+hr:mail.activity.technical_usage
+# NOTHING TO DO: the core field is new in 20.0, so there are no 19.0 values for
+# hr's two added keys to invalidate -- technical_usage appears nowhere under
+# 19.0's addons, and 20.0's mail declares it selection=[('none', 'Non
+# Technical')], default='none', readonly=True (mail/models/mail_activity.py:112).
+# Both mail_activity rows read 'none'. hr only extends the selection and writes
+# the new keys itself when it schedules those activities
+
+## ---------------------------------------------------------------------------
+## point_of_sale -- measured against erp_mig20test (the sanitised prod copy)
+## 2026-10-02. POS is barely used there: 1 pos_config, 10 pos_payment_method,
+## and 0 rows in pos_session, pos_order, pos_payment, pos_category, pos_preset;
+## pos_restaurant is uninstalled. Neighbouring lines above cite counts from an
+## earlier demo-loaded run. Where a verdict rests on source rather than on rows,
+## it says so.
+## ---------------------------------------------------------------------------
+
+point_of_sale:pos.config.invoice_journal_id
+# SCRIPT NEEDED: carry it into journal_id, whose meaning changed underneath it.
+# In 19.0 invoice_journal_id was the journal for POS invoices (pos_order.py:919)
+# and journal_id was the closing journal. In 20.0 _prepare_invoice_vals reads
+# config_id.journal_id (pos_order.py:1557). Nothing moved the value: the one row
+# still holds journal_id = 19 and invoice_journal_id = 1. Journal 1 (INV, sale,
+# created 2020-01-05) carries all 88 POS invoice moves; journal 19 (POSS, sale,
+# created 2020-01-06) carries 0. So after the upgrade POS invoices are cut in a
+# journal with no history instead of the one holding every POS invoice to date
+
+point_of_sale:pos.config.closing_journal_id
+# SCRIPT NEEDED: carry the old journal_id into it -- the precompute invented a
+# new journal rather than reusing the one 19.0 posted to. 19.0 posted the
+# session closing entry to config.journal_id (pos_session.py:819); 20.0 posts it
+# to config.closing_journal_id (pos_session.py:988).
+# _compute_closing_journal_id calls _ensure_company_closing_journal(), which
+# creates a POSC journal: the migrated row holds closing_journal_id = 88, whose
+# create_date is 2026-10-01 -- the migration run itself -- while journal_id is
+# still 19, the journal 19.0 would have posted to. The script must only carry
+# journals of type 'sale': 19.0's domain was ('general','sale') and 20.0's is
+# ('sale',) alone. Journal 19 qualifies
+
+point_of_sale:pos.config.session_closing_mode
+# SCRIPT NEEDED: write 'closing' on every pre-existing config -- the default
+# 'daily' changes WHEN accounting entries are generated. 19.0 built the closing
+# entry only when a session was closed and shipped no cron for it. 20.0 ships
+# point_of_sale.ir_cron_pos_auto_order_invoicing, active, every 10 minutes, and
+# its _launch_cron_generate_invoice_period selects ('config_id.
+# session_closing_mode', '=', 'daily') and calls _validate_session_accounting on
+# sessions that are still open. The migrated row holds 'daily' with
+# session_closing_daily_hour 4.0, so an upgraded database starts posting session
+# accounting at 04:00 whether or not anyone closed the session. 'closing' is
+# 20.0's spelling of what 19.0 did. The copy cannot show the effect -- the lab
+# disables every cron -- so the 20.0 data file is the evidence
+
+point_of_sale:pos.payment.currency_rate
+# SCRIPT NEEDED: fill it from pos_order.currency_rate. 19.0 declared it
+# related='pos_order_id.currency_rate' with no store, so there was no column and
+# every read went to the order; 20.0 declares a plain stored Float
+# (pos_payment.py:39) and nothing fills it for historical rows. The source is
+# intact -- pos.order.currency_rate is a stored compute in both versions and the
+# column survives -- so UPDATE pos_payment p SET currency_rate = o.currency_rate
+# FROM pos_order o WHERE o.id = p.pos_order_id reproduces what 19.0 returned.
+# pos_payment has 0 rows here
+
+point_of_sale:pos.session.move_id
+# SCRIPT NEEDED: carry it into account_move.pos_session_sales_id. 19.0 kept the
+# session's closing entry as one many2one on pos.session (pos_session.py:88);
+# 20.0 inverts the link and splits it across pos_session_sales_id,
+# pos_session_refunds_id and pos_session_correction_id on account.move. The work
+# file already records all three new columns as empty on every row, while the
+# old move_id column survives with its FK intact, so the link is recoverable
+# with one UPDATE into pos_session_sales_id (19.0 posted sales and refunds into
+# one move). Not cosmetic: 20.0's _compute_always_tax_exigible depends on
+# pos_session_ids and forces always_tax_exigible True for a move belonging to a
+# session, so unlinked historical closing moves can recompute to the wrong
+# exigibility. pos_session is empty here
+
+point_of_sale:pos.payment.method.type
+# DONE: post-migration fills it from the journal, which is 19.0's own rule.
+# 19.0's type was a NON-stored compute (pos_payment_method.py:59) so there was
+# no column; 20.0 declares it stored and required. The script replays 19.0's
+# _compute_type verbatim. The five rows NAMED "Bank" came out 'pay_later', not
+# 'bank', because their journal_id is NULL -- and that is what 19.0 displayed
+# for them too: they are 2020-vintage records from the era when a non-cash
+# method was is_cash_count=False with no journal. Writing 'bank' would be an
+# invention -- 20.0's form marks journal_id required for type in (cash, bank)
+# and both it and outstanding_account_id are empty on all five
+
+point_of_sale:pos.payment.method.is_cash_count
+# NOTHING TO DO: it was only ever a stored echo of type. 19.0's
+# _compute_is_cash_count is `pm.is_cash_count = pm.type == 'cash'`, and the
+# migrated table agrees exactly -- true on ids 1,3,5,7,9, precisely the rows
+# that came out type='cash'. 20.0 drops the column and asks `pm.type == 'cash'`
+# directly, so the information is already carried by type
+
+point_of_sale:pos.payment.method.split_transactions
+# NOTHING TO DO: 20.0 removes the concept along with the accounting path that
+# used it. 19.0's "Identify Customer" forced a partner and split the closing
+# entry per customer; grep for split_transactions across the whole 20.0 addons
+# tree returns nothing, 20.0 having moved to per-order sale_move_ids /
+# refund_move_ids. All 10 rows are false in any case
+
+point_of_sale:pos.payment.method.company_id
+# NOTHING TO DO: the NOT NULL applied cleanly because every row genuinely had a
+# company, checked against two independent references. All 10 rows are filled
+# (companies 1-5, two methods each); each row's company_id equals its journal's
+# company_id where a journal is set, and equals the single company in
+# account_account_res_company_rel for its receivable_account_id on every row.
+# 19.0 already defaulted company_id to env.company
+
+point_of_sale:pos.config.iface_print_skip_screen
+# NOTHING TO DO: 20.0 drops the flag and keeps nothing equivalent. 19.0 skipped
+# the receipt screen only when both flags were on (order_payment_validation.js);
+# 20.0's replacement reads iface_print_auto alone (pos_config.js `get
+# autoPrint()`), and grep for iface_print_skip_screen across 20.0 returns
+# nothing. A config with auto-print on and preview-skip off will now skip, and
+# there is no 20.0 field in which to say otherwise. Moot on this row --
+# iface_print_auto is false, so the flag was already inert
+
+point_of_sale:pos.order.last_order_preparation_change
+# NOTHING TO DO: 20.0 replaces the JSON blob with pos.prep.order / pos.prep.line
+# records, and the blob is live per-session kitchen bookkeeping nothing reads
+# again. 20.0 rebuilds it from line quantities in update_last_order_change, so
+# for a paid order there is nothing to show and for a draft one 20.0 re-derives
+# it on the next change. pos_order is empty here and pos_restaurant, which owns
+# kitchen printing, is uninstalled
+
+point_of_sale:pos.session.cash_register_balance_start
+# NOTHING TO DO -- DECLINED, not overlooked. 20.0's successor is opening_balance
+# and it is NOT stored: related='bank_statement_id.balance_start', with
+# bank_statement_id itself new in 20.0. The only place a script could write the
+# opening count is account_bank_statement.balance_start of a statement that does
+# not exist for any migrated session, and creating those means fabricating
+# accounting records to hold a display value. The 19.0 number is not destroyed
+# -- the cash_register_balance_start column survives with its values
+
+point_of_sale:pos.category.active
+# NOTHING TO DO: 19.0's pos.category had no archiving of any kind, so every 19.0
+# category was visible and the default True is the only value that reproduces
+# 19.0. pos_category is empty in this copy in any case
+
+point_of_sale:pos.config.email
+# NOTHING TO DO: a stored compute off the company, and it came out right.
+# _compute_custom_info sets it to custom_email when use_custom_receipt_info is
+# on and to company_id.email otherwise; 19.0 had no per-config contact fields at
+# all. The row holds company 1's partner email
+
+point_of_sale:pos.config.phone
+# NOTHING TO DO: same compute as email -- the row holds company 1's partner
+# phone. 19.0 had no per-config phone to carry
+
+point_of_sale:pos.config.website
+# NOTHING TO DO: same compute as email -- company 1's partner website. 19.0 had
+# no per-config website to carry
+
+point_of_sale:pos.config.receipt_address
+# NOTHING TO DO: same compute as email -- assembled from company 1's
+# street/city/state/zip. 19.0 had no per-config address to carry
+
+point_of_sale:pos.config.tip_percentage_3
+# NOTHING TO DO: tip_percentage_1/2/3 are all new in 20.0 -- grep over 19.0's
+# pos_config.py returns nothing. 19.0's tipping was iface_tipproduct +
+# tip_product_id, which carry no percentage, and both are NULL on the one row
+
+point_of_sale:pos.preset.service_fee_type
+# NOTHING TO DO: the whole service-fee feature is new in 20.0 -- 19.0's
+# pos.preset has no service_fee field of any kind. The gate is service_fee,
+# default False, so 'percent' is inert. pos_preset is empty here
+
+point_of_sale:pos.preset.service_fee_based_on
+# NOTHING TO DO: new with service_fee_type above; 19.0 has no service fee on
+# pos.preset and the default 'pre_discount' is inert while service_fee is False
+
+## ---------------------------------------------------------------------------
+## website_sale -- NOT re-measured. The module is uninstalled in erp_mig20test,
+## product_public_category does not exist there, and the seed the bootstrap
+## measured against is gone. Every count quoted below is the bootstrap's own
+## recording; the reasoning is from 19.0 and 20.0 source. Re-check against a
+## database with website_sale installed before relying on the SCRIPT NEEDED
+## lines.
+## ---------------------------------------------------------------------------
+
+website_sale:website.contact_us_link_url
+# SCRIPT NEEDED: a rename, and a default that silently overwrites it if nobody
+# renames it. 19.0: contact_us_button_url = Char(translate=True,
+# default="/contactus") (models/website.py:104). 20.0: contact_us_link_url =
+# Char(translate=True, default="/contactus") (models/website.py:92), read by
+# _get_contact_us_url() at :1213 -- same purpose, new name. Because the new
+# column is created with its default, a site that pointed the button at /help
+# or an external form gets "/contactus" back while its own value sits in the DEL
+# column. pre-migration must openupgrade.rename_fields website
+# contact_us_button_url -> contact_us_link_url before the ORM adds the column,
+# which also carries the jsonb translations both versions store
+
+website_sale:website.show_category_description
+# SCRIPT NEEDED: the setting moved from per-category to per-website, and 20.0's
+# default silently re-enables it. 19.0 held show_category_title /
+# show_category_description / align_category_content on product.public.category
+# (models/product_public_category.py:75-91), read off the browsed category
+# (views/templates.xml:538-540); 20.0 holds all three on website
+# (models/website.py:290-308) and reads website.show_category_*
+# (templates/shop_page_templates.xml:144-146). The ORM wrote default True into
+# show_category_description and left the other two NULL, a falsy default not
+# being written. So a site that unticked "Show Description" gets descriptions
+# back, and one that ticked "Show Title" loses titles. post-migration should set
+# each website's three flags from the 19.0 columns of the categories that
+# website shows, when those categories agree, and REPORT the websites whose
+# categories disagree -- one website-wide flag cannot faithfully answer for
+# categories that differ, and claiming a value nobody chose is worse than
+# reporting it
+
+website_sale:product.public.category.show_category_title
+# SCRIPT NEEDED: this column is the only record of a per-category choice that
+# 20.0 now keeps once per website, and post-migration has to read it. 19.0 wrote
+# the three flags through the /shop/config/category route
+# (controllers/main.py:1872); 20.0 writes them through /shop/config/website and
+# has no per-category route left. This line's part is to keep the column
+# readable -- rename it to its legacy name in pre-migration, as this branch
+# already does for product.image.product_variant_id. The aggregation itself is
+# under website.show_category_description above
+
+website_sale:website.show_product_reference_price
+# SCRIPT NEEDED: the $/kg switch moved from a feature group to a per-website
+# boolean, and the new column starts False. 19.0 gated the reference price on
+# the group alone -- _is_feature_enabled('website_sale.group_show_uom_price')
+# put base_unit_price into combination_info (product_template.py:675). 20.0
+# keeps the group but ALSO requires the website flag: product_template.py:765
+# and :1035 only add base_unit_price when website.show_product_reference_price.
+# With the flag False everywhere, a 19.0 site that had "Base Unit Price" on
+# loses $/kg on the tiles, the product page and the cart. post-migration should
+# set it TRUE on every website when the 19.0 feature was on -- base.group_user
+# implies group_show_uom_price in res_groups_implied_rel, which is what
+# _is_feature_enabled tested
+
+website_sale:website.add_to_cart_action
+# NOTHING TO DO: 20.0 removes the preference outright and there is no field to
+# carry it into. Every piece of the 19.0 wiring is gone -- no field on website,
+# no 'add_to_cart_action' session key in ir_http, no "Add to Cart" radio in
+# res_config_settings_views, and cart_service.js no longer tests
+# session.add_to_cart_action; in 20.0 shouldRedirectToCart comes only from
+# isBuyNow or an explicit options.goToCart. A site that chose 'go_to_cart'
+# loses that behaviour and no 20.0 field could record the choice. The 19.0
+# column is left for database_cleanup
+
+website_sale:account.move.website_id
+# NOTHING TO DO: the same stored column, minus its compute. 19.0 declared it
+# compute='_compute_website_id', store=True, readonly=True and created the
+# column by hand in _auto_init; 20.0 declares a plain stored readonly Many2one
+# with the same comodel and help text. Dropping a compute neither moves nor
+# rewrites what is already in account_move.website_id
+
+website_sale:product.public.category.not_in_shop
+# NOTHING TO DO: a new 20.0 concept with nothing in 19.0 to carry. It hides a
+# category from the unfiltered /shop listing -- 20.0's controllers/main.py:573
+# adds Domain("not_in_shop","=",False) where 19.0's :426 had only the parent
+# test -- and _compute_not_in_shop only copies parent_id.not_in_shop, so a root
+# category has no source and stays False, exactly 19.0's behaviour
+
+website_sale:product.template.suggest_alternative_products
+# NOTHING TO DO: a flag for 20.0's new "Automate suggested products" cron, with
+# no 19.0 counterpart. _compute_suggest_alternative_products sets it to `not
+# template.alternative_product_ids` whenever
+# _is_automate_suggested_product_feature_enabled() is false, and that tests a
+# group 20.0 introduces -- so it is off right after an upgrade and the computed
+# column states the 19.0 fact: alternative products were either chosen by hand
+# or never chosen
+
+website_sale:res.company.free_order_label
+# NOTHING TO DO: 19.0 had no field -- the label was a literal in the template,
+# views/templates.xml:3425 `<t t-set="submit_button_label">Confirm Order</t>` in
+# the zero-total branch. 20.0 moves it to res.company with default="Confirm
+# Order" (models/res_company.py:10). The new column's default reproduces the
+# 19.0 wording word for word
+
+website_sale:sale.order.assigned_website_id
+# NOTHING TO DO: 20.0 fills it itself from a column 19.0 already had.
+# _compute_assigned_website_id is @api.depends("website_id") and copies
+# website_id onto every row when the stored column is added
+# (models/sale_order.py:69-72); website_id is unchanged in 20.0. The compute is
+# write-once, which is what lets a user retarget an order later
+
+website_sale:website.prevent_sale_for
+# NOTHING TO DO for this field: its default already says what 19.0 said. 19.0
+# had one boolean, prevent_zero_price_sale. 20.0 splits it into the gate
+# prevent_sale, this selection (default 'zero_price') and
+# prevent_sale_for_categories; _prevent_product_sale() returns False unless
+# prevent_sale is set and only then applies the zero-price test
+# (models/website.py:1180-1204). 'zero_price' is 19.0's only mode. The choice a
+# 19.0 administrator actually made lives in prevent_sale, which the mechanical
+# marker wrongly reports as settled -- it is the successor of
+# prevent_zero_price_sale and deserves a pre-migration rename
+
+website_sale:website.rating_email_template_id
+# NOTHING TO DO: 19.0 has no post-order rating feature to carry. Nothing named
+# rating_email_template_id, rating_email_delay, send_order_rating_emails or
+# sale.order.is_rating_email_sent exists in 19.0's website_sale. The uniform
+# value is the field's own default, prepopulated for a feature that stays off:
+# send_order_rating_emails defaults to False and sale_order.py:1210 only sends
+# when a template is set on a website that has the feature on

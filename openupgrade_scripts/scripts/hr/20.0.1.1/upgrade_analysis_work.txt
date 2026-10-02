@@ -15,16 +15,27 @@ hr           / hr.contract.type         / _order                        : _order
 hr           / hr.department            / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on hr.department, so nothing was left behind
 hr           / hr.departure.reason      / active (boolean)              : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 adds the archive flag where 19.0 had none, and its
+# default True is what every carried row holds -- count(*), count(active),
+# count(*) where active is 4|4|4, so the upgrade archived no reason
 hr           / hr.employee              / additional_note (text)        : is now stored
 # NOTHING TO DO: empty on all 25 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.employee              / additional_note (text)        : not related anymore
 hr           / hr.employee              / birthday_month (selection)    : NEW selection_keys: ['0', '1', '10', '11', '12', '2', '3', '4', '5', '6', '7', '8', '9'], isfunction: function, stored
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself. It is store=True
+# compute='_compute_birthday_month', writing str(birthday.month) or else '0'
+# (hr_employee.py:589-591). birthday is NULL on both employees and
+# birthday_month came out '0', the "Not specified" key -- the right answer for
+# an unknown birthday, so the compute ran
 hr           / hr.employee              / contract_template_id (many2one): is now stored
 # NOTHING TO DO: empty on all 25 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.employee              / contract_template_id (many2one): not related anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 had no column here -- hr.employee got the field by
+# _inherits from hr.version, and the 19.0 hr_employee table carries no
+# contract_template_id. The value lived in hr_version.contract_template_id,
+# which survives untouched and is NULL on both versions either side of the
+# upgrade. 20.0's own stored Many2one on hr.employee is UI staging for the
+# template button rather than a record of truth, so a NULL is correct
 hr           / hr.employee              / driving_license_name (char)   : NEW
 # NOTHING TO DO: empty on all 25 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.employee              / first_contract_date (date)    : NEW isfunction: function, stored
@@ -32,7 +43,11 @@ hr           / hr.employee              / first_contract_date (date)    : NEW is
 hr           / hr.employee              / hr_icon_display (selection)   : selection_keys added: [presence_home, presence_office, presence_other], removed: [presence_archive]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 hr           / hr.employee              / hr_presence_state (selection) : selection_keys removed: [archive]
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: nothing was ever stored for the dropped key to invalidate.
+# Both versions declare it compute='_compute_presence_state' with no store, and
+# information_schema returns 0 columns named hr_presence_state across
+# hr_employee and hr_employee_public. 19.0's 'archive' value was derived from
+# the employee being inactive, which `active` still records
 hr           / hr.employee              / id_card_name (char)           : NEW
 # NOTHING TO DO: empty on all 25 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.employee              / phone_mobile_search (char)    : NEW stored: False
@@ -44,7 +59,10 @@ hr           / hr.employee              / private_car_plate (char)      : DEL
 hr           / hr.employee              / resource_calendar_id (many2one): now required
 # NOTHING TO DO: 20.0 has no resource_calendar_id column on hr.employee, so nothing was left behind
 hr           / hr.employee              / study_school (char)           : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: nothing was entered. 20.0 keeps study_field ("Field of Study")
+# but has no School field, and count(*), count(study_school) on hr_employee is
+# 2|0 before the upgrade and 2|0 after -- the column survives, because the ORM
+# does not drop it, holding NULL on every row
 hr           / hr.employee              / tz (selection)                : now required
 # NOTHING TO DO: 20.0 has no tz column on hr.employee, so nothing was left behind
 hr           / hr.employee              / website_message_ids (one2many): DEL relation: mail.message
@@ -63,7 +81,10 @@ hr           / hr.employee.type         / company_id (many2one)         : NEW re
 hr           / hr.employee.type         / employee_ids (one2many)       : NEW relation: hr.employee
 # NOTHING TO DO: 20.0 has no employee_ids column on hr.employee.type, so nothing was left behind
 hr           / hr.job                   / company_id (many2one)         : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO on this data, and it cannot be proven in general here: hr_job
+# holds 0 rows either side, so the NOT NULL applied over an empty table and
+# defaulted nothing. 19.0 already defaulted company_id to env.company
+# (hr_job.py:39), so a NULL was only reachable by writing one deliberately
 hr           / hr.job                   / contract_type_id (many2one)   : DEL relation: hr.contract.type
 # NOTHING TO DO: 20.0 has no contract_type_id column on hr.job, so nothing was left behind
 hr           / hr.job                   / employee_type_id (many2one)   : NEW relation: hr.employee.type
@@ -71,7 +92,13 @@ hr           / hr.job                   / employee_type_id (many2one)   : NEW re
 hr           / hr.job                   / recruiter_id (many2one)       : NEW relation: hr.employee, hasdefault: default
 # NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.job                   / user_id (many2one)            : DEL relation: res.users
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: 20.0's recruiter_id is this field retyped, not a new one. Both
+# are labelled "Recruiter" and carry the same help text word for word; only the
+# comodel changed, res.users -> hr.employee. The 19.0 column survives in
+# hr_job, so pre-migration should keep it under a legacy name and
+# post-migration set recruiter_id to the hr.employee whose user_id matches,
+# reporting any recruiter with no employee record. hr_job holds 0 rows on this
+# copy, so nothing here exercises it
 hr           / hr.job                   / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on hr.job, so nothing was left behind
 hr           / hr.version               / additional_note (text)        : DEL
@@ -82,12 +109,22 @@ hr           / hr.version               / departure_date (date)         : not st
 hr           / hr.version               / departure_date (date)         : now related
 hr           / hr.version               / departure_description (html)  : not stored anymore
 hr           / hr.version               / departure_description (html)  : now related
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carried by the same script as departure_reason_id above. 20.0
+# reads it through departure_id.departure_description, so the 19.0 hr_version
+# column is orphaned unless an hr.employee.departure row is built from it
 hr           / hr.version               / departure_id (many2one)       : NEW relation: hr.employee.departure
 # NOTHING TO DO: empty on all 31 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.version               / departure_reason_id (many2one): not stored anymore
 hr           / hr.version               / departure_reason_id (many2one): now related
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: what stops is the reading, not the data. 19.0 stored
+# departure_reason_id, departure_description and departure_date on hr_version;
+# 20.0 moves all three onto the new hr.employee.departure and makes
+# hr.version's related through departure_id, so the surviving hr_version
+# columns go invisible to the ORM -- hr_employee_departure holds 0 rows and
+# every hr_version.departure_id is NULL. post-migration should create one
+# hr.employee.departure per version holding any of the three and point
+# hr_version.departure_id at it. All three are NULL on both copies' versions,
+# so this copy cannot show the loss
 hr           / hr.version               / employee_type (selection)     : DEL required, selection_keys: ['contractor', 'employee', 'freelance', 'student', 'trainee', 'worker']
 # NOTHING TO DO: 20.0 has no employee_type column on hr.version, so nothing was left behind
 hr           / hr.version               / employee_type_id (many2one)   : NEW relation: hr.employee.type
@@ -97,7 +134,11 @@ hr           / hr.version               / fixed_term (boolean)          : NEW
 hr           / hr.version               / is_flexible (boolean)         : DEL
 hr           / hr.version               / is_fully_flexible (boolean)   : DEL
 hr           / hr.version               / resource_calendar_id (many2one): now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: no row came out wrong -- both versions hold
+# resource_calendar_id = 1 before and after, matching
+# resource_resource.calendar_id = 1 for both employees' resources. The copy
+# cannot prove the mechanism, because res_company 1's resource_calendar_id is
+# also 1, so the 20.0 default would have written the same number
 hr           / hr.version               / sex (selection)               : selection_keys removed: [other]
 # NOTHING TO DO: no row holds other any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 hr           / hr.version               / ssnid (char)                  : DEL
@@ -105,11 +146,29 @@ hr           / hr.version               / ssnid (char)                  : DEL
 hr           / hr.version               / tz (selection)                : is now stored
 hr           / hr.version               / tz (selection)                : not related anymore
 hr           / hr.version               / tz (selection)                : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: every version came out UTC where every employee is
+# America/New_York, and the real value is still in the database. 19.0 declared
+# hr.version.tz related='employee_id.tz' (hr_version.py:153), so nothing was
+# stored on the version -- the value lived in resource_resource.tz. 20.0
+# inverts the relation: hr.version.tz is stored and required with
+# default=env.context tz or env.user.tz or 'UTC' (hr_version.py:162), and
+# hr.employee.tz becomes related="version_id.tz" (hr_employee.py:309). So the
+# upgrade had to materialise it and took the default instead. Measured: both
+# migrated versions hold 'UTC' while the resources behind their employees hold
+# 'America/New_York'. Nothing re-derives it -- _get_tz() returns self.tz first
+# (hr_version.py:715-717) -- so the wrong zone reaches _get_resources_per_tz
+# and every working-hours and attendance calculation downstream, a four or five
+# hour shift. post-migration must fill hr_version.tz from resource_resource.tz
+# through hr_employee.resource_id, and report any version it cannot source
 hr           / hr.version               / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on hr.version, so nothing was left behind
 hr           / mail.activity            / technical_usage (False)       : NEW selection_keys: ['hr_expiring_contract', 'hr_expiring_work_permit', 'none'], mode: modify
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the core field is new in 20.0, so there are no 19.0 values for
+# hr's two added keys to invalidate -- technical_usage appears nowhere under
+# 19.0's addons, and 20.0's mail declares it selection=[('none', 'Non
+# Technical')], default='none', readonly=True (mail/models/mail_activity.py:112).
+# Both mail_activity rows read 'none'. hr only extends the selection and writes
+# the new keys itself when it schedules those activities
 hr           / mail.activity.plan.template / responsible_type (False)      : selection_keys added: [role], removed: [coach]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 hr           / res.users                / additional_note (text)        : not related anymore

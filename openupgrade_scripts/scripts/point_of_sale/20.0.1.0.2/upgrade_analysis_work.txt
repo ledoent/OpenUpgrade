@@ -26,7 +26,9 @@ point_of_sale / account.move.line        / pos_order_line_id (many2one)  : NEW r
 # NOTHING TO DO: empty on all 7824 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.bill                 / name (char)                   : now required
 point_of_sale / pos.category             / active (boolean)              : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0's pos.category had no archiving of any kind, so every 19.0
+# category was visible and the default True is the only value that reproduces
+# 19.0. pos_category is empty in this copy in any case
 point_of_sale / pos.category             / complete_name (char)          : NEW isfunction: function, stored
 # NOTHING TO DO: 20.0 filled it itself -- 13 distinct values over 13 of 13 rows, so a compute or a related field did the work
 point_of_sale / pos.category             / pos_config_ids (many2many)    : previously in module pos_self_order
@@ -34,7 +36,16 @@ point_of_sale / pos.category             / pos_config_ids (many2many)    : previ
 point_of_sale / pos.config               / auto_validate_electronic_payment (boolean): NEW hasdefault: default
 point_of_sale / pos.config               / auto_validate_terminal_payment (boolean): DEL
 point_of_sale / pos.config               / closing_journal_id (many2one) : NEW relation: account.journal, required, hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carry the old journal_id into it -- the precompute invented a
+# new journal rather than reusing the one 19.0 posted to. 19.0 posted the
+# session closing entry to config.journal_id (pos_session.py:819); 20.0 posts it
+# to config.closing_journal_id (pos_session.py:988).
+# _compute_closing_journal_id calls _ensure_company_closing_journal(), which
+# creates a POSC journal: the migrated row holds closing_journal_id = 88, whose
+# create_date is 2026-10-01 -- the migration run itself -- while journal_id is
+# still 19, the journal 19.0 would have posted to. The script must only carry
+# journals of type 'sale': 19.0's domain was ('general','sale') and 20.0's is
+# ('sale',) alone. Journal 19 qualifies
 point_of_sale / pos.config               / custom_email (char)           : NEW
 # NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.config               / custom_logo (binary)          : NEW attachment: True
@@ -46,13 +57,22 @@ point_of_sale / pos.config               / custom_website (char)         : NEW
 # NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.config               / default_partner_id (many2one) : NEW relation: res.partner, required, hasdefault: default
 point_of_sale / pos.config               / email (char)                  : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a stored compute off the company, and it came out right.
+# _compute_custom_info sets it to custom_email when use_custom_receipt_info is
+# on and to company_id.email otherwise; 19.0 had no per-config contact fields at
+# all. The row holds company 1's partner email
 point_of_sale / pos.config               / epson_printer_ip (char)       : DEL
 point_of_sale / pos.config               / iface_cashdrawer (boolean)    : DEL
 point_of_sale / pos.config               / iface_electronic_scale (boolean): DEL
 # NOTHING TO DO: the column held nothing on any of the 6 rows, so its removal carries nothing away
 point_of_sale / pos.config               / iface_print_skip_screen (boolean): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 drops the flag and keeps nothing equivalent. 19.0 skipped
+# the receipt screen only when both flags were on (order_payment_validation.js);
+# 20.0's replacement reads iface_print_auto alone (pos_config.js `get
+# autoPrint()`), and grep for iface_print_skip_screen across 20.0 returns
+# nothing. A config with auto-print on and preview-skip off will now skip, and
+# there is no 20.0 field in which to say otherwise. Moot on this row --
+# iface_print_auto is false, so the flag was already inert
 point_of_sale / pos.config               / iface_print_via_proxy (boolean): DEL
 # NOTHING TO DO: the column held nothing on any of the 6 rows, so its removal carries nothing away
 point_of_sale / pos.config               / iface_printbill (boolean)     : previously in module pos_restaurant
@@ -60,7 +80,14 @@ point_of_sale / pos.config               / iface_printbill (boolean)     : previ
 point_of_sale / pos.config               / iface_scan_via_proxy (boolean): DEL
 # NOTHING TO DO: the column held nothing on any of the 6 rows, so its removal carries nothing away
 point_of_sale / pos.config               / invoice_journal_id (many2one) : DEL relation: account.journal
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carry it into journal_id, whose meaning changed underneath it.
+# In 19.0 invoice_journal_id was the journal for POS invoices (pos_order.py:919)
+# and journal_id was the closing journal. In 20.0 _prepare_invoice_vals reads
+# config_id.journal_id (pos_order.py:1557). Nothing moved the value: the one row
+# still holds journal_id = 19 and invoice_journal_id = 1. Journal 1 (INV, sale,
+# created 2020-01-05) carries all 88 POS invoice moves; journal 19 (POSS, sale,
+# created 2020-01-06) carries 0. So after the upgrade POS invoices are cut in a
+# journal with no history instead of the one holding every POS invoice to date
 point_of_sale / pos.config               / is_closing_entry_by_product (boolean): DEL
 point_of_sale / pos.config               / is_header_or_footer (boolean) : DEL
 point_of_sale / pos.config               / is_order_printer (boolean)    : DEL
@@ -71,7 +98,8 @@ point_of_sale / pos.config               / logo (binary)                 : NEW a
 point_of_sale / pos.config               / name (char)                   : now translatable
 point_of_sale / pos.config               / order_edit_tracking (boolean) : DEL
 point_of_sale / pos.config               / phone (char)                  : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: same compute as email -- the row holds company 1's partner
+# phone. 19.0 had no per-config phone to carry
 point_of_sale / pos.config               / picking_policy (selection)    : module is now 'pos_stock' ('point_of_sale')
 point_of_sale / pos.config               / picking_type_id (many2one)    : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
@@ -86,21 +114,34 @@ point_of_sale / pos.config               / printer_ids (many2many)       : DEL r
 point_of_sale / pos.config               / proxy_ip (char)               : DEL
 # NOTHING TO DO: the column held nothing on any of the 6 rows, so its removal carries nothing away
 point_of_sale / pos.config               / receipt_address (char)        : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: same compute as email -- assembled from company 1's
+# street/city/state/zip. 19.0 had no per-config address to carry
 point_of_sale / pos.config               / receipt_printer_ids (many2many): NEW relation: pos.printer
 # NOTHING TO DO: 20.0 has no receipt_printer_ids column on pos.config, so nothing was left behind
 point_of_sale / pos.config               / route_id (many2one)           : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.config               / session_closing_daily_hour (float): NEW hasdefault: default
 point_of_sale / pos.config               / session_closing_mode (selection): NEW selection_keys: ['closing', 'daily']
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: write 'closing' on every pre-existing config -- the default
+# 'daily' changes WHEN accounting entries are generated. 19.0 built the closing
+# entry only when a session was closed and shipped no cron for it. 20.0 ships
+# point_of_sale.ir_cron_pos_auto_order_invoicing, active, every 10 minutes, and
+# its _launch_cron_generate_invoice_period selects ('config_id.
+# session_closing_mode', '=', 'daily') and calls _validate_session_accounting on
+# sessions that are still open. The migrated row holds 'daily' with
+# session_closing_daily_hour 4.0, so an upgraded database starts posting session
+# accounting at 04:00 whether or not anyone closed the session. 'closing' is
+# 20.0's spelling of what 19.0 did. The copy cannot show the effect -- the lab
+# disables every cron -- so the 20.0 data file is the evidence
 point_of_sale / pos.config               / set_tip_after_payment (boolean): previously in module pos_restaurant
 point_of_sale / pos.config               / ship_later (boolean)          : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.config               / tip_percentage_1 (integer)    : NEW hasdefault: default
 point_of_sale / pos.config               / tip_percentage_2 (integer)    : NEW hasdefault: default
 point_of_sale / pos.config               / tip_percentage_3 (integer)    : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: tip_percentage_1/2/3 are all new in 20.0 -- grep over 19.0's
+# pos_config.py returns nothing. 19.0's tipping was iface_tipproduct +
+# tip_product_id, which carry no percentage, and both are NULL on the one row
 point_of_sale / pos.config               / use_closing_entry_by_product (boolean): NEW
 point_of_sale / pos.config               / use_custom_receipt_info (boolean): NEW hasdefault: default
 point_of_sale / pos.config               / use_download_invoice (boolean): NEW
@@ -110,13 +151,19 @@ point_of_sale / pos.config               / use_order_printer (boolean)   : NEW
 point_of_sale / pos.config               / warehouse_id (many2one)       : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.config               / website (char)                : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: same compute as email -- company 1's partner website. 19.0 had
+# no per-config website to carry
 point_of_sale / pos.order                / defer_invoice_pdf (boolean)   : NEW
 # NOTHING TO DO: empty on all 12 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.order                / failed_pickings (boolean)     : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.order                / last_order_preparation_change (char): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 replaces the JSON blob with pos.prep.order / pos.prep.line
+# records, and the blob is live per-session kitchen bookkeeping nothing reads
+# again. 20.0 rebuilds it from line quantities in update_last_order_change, so
+# for a paid order there is nothing to show and for a draft one 20.0 re-derives
+# it on the next change. pos_order is empty here and pos_restaurant, which owns
+# kitchen printing, is uninstalled
 point_of_sale / pos.order                / picking_count (integer)       : module is now 'pos_stock' ('point_of_sale')
 point_of_sale / pos.order                / picking_ids (one2many)        : module is now 'pos_stock' ('point_of_sale')
 point_of_sale / pos.order                / picking_type_id (many2one)    : module is now 'pos_stock' ('point_of_sale')
@@ -145,14 +192,26 @@ point_of_sale / pos.payment              / amount_currency (float)       : NEW
 point_of_sale / pos.payment              / currency_rate (float)         : is now stored
 # NOTHING TO DO: empty on all 8 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.payment              / currency_rate (float)         : not related anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: fill it from pos_order.currency_rate. 19.0 declared it
+# related='pos_order_id.currency_rate' with no store, so there was no column and
+# every read went to the order; 20.0 declares a plain stored Float
+# (pos_payment.py:39) and nothing fills it for historical rows. The source is
+# intact -- pos.order.currency_rate is a stored compute in both versions and the
+# column survives -- so UPDATE pos_payment p SET currency_rate = o.currency_rate
+# FROM pos_order o WHERE o.id = p.pos_order_id reproduces what 19.0 returned.
+# pos_payment has 0 rows here
 point_of_sale / pos.payment              / foreign_currency_id (many2one): NEW relation: res.currency
 point_of_sale / pos.payment              / qr_code (char)                : NEW
 # NOTHING TO DO: empty on all 8 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.payment.method       / account_bank_statement_id (many2one): NEW relation: account.bank.statement
 # NOTHING TO DO: empty on all 11 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.payment.method       / company_id (many2one)         : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the NOT NULL applied cleanly because every row genuinely had a
+# company, checked against two independent references. All 10 rows are filled
+# (companies 1-5, two methods each); each row's company_id equals its journal's
+# company_id where a journal is set, and equals the single company in
+# account_account_res_company_rel for its receivable_account_id on every row.
+# 19.0 already defaulted company_id to env.company
 point_of_sale / pos.payment.method       / currency_ids (many2many)      : NEW relation: res.currency
 # NOTHING TO DO: 20.0 has no currency_ids column on pos.payment.method, so nothing was left behind
 point_of_sale / pos.payment.method       / custom_image (binary)         : NEW attachment: True
@@ -161,16 +220,32 @@ point_of_sale / pos.payment.method       / image (binary)                : not s
 point_of_sale / pos.payment.method       / image (binary)                : now a function
 # NOTHING TO DO: 20.0 has no image column on pos.payment.method, so nothing was left behind
 point_of_sale / pos.payment.method       / is_cash_count (boolean)       : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: it was only ever a stored echo of type. 19.0's
+# _compute_is_cash_count is `pm.is_cash_count = pm.type == 'cash'`, and the
+# migrated table agrees exactly -- true on ids 1,3,5,7,9, precisely the rows
+# that came out type='cash'. 20.0 drops the column and asks `pm.type == 'cash'`
+# directly, so the information is already carried by type
 point_of_sale / pos.payment.method       / payment_provider (selection)  : NEW selection_keys: function
 # NOTHING TO DO: empty on all 11 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.payment.method       / split_transactions (boolean)  : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 removes the concept along with the accounting path that
+# used it. 19.0's "Identify Customer" forced a partner and split the closing
+# entry per customer; grep for split_transactions across the whole 20.0 addons
+# tree returns nothing, 20.0 having moved to per-order sale_move_ids /
+# refund_move_ids. All 10 rows are false in any case
 point_of_sale / pos.payment.method       / type (selection)              : is now stored
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 11 of 11 rows, so a compute or a related field did the work
 point_of_sale / pos.payment.method       / type (selection)              : not a function anymore
 point_of_sale / pos.payment.method       / type (selection)              : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration fills it from the journal, which is 19.0's own rule.
+# 19.0's type was a NON-stored compute (pos_payment_method.py:59) so there was
+# no column; 20.0 declares it stored and required. The script replays 19.0's
+# _compute_type verbatim. The five rows NAMED "Bank" came out 'pay_later', not
+# 'bank', because their journal_id is NULL -- and that is what 19.0 displayed
+# for them too: they are 2020-vintage records from the era when a non-cash
+# method was is_cash_count=False with no journal. Writing 'bank' would be an
+# invention -- 20.0's form marks journal_id required for type in (cash, bank)
+# and both it and outstanding_account_id are empty on all five
 point_of_sale / pos.payment.method       / use_payment_terminal (selection): DEL selection_keys: function
 # NOTHING TO DO: the column held nothing on any of the 11 rows, so its removal carries nothing away
 point_of_sale / pos.prep.line            / attribute_value_ids (many2many): NEW relation: product.template.attribute.value
@@ -196,11 +271,14 @@ point_of_sale / pos.preset               / service_fee (boolean)         : NEW h
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.preset               / service_fee_amount (float)    : NEW hasdefault: default
 point_of_sale / pos.preset               / service_fee_based_on (selection): NEW selection_keys: ['post_discount', 'pre_discount'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new with service_fee_type above; 19.0 has no service fee on
+# pos.preset and the default 'pre_discount' is inert while service_fee is False
 point_of_sale / pos.preset               / service_fee_product_id (many2one): NEW relation: product.product, hasdefault: default
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.preset               / service_fee_type (selection)  : NEW selection_keys: ['fixed', 'percent'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the whole service-fee feature is new in 20.0 -- 19.0's
+# pos.preset has no service_fee field of any kind. The gate is service_fee,
+# default False, so 'percent' is inert. pos_preset is empty here
 point_of_sale / pos.printer              / company_id (many2one)         : DEL relation: res.company, required
 point_of_sale / pos.printer              / epson_printer_ip (char)       : DEL
 point_of_sale / pos.printer              / is_split_per_product (boolean): NEW
@@ -226,13 +304,29 @@ point_of_sale / pos.session              / cash_journal_id (many2one)    : DEL r
 point_of_sale / pos.session              / cash_real_transaction (float) : DEL
 point_of_sale / pos.session              / cash_register_balance_end_real (float): DEL
 point_of_sale / pos.session              / cash_register_balance_start (float): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO -- DECLINED, not overlooked. 20.0's successor is opening_balance
+# and it is NOT stored: related='bank_statement_id.balance_start', with
+# bank_statement_id itself new in 20.0. The only place a script could write the
+# opening count is account_bank_statement.balance_start of a statement that does
+# not exist for any migrated session, and creating those means fabricating
+# accounting records to hold a display value. The 19.0 number is not destroyed
+# -- the cash_register_balance_start column survives with its values
 point_of_sale / pos.session              / correction_move_ids (one2many): NEW relation: account.move
 # NOTHING TO DO: 20.0 has no correction_move_ids column on pos.session, so nothing was left behind
 point_of_sale / pos.session              / failed_pickings (boolean)     : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.session              / move_id (many2one)            : DEL relation: account.move
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carry it into account_move.pos_session_sales_id. 19.0 kept the
+# session's closing entry as one many2one on pos.session (pos_session.py:88);
+# 20.0 inverts the link and splits it across pos_session_sales_id,
+# pos_session_refunds_id and pos_session_correction_id on account.move. The work
+# file already records all three new columns as empty on every row, while the
+# old move_id column survives with its FK intact, so the link is recoverable
+# with one UPDATE into pos_session_sales_id (19.0 posted sales and refunds into
+# one move). Not cosmetic: 20.0's _compute_always_tax_exigible depends on
+# pos_session_ids and forces always_tax_exigible True for a move belonging to a
+# session, so unlinked historical closing moves can recompute to the wrong
+# exigibility. pos_session is empty here
 point_of_sale / pos.session              / picking_count (integer)       : module is now 'pos_stock' ('point_of_sale')
 point_of_sale / pos.session              / picking_ids (one2many)        : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same

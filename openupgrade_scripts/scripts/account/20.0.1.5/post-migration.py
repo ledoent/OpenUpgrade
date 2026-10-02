@@ -46,19 +46,28 @@ def _carry_a_deliberate_not_reviewed_into_the_review_queue(env):
 
     **Only the deviation is carried.** A True that merely reproduces the compute
     records nothing a reader could not derive, and writing 'reviewed' for it
-    would assert a review of every posted invoice in the database -- 3206 of the
-    seed's 3223 moves, on the strength of a value that is really just "posted".
-    A posted move whose `checked` is FALSE is the opposite: the compute would
-    have set it True, so False is there because somebody put it there, and
+    would assert a review of every posted invoice in the database -- 7907 of the
+    prod copy's 7958 moves, on the strength of a value that is really just
+    "posted". A posted move whose `checked` is FALSE is the opposite: the compute
+    would have set it True, so False is there because somebody put it there, and
     'todo' is what 20.0 calls that.
 
     Nothing is written for a draft move. 19.0 left those unchecked by the same
     formula, which says "not posted yet", not "waiting to be reviewed".
 
-    **This seed contains no such row** -- `checked` equals `state = 'posted'` on
-    all 3223 of its moves -- so the branch is unreachable here and the migration
-    test builds the row that reaches it. The count is reported either way, so a
-    database where it does fire says so in the log rather than only in the data.
+    **Measured on erp_mig20test (the sanitised prod copy) 2026-10-02:** `posted
+    AND NOT checked` is **0 rows**, so the branch is unreachable on this data too
+    and the migration test builds the row that reaches it. The count is reported
+    either way, so a database where it does fire says so in the log rather than
+    only in the data.
+
+    `checked` is NOT simply `state = 'posted'` here, which an earlier draft of
+    this docstring asserted against a 3223-move seed: 45 cancelled moves and 1
+    draft carry `checked = TRUE`, because 19.0's field was `readonly=False` and a
+    move can be checked and then cancelled. None of them is `posted AND NOT
+    checked`, so none changes what this script writes -- but the shape is worth
+    stating, because "checked == posted" is the assumption that would make
+    carrying the True side look harmless.
     """
     openupgrade.logged_query(
         env.cr,
