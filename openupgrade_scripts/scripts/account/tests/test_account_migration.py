@@ -118,3 +118,62 @@ class TestAccountMigration(TransactionCase):
             """
         )
         self.assertEqual(self.env.cr.fetchone()[0], 0)
+
+    def test_the_gln_moved_into_the_identifier_json(self):
+        """20.0 reads global_location_number from additional_identifiers.
+
+        account absorbed account_add_gln and redeclared the field as a
+        NON-STORED compute returning `_get_additional_identifier('EAN_GLN')`
+        (account/models/partner.py:677-679). The 19.0 column survives, so
+        nothing fails -- the value simply stops being read.
+        """
+        partner = self.env["res.partner"].search([("name", "=", "ou19-gln-valid")])
+        self.assertTrue(partner, "the fixture's partner is gone")
+        self.assertEqual(
+            partner.additional_identifiers.get("EAN_GLN"), "1234567890128"
+        )
+        # The compute is what a user actually sees, so assert through it too.
+        self.assertEqual(partner.global_location_number, "1234567890128")
+
+    def test_a_gln_failing_its_check_digit_was_not_filed(self):
+        """Carrying it would make the partner unsavable, not merely wrong.
+
+        `@api.constrains('additional_identifiers')` revalidates every key with
+        validation='error', and EAN_GLN validates with ean.validate -- so a
+        legacy typo written into the Json blocks every later save of that
+        partner. It stays in the legacy column and is reported instead.
+        """
+        partner = self.env["res.partner"].search([("name", "=", "ou19-gln-broken")])
+        self.assertTrue(partner, "the fixture's partner is gone")
+        self.assertNotIn("EAN_GLN", partner.additional_identifiers or {})
+        # Still savable, which is the point of refusing to write it.
+        partner.write({"additional_identifiers": partner.additional_identifiers})
+        self.env.cr.execute(
+            "SELECT global_location_number FROM res_partner WHERE id = %s",
+            (partner.id,),
+        )
+        self.assertEqual(self.env.cr.fetchone()[0], "1234567890129")
+
+    def test_an_archived_report_did_not_come_back(self):
+        """account.report.active stops being stored, so the archive flag moves.
+
+        20.0 computes active from active_fallback and active_selection, and
+        names the carrier in its own loader error: "'active' field of
+        account.report shouldn't be directly written to in data files. Use
+        active_fallback." active_fallback defaults to True, so without the
+        carry a report an administrator archived reappears in every report
+        menu.
+
+        Found by external id, not by name: every report in the seed is core
+        module data, so account's data load rewrites `name` during the upgrade
+        and a fixture rename does not survive to be searched for.
+        """
+        report = self.env.ref("__ou19__.ou19_report_archived")
+        self.assertTrue(report, "the fixture's report is gone")
+        self.env.cr.execute(
+            "SELECT active_fallback FROM account_report WHERE id = %s", (report.id,)
+        )
+        self.assertFalse(
+            self.env.cr.fetchone()[0], "active_fallback came back as True"
+        )
+        self.assertFalse(report.active, "the report un-archived itself")

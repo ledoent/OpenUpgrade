@@ -73,4 +73,50 @@ env["ir.model.data"].create(
     }
 )
 
+# account_add_gln is absorbed: 20.0's global_location_number is a non-stored
+# compute over additional_identifiers['EAN_GLN'], so a stored GLN goes unread.
+# The column is written in SQL because 19.0's field is the stored one and this is
+# meant to leave exactly what an upgraded database carries.
+#
+# Two partners, because the two outcomes differ in kind. 1234567890128 is a valid
+# EAN-13 -- its check digit closes 26 + 3x22 = 92 to 100 -- and must be carried.
+# 1234567890129 is the same number with a broken check digit, and must NOT be:
+# @api.constrains('additional_identifiers') revalidates every key on write, so
+# filing it would make the partner permanently unsavable, which is worse than
+# leaving it in the legacy column and reporting it.
+for name, gln in (
+    ("ou19-gln-valid", "1234567890128"),
+    ("ou19-gln-broken", "1234567890129"),
+):
+    partner = env["res.partner"].create({"name": name})
+    env.cr.execute(
+        "UPDATE res_partner SET global_location_number = %s WHERE id = %s",
+        (gln, partner.id),
+    )
+
+
+# account.report.active stops being stored in 20.0: it becomes a non-stored
+# compute over active_fallback, which takes its default True on every row, so an
+# archived report comes back into the menus. One report is archived here because
+# every report in the seed is active, and the True side proves nothing -- it is
+# what the default produces anyway.
+# Marked with an external id rather than renamed. Every account.report in the
+# seed is core module data, so the data load rewrites its `name` when account is
+# upgraded and a fixture rename simply vanishes -- the first version of this
+# looked the report up by name afterwards and found nothing. `active` is not
+# rewritten, because 20.0's loader refuses to write that field from a data file
+# at all ("Use active_fallback."), which is exactly why the value survives for
+# post-migration to read.
+archived_report = env["account.report"].search([], order="id", limit=1)
+assert archived_report, "the seed needs at least one account.report"
+archived_report.active = False
+env["ir.model.data"].create(
+    {
+        "module": "__ou19__",
+        "name": "ou19_report_archived",
+        "model": "account.report",
+        "res_id": archived_report.id,
+    }
+)
+
 env.cr.commit()

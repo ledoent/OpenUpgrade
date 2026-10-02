@@ -1,6 +1,8 @@
 # Copyright 2026 Don Kendall
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from odoo.exceptions import ValidationError
+
 from openupgradelib import openupgrade
 
 
@@ -286,6 +288,127 @@ def _rescale_the_deductibility_from_percent_to_fraction(env):
         )
 
 
+def _keep_archived_reports_archived(env):
+    """account.report.active stops being stored, so an archived report revives.
+
+    19.0 had a plain `active = fields.Boolean(default=True)`. 20.0 makes it
+    company-dependent and non-stored: active is a compute/compute_sql/inverse
+    over active_fallback and active_selection, with _compute_active returning
+    `active_selection == 'True' or active_fallback`
+    (account_report.py:378-381).
+
+    20.0 names the carrier itself. Its loader refuses data writes to the field
+    with "'active' field of account.report shouldn't be directly written to in
+    data files. Use active_fallback." -- and active_fallback takes its default
+    True on every row, so a report an administrator archived in 19.0 comes back.
+
+    Only the False side is written. A True merely reproduces the default, and
+    the 19.0 column survives untouched because the field is no longer stored,
+    which is what makes it readable here at all.
+
+    All 4 reports are active on the prod copy, so the migration test is what
+    exercises this.
+    """
+    if not openupgrade.column_exists(env.cr, "account_report", "active"):
+        return
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_report SET active_fallback = false
+        WHERE NOT active AND active_fallback
+        """,
+    )
+    if env.cr.rowcount:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "account.report: kept %s report(s) archived. 20.0 reads the archive "
+            "flag through active_fallback, whose default would have brought them "
+            "back into every report menu",
+            env.cr.rowcount,
+        )
+
+
+def _carry_the_gln_into_additional_identifiers(env):
+    """account_add_gln is absorbed and its column stops being read.
+
+    20.0 did what the OCA module's own 19.0 manifest promised: account now
+    declares global_location_number itself (account/models/partner.py:615-620)
+    as a NON-STORED compute whose body is
+    `_get_additional_identifier('EAN_GLN')` (:677-679). The 19.0 column survives
+    but nothing reads it, so a stored GLN becomes invisible.
+
+    The Json key is written directly rather than through
+    _set_additional_identifier, which validates with ean.validate and raises
+    ValidationError on a bad check digit -- one legacy typo would abort the
+    whole upgrade. Each value is probed first with
+    `_validate_identifier(..., validation=False)`, which reports rather than
+    raises, and anything that fails is left in the legacy column and counted.
+    That matters because `@api.constrains('additional_identifiers')`
+    revalidates every key on write: a bad GLN written here would make the
+    partner unsavable rather than merely unmigrated.
+
+    Unlike the country-scoped identifiers, EAN_GLN declares `countries: False`,
+    so it stays visible on the form for every partner.
+
+    NULL on all 840 partners of the prod copy, so the migration test is what
+    exercises this.
+    """
+    if not openupgrade.column_exists(env.cr, "res_partner", "global_location_number"):
+        return
+    env.cr.execute(
+        """
+        SELECT id, global_location_number FROM res_partner
+        WHERE global_location_number IS NOT NULL AND global_location_number != ''
+        """
+    )
+    rows = env.cr.fetchall()
+    if not rows:
+        return
+    partner_model = env["res.partner"]
+    carried = rejected = 0
+    for partner_id, gln in rows:
+        check = partner_model._validate_identifier("EAN_GLN", gln, validation=False)
+        if not check["valid"]:
+            rejected += 1
+            continue
+        partner = partner_model.browse(partner_id)
+        try:
+            partner.additional_identifiers = {
+                **(partner.additional_identifiers or {}),
+                "EAN_GLN": check["value"],
+            }
+        except ValidationError:
+            rejected += 1
+            continue
+        carried += 1
+    if carried:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "res.partner: carried the GLN of %s partner(s) into "
+            "additional_identifiers['EAN_GLN'], which is where 20.0 reads it "
+            "from now that account_add_gln is part of account",
+            carried,
+        )
+    if rejected:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "res.partner: %s partner(s) hold a global_location_number that fails "
+            "20.0's EAN check digit, so it was left in the legacy column rather "
+            "than written into a Json whose constraint would then block every "
+            "save of the partner",
+            rejected,
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "account", "20.0.1.5/noupdate_changes.xml")
@@ -306,3 +429,5 @@ def migrate(env, version):
     _modernise_reconcile_model_rule_type(env)
     _drop_obsolete_journal_group_company_rule(env)
     _rescale_the_deductibility_from_percent_to_fraction(env)
+    _keep_archived_reports_archived(env)
+    _carry_the_gln_into_additional_identifiers(env)
