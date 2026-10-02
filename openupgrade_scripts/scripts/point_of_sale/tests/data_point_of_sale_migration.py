@@ -42,4 +42,45 @@ method.create(
 # it is False here and False on a bank method alike.
 method.create({"name": "ou19-pm-none", "company_id": company.id})
 
+# --- the two journals that swap jobs -----------------------------------------
+# 19.0: journal_id is the SESSION CLOSING journal, invoice_journal_id is the
+# journal POS invoices are cut from. 20.0 reverses both. The two are planted
+# DIFFERENT from each other, because a config whose journals already matched
+# would come out right whether the swap ran or not.
+pos_config = env["pos.config"].search([], order="id", limit=1)
+assert pos_config, "the seed has no pos.config"
+closing_journal = env["account.journal"].create(
+    {
+        "name": "ou19-pos-closing",
+        "code": "OU19C",
+        "type": "sale",
+        "company_id": pos_config.company_id.id,
+    }
+)
+invoice_journal = env["account.journal"].create(
+    {
+        "name": "ou19-pos-invoice",
+        "code": "OU19I",
+        "type": "sale",
+        "company_id": pos_config.company_id.id,
+    }
+)
+env.cr.execute(
+    "UPDATE pos_config SET journal_id = %s, invoice_journal_id = %s WHERE id = %s",
+    (closing_journal.id, invoice_journal.id, pos_config.id),
+)
+for record, name in (
+    (pos_config, "ou19_pos_config"),
+    (closing_journal, "ou19_pos_closing_journal"),
+    (invoice_journal, "ou19_pos_invoice_journal"),
+):
+    env["ir.model.data"].create(
+        {
+            "module": "__ou19__",
+            "name": name,
+            "model": record._name,
+            "res_id": record.id,
+        }
+    )
+
 env.cr.commit()

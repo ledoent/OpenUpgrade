@@ -74,3 +74,47 @@ class TestAccountMigration(TransactionCase):
             "the review queue holds more than the posted moves that were "
             "explicitly unticked in 19.0",
         )
+
+    def test_deductibility_is_rescaled_from_percent_to_fraction(self):
+        """19.0's 0-100 deductible_amount becomes 20.0's 0-1 fraction.
+
+        19.0 stored a percentage and divided at the point of use, `percentage =
+        1 - line.deductible_amount / 100` (19.0 account_move.py:1731). 20.0
+        renamed the idea to deductible_percentage and made it a fraction,
+        default 1.0, constrained `< 0 or > 1` (account_move_line.py:480,
+        :1973). The analysis reports a DEL/NEW pair rather than a rename, so
+        without this carry the new column keeps its default and the 19.0 figure
+        stays behind in its own.
+
+        That failure is invisible on ordinary data: deductible_amount is 100 on
+        all 16648 lines of the prod copy and deductible_percentage 1.0 on all
+        16648, the two defaults agreeing by coincidence. The fixture plants the
+        50 that makes the two scales disagree.
+        """
+        line = self.env.ref("__ou19__.ou19_line_half_deductible")
+        self.assertEqual(line.deductible_percentage, 0.5)
+
+    def test_a_fully_deductible_line_was_not_rescaled_to_nothing(self):
+        """100 is 19.0's default and maps to 20.0's, so those rows stay at 1.0.
+
+        Guards the obvious way to get this wrong -- dividing every row, which
+        would turn every ordinary line into 1% deductible.
+        """
+        self.env.cr.execute(
+            """
+            SELECT count(*)
+            FROM account_move_line
+            WHERE deductible_amount = 100 AND deductible_percentage != 1
+            """
+        )
+        self.assertEqual(self.env.cr.fetchone()[0], 0)
+
+    def test_no_line_holds_a_fraction_outside_what_20_allows(self):
+        """Nothing was written that 20.0's own constraint would reject."""
+        self.env.cr.execute(
+            """
+            SELECT count(*) FROM account_move_line
+            WHERE deductible_percentage < 0 OR deductible_percentage > 1
+            """
+        )
+        self.assertEqual(self.env.cr.fetchone()[0], 0)

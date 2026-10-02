@@ -41,4 +41,36 @@ for record, name in (
         }
     )
 
+# --- the deductibility scale change ------------------------------------------
+# 19.0's deductible_amount is a 0-100 percentage; 20.0's deductible_percentage
+# is a 0-1 fraction. The two defaults -- 100 and 1.0 -- mean the same thing, so
+# a line left on the default proves nothing either way. 50 is planted because it
+# is the one value that comes out wrong: without the rescale the line reads as
+# fully deductible and 20.0 claims the whole VAT on a half-private expense.
+#
+# It must sit on a vendor bill: 20.0 forbids deductibility anywhere else
+# ("Only vendor bills allow for deductibility of product/services.",
+# account_move_line.py:1971), so a sales line could not hold the value at all.
+bill_line = env["account.move.line"].search(
+    [
+        ("move_id.move_type", "in", ("in_invoice", "in_refund", "in_receipt")),
+        ("display_type", "=", "product"),
+    ],
+    order="id",
+    limit=1,
+)
+assert bill_line, "the seed has no vendor bill product line to mark part-deductible"
+env.cr.execute(
+    "UPDATE account_move_line SET deductible_amount = 50 WHERE id = %s",
+    (bill_line.id,),
+)
+env["ir.model.data"].create(
+    {
+        "module": "__ou19__",
+        "name": "ou19_line_half_deductible",
+        "model": "account.move.line",
+        "res_id": bill_line.id,
+    }
+)
+
 env.cr.commit()

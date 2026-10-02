@@ -49,3 +49,44 @@ class TestPointOfSaleMigration(TransactionCase):
         methods = self.env["pos.payment.method"].with_context(active_test=False)
         self.assertTrue(methods.search_count([]))
         self.assertEqual(methods.search_count([("type", "=", False)]), 0)
+
+    def test_the_invoice_journal_became_the_one_20_cuts_invoices_from(self):
+        """19.0's invoice_journal_id is 20.0's journal_id.
+
+        _prepare_invoice_vals reads `config_id.journal_id` in 20.0
+        (pos_order.py:1557) where 19.0 read invoice_journal_id
+        (19.0 pos_order.py:919). Without the swap, POS invoices are cut from
+        the old CLOSING journal: on the sanitised prod copy that is POSS, which
+        holds 0 moves, while all 88 POS invoices sit in the journal
+        invoice_journal_id still named.
+        """
+        config = self.env.ref("__ou19__.ou19_pos_config")
+        self.assertEqual(
+            config.journal_id,
+            self.env.ref("__ou19__.ou19_pos_invoice_journal"),
+        )
+
+    def test_the_closing_journal_is_the_19_one_not_a_freshly_created_one(self):
+        """closing_journal_id takes 19.0's journal_id, not a new POSC journal.
+
+        Left alone, _compute_closing_journal_id calls
+        _ensure_company_closing_journal() and CREATES one -- the prod copy's
+        config points at journal 88, whose create_date is the migration run
+        itself.
+        """
+        config = self.env.ref("__ou19__.ou19_pos_config")
+        self.assertEqual(
+            config.closing_journal_id,
+            self.env.ref("__ou19__.ou19_pos_closing_journal"),
+        )
+
+    def test_session_accounting_still_waits_for_a_close(self):
+        """A pre-existing config keeps 19.0's behaviour, not 20.0's default.
+
+        20.0 defaults session_closing_mode to 'daily' and ships
+        ir_cron_pos_auto_order_invoicing active every 10 minutes, whose domain
+        selects exactly that value and validates accounting on sessions that
+        are still open. 19.0 posted only on close and shipped no such cron.
+        """
+        config = self.env.ref("__ou19__.ou19_pos_config")
+        self.assertEqual(config.session_closing_mode, "closing")

@@ -210,6 +210,82 @@ def _drop_obsolete_journal_group_company_rule(env):
     )
 
 
+def _rescale_the_deductibility_from_percent_to_fraction(env):
+    """deductible_amount was 0-100; deductible_percentage is 0-1.
+
+    19.0 stored a percentage and its consumer divided: `percentage = 1 -
+    line.deductible_amount / 100` (19.0 account_move.py:1731), with a 0..100
+    constraint. 20.0 renamed the idea to deductible_percentage and made it a
+    FRACTION, default 1.0, constrained `< 0 or > 1`
+    (account_move_line.py:480, :1973).
+
+    The analysis reports a DEL/NEW pair rather than a rename, so the new column
+    simply took its default on every row and the 19.0 figure stayed behind in
+    its own. Left alone, a line a bookkeeper marked 50% deductible reads as
+    fully deductible, and 20.0 claims the whole VAT on a mixed-use expense.
+
+    Two things bound what is written. 20.0 also constrains a non-purchase
+    document to exactly 1 ("Only vendor bills allow for deductibility of
+    product/services.", :1971), so only in_invoice / in_refund / in_receipt
+    lines -- get_purchase_types(include_receipts=True) -- are rescaled; a sales
+    line carrying a stray 19.0 value is reported instead, because writing it
+    would make the move unsavable. And 100 is 19.0's own default, which maps to
+    20.0's, so those rows are already right and are left alone.
+
+    Measured on the sanitised prod copy 2026-10-02: deductible_amount is 100 on
+    all 16648 lines and deductible_percentage 1.0 on all 16648 -- the two
+    defaults agreeing by coincidence, which is exactly why this would pass
+    unnoticed. The migration test plants the row that reaches the branch.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE account_move_line l
+        SET deductible_percentage = l.deductible_amount / 100.0
+        FROM account_move m
+        WHERE m.id = l.move_id
+          AND m.move_type IN ('in_invoice', 'in_refund', 'in_receipt')
+          AND l.deductible_amount IS NOT NULL
+          AND l.deductible_amount != 100
+        """,
+    )
+    rescaled = env.cr.rowcount
+    if rescaled:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "account.move.line: rescaled %s line(s) from 19.0's 0-100 "
+            "deductible_amount to 20.0's 0-1 deductible_percentage; without it "
+            "each would have claimed full VAT deductibility",
+            rescaled,
+        )
+    env.cr.execute(
+        """
+        SELECT count(*)
+        FROM account_move_line l
+        JOIN account_move m ON m.id = l.move_id
+        WHERE m.move_type NOT IN ('in_invoice', 'in_refund', 'in_receipt')
+          AND l.deductible_amount IS NOT NULL
+          AND l.deductible_amount != 100
+        """
+    )
+    unsalvageable = env.cr.fetchone()[0]
+    if unsalvageable:
+        openupgrade.message(
+            env.cr,
+            "account",
+            False,
+            False,
+            "account.move.line: %s line(s) carry a 19.0 deductible_amount other "
+            "than 100 on a document that is not a vendor bill. 20.0 forbids "
+            "deductibility there, so the value was left in the legacy column "
+            "rather than written into a move that could then not be saved",
+            unsalvageable,
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "account", "20.0.1.5/noupdate_changes.xml")
@@ -229,3 +305,4 @@ def migrate(env, version):
     _carry_a_deliberate_not_reviewed_into_the_review_queue(env)
     _modernise_reconcile_model_rule_type(env)
     _drop_obsolete_journal_group_company_rule(env)
+    _rescale_the_deductibility_from_percent_to_fraction(env)
