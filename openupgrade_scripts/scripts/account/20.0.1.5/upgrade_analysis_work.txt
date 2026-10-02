@@ -17,7 +17,14 @@ account      / account.account          / parent_path (char)            : NEW
 account      / account.account          / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on account.account, so nothing was left behind
 account      / account.bank.statement   / is_statement_posted (boolean) : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 has no statement state to carry -- its
+# account.bank.statement declares is_complete and is_valid and nothing else,
+# and posted-ness lived on each line's move. 20.0 adds is_statement_posted
+# (default=True, account_bank_statement.py:110) as a real draft/posted step.
+# The default is the only honest landing point: all 495 statements came out
+# True, and of the 1970 lines they hold 1966 already sit on posted moves.
+# Defaulting False would have pushed 495 reconciled statements into a draft
+# queue
 account      / account.bank.statement.line / invoice_outstanding_credits_debits_widget (binary): type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no invoice_outstanding_credits_debits_widget column on account.bank.statement.line, so nothing was left behind
 account      / account.bank.statement.line / invoice_payments_widget (binary): type is now 'json' ('binary')
@@ -31,7 +38,11 @@ account      / account.bank.statement.line / tax_totals (binary)           : typ
 account      / account.cash.rounding    / _order                        : _order is now 'sequence, id' ('id')
 account      / account.cash.rounding    / active (boolean)              : NEW hasdefault: default
 account      / account.cash.rounding    / company_id (many2one)         : NEW relation: res.company
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0's account.cash.rounding has no company field at all, so a
+# rounding was global; 20.0's company_id is OPTIONAL with ondelete='cascade'
+# (account_cash_rounding.py:75) and the model uses
+# check_company_domain_parent_of (:19), so NULL means available to every
+# company -- exactly 19.0's meaning. account_cash_rounding is empty here
 account      / account.cash.rounding    / currency_ids (many2many)      : NEW relation: res.currency
 # NOTHING TO DO: 20.0 has no currency_ids column on account.cash.rounding, so nothing was left behind
 account      / account.cash.rounding    / partner_category_ids (many2many): NEW relation: res.partner.category
@@ -39,7 +50,10 @@ account      / account.cash.rounding    / partner_category_ids (many2many): NEW 
 account      / account.cash.rounding    / payment_method_line_ids (many2many): NEW relation: account.payment.method.line
 # NOTHING TO DO: 20.0 has no payment_method_line_ids column on account.cash.rounding, so nothing was left behind
 account      / account.cash.rounding    / sequence (integer)            : NEW required, hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a new ordering key with no 19.0 counterpart. 20.0 declares
+# sequence required default=10 (:23) and changes _order from 'id' to
+# 'sequence, id' (:17); with every row on the same default the order
+# degenerates back to id, i.e. 19.0's order
 account      / account.fiscal.position  / account_map (binary)          : type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no account_map column on account.fiscal.position, so nothing was left behind
 account      / account.fiscal.position  / tax_map (binary)              : type is now 'json' ('binary')
@@ -49,7 +63,11 @@ account      / account.group            / code_prefix_start (char)      : DEL
 account      / account.group            / company_id (many2one)         : DEL relation: res.company, required
 account      / account.group            / name (char)                   : DEL required
 account      / account.group            / parent_id (many2one)          : DEL relation: account.group
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 removed the whole model, not just the field. There is no
+# account_group.py and no `_name = 'account.group'` anywhere in 20.0; the
+# hierarchy is now account.account.parent_id (account_account.py:133) with
+# parent_path (:141). Nothing to carry regardless: account_group is empty and
+# the retained group_id column is NULL on all 356 accounts
 account      / account.journal          / disable_dashboard_graph (boolean): NEW
 # NOTHING TO DO: empty on all 850 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 account      / account.journal          / display_invoice_template_pdf_report_id (boolean): now a function
@@ -82,7 +100,16 @@ account      / account.move             / journal_group_id (many2one)   : now re
 account      / account.move             / journal_line_ids (one2many)   : DEL relation: account.move.line
 # NOTHING TO DO: 20.0 has no journal_line_ids column on account.move, so nothing was left behind
 account      / account.move             / narration (html)              : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the field is still stored; only an inverse was added. 19.0
+# (account_move.py:655) and 20.0 (:689) both declare
+# compute='_compute_narration', store=True, readonly=False, and 20.0's single
+# change is inverse='_inverse_narration'. That is the whole reason the line
+# appears: the analysis flags "now a function" when isfunction() flips, and
+# isfunction is `compute and (readonly or inverse) and not related and not
+# company_dependent` (upgrade_analysis/upgrade_log.py:99-107) -- a
+# readonly=False stored compute with no inverse scores "", the same field with
+# an inverse scores "function". Hence no accompanying "not stored anymore", and
+# the column is untouched: 901 of 7958 moves still hold their terms text
 account      / account.move             / needed_terms (binary)         : type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no needed_terms column on account.move, so nothing was left behind
 account      / account.move             / payment_term_details (binary) : type is now 'json' ('binary')
@@ -97,7 +124,19 @@ account      / account.move.line        / cogs_origin_id (many2one)     : previo
 # NOTHING TO DO: the field only changed owning module, the column is the same
 account      / account.move.line        / deductible_amount (float)     : DEL
 account      / account.move.line        / deductible_percentage (float) : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: divide by 100 -- the scale changed. 19.0's deductible_amount
+# was a percentage on a 0-100 scale, default 100 (account_move_line.py:405,
+# constraint 0..100 at :1586), and its consumer reads it that way: `percentage
+# = 1 - line.deductible_amount / 100` (account_move.py:1731). 20.0's
+# deductible_percentage is a FRACTION, default 1.0 (account_move_line.py:480)
+# with the constraint `< 0 or > 1` (:1973). The analysis reports a DEL/NEW
+# pair, not a rename, so the new column simply took its default on every row.
+# The script must set deductible_percentage = deductible_amount / 100 wherever
+# deductible_amount is not 100: left alone, a half-private expense silently
+# claims full VAT deductibility. This copy cannot show it -- deductible_amount
+# is 100 on all 16648 lines and deductible_percentage 1.0 on all 16648, the two
+# defaults agreeing by coincidence, which is precisely why it would pass
+# unnoticed
 account      / account.move.line        / discount_allocation_key (binary): type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no discount_allocation_key column on account.move.line, so nothing was left behind
 account      / account.move.line        / discount_allocation_needed (binary): type is now 'json' ('binary')
@@ -109,7 +148,10 @@ account      / account.move.line        / epd_needed (binary)           : type i
 account      / account.move.line        / journal_group_id (many2one)   : now related
 # NOTHING TO DO: 20.0 has no journal_group_id column on account.move.line, so nothing was left behind
 account      / account.move.line        / name (char)                   : type is now 'text' ('char')
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: Char -> Text is a widening ALTER and 19.0's column was an
+# unbounded varchar, so nothing can be truncated; information_schema reports
+# the column as text now. 15909 of 16648 lines carry a label, the longest 252
+# characters, all intact
 account      / account.move.line        / open_on (date)                : NEW stored: False
 # NOTHING TO DO: 20.0 has no open_on column on account.move.line, so nothing was left behind
 account      / account.move.line        / term_key (binary)             : type is now 'json' ('binary')
@@ -127,12 +169,26 @@ account      / account.reconcile.model  / matching_order (selection)    : NEW re
 account      / account.reconcile.model  / payment_tolerance (float)     : NEW required, hasdefault: default
 account      / account.reconcile.model  / payment_tolerance_type (selection): NEW required, selection_keys: ['amount', 'percentage'], hasdefault: default
 account      / account.reconcile.model  / rule_type (selection)         : NEW selection_keys: ['matching_rule', 'reco_model'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration carries it. _modernise_reconcile_model_rule_type maps
+# 18.0's dormant values onto 20.0's matching_rule/reco_model and writes
+# `trigger` to agree with _compute_trigger. The copy confirms it ran: 9
+# matching_rule + 32 reco_model over 41 models, with no legacy key left
 account      / account.reconcile.model  / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on account.reconcile.model, so nothing was left behind
 account      / account.report           / active (boolean)              : not stored anymore
 account      / account.report           / active (boolean)              : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carry the retained column into active_fallback. 19.0 had a
+# plain active = fields.Boolean(default=True) (account_report.py:53). 20.0
+# makes it company-dependent and non-stored: active is a
+# compute/compute_sql/inverse (:55) over active_fallback (:56) and
+# active_selection (:58), with _compute_active returning active_selection ==
+# 'True' or else active_fallback (:378-381). 20.0 is explicit about the
+# carrier -- its loader refuses data writes with "'active' field of
+# account.report shouldn't be directly written to in data files. Use
+# active_fallback." (:318). On upgrade active_fallback takes its default True
+# on every row, so a report an administrator archived in 19.0 silently
+# un-archives. The fix is UPDATE account_report SET active_fallback = active
+# WHERE NOT active. This copy cannot demonstrate it: all 4 reports are active
 account      / account.report           / active_fallback (boolean)     : NEW hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 187 of 187 rows, so a compute or a related field did the work
 account      / account.report           / active_selection (selection)  : NEW selection_keys: ['False', 'True']
@@ -144,31 +200,60 @@ account      / account.report           / filter_analytic (boolean)     : DEL
 account      / account.report           / filter_line_comparison (boolean): NEW hasdefault: compute
 account      / account.report           / groupby (char)                : NEW
 account      / account.report           / prefix_groups_threshold (integer): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 declared it and never read it. prefix_groups_threshold
+# (19.0 account_report.py:80) is the ONLY occurrence in the whole 19.0
+# community tree -- the consumer was enterprise -- and 20.0 has none at all.
+# The same marker covers filter_analytic, which 20.0 also drops with no
+# successor, and groupby, which is new on the report model
 account      / account.report           / use_fiscal_periods (boolean)  : NEW hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 187 of 187 rows, so a compute or a related field did the work
 account      / account.report           / user_groupby (char)           : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: both report-level groupby and user_groupby are new in 20.0.
+# 19.0 carries that pair on account.report.LINE only (19.0
+# account_report.py:379-382); the report model has neither. 20.0's
+# _compute_user_groupby is `report.user_groupby or report.groupby` (:267-269),
+# so with groupby NULL there is nothing to pick up
 account      / account.report.column    / figure_type (selection)       : selection_keys added: [many2one] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 account      / account.report.column    / report_id (many2one)          : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: no value was invented to satisfy the constraint. 19.0 declared
+# report_id optional (account_report.py:940); 20.0 adds required and
+# ondelete='cascade' (:1047). The column arrived already NOT NULL --
+# information_schema reports is_nullable=NO -- and all 8 columns point at one
+# of the 4 reports
 account      / account.report.expression / engine (selection)            : selection_keys added: [reference, text] (most likely nothing to do)
 account      / account.report.expression / figure_type (selection)       : selection_keys added: [many2one] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 account      / account.report.expression / formula (char)                : type is now 'text' ('char')
 account      / account.report.expression / subformula (char)             : type is now 'text' ('char')
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: Char -> Text widening, same as account.move.line.name.
+# account_report_expression is empty in this copy, so the type change is all
+# there is to check
 account      / account.report.line      / foldability (selection)       : NEW selection_keys: ['always_unfolded', 'foldable', 'never_unfolded'], hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 6225 of 6225 rows, so a compute or a related field did the work
 account      / account.report.line      / foldable (boolean)            : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO -- DECLINED, not overlooked. 19.0's foldable was a boolean
+# "don't unfold by default" (account_report.py:387). 20.0 replaces it with
+# foldability, a three-key stored compute (:443) whose _compute_foldability
+# (:490) derives the answer from STRUCTURE and never reads foldable: children
+# -> always_unfolded, a groupby with no aggregation/external expression ->
+# foldable, aggregation/external -> never_unfolded. Carrying foldable=True
+# would override those rules exactly where they disagree, and 20.0's l10n data
+# files set foldability explicitly. This copy holds 0 report lines, so it could
+# not discriminate
 account      / account.tax              / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on account.tax, so nothing was left behind
 account      / account.tax.group        / advance_tax_payment_account_id (many2one): DEL relation: account.account
 account      / account.tax.group        / tax_payable_account_id (many2one): DEL relation: account.account
 account      / account.tax.group        / tax_receivable_account_id (many2one): DEL relation: account.account
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the concept is retired model-wide and data-wide. 20.0's
+# account.tax.group keeps only name, sequence, company_id, country_id,
+# preceding_subtotal and pos_receipt_label (account_tax.py:26-48);
+# tax_receivable_account_id, tax_payable_account_id and
+# advance_tax_payment_account_id have no occurrence anywhere in 20.0, and the
+# chart templates that fed them dropped the columns. The one 19.0 community
+# consumer, l10n_eu_oss, was rewritten to build its OSS account itself. 5 tax
+# groups here, 0 with any of the three set
 account      / account.tax.repartition.line / tag_ids_domain (binary)       : type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no tag_ids_domain column on account.tax.repartition.line, so nothing was left behind
 account      / ir.module.module         / account_templates (binary)    : type is now 'json' ('binary')
@@ -196,7 +281,13 @@ account      / res.company              / expense_account_id (many2one) : not st
 account      / res.company              / expense_account_id (many2one) : now a function
 account      / res.company              / income_account_id (many2one)  : not stored anymore
 account      / res.company              / income_account_id (many2one)  : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 already mirrored it into the place 20.0 now reads. 20.0
+# makes it a non-stored compute over ir.default via
+# company_default_for('income_account_id', 'product.category',
+# 'property_account_income_categ_id') (company.py:303-306), and 19.0 wrote that
+# very ir.default itself: _set_category_defaults (19.0 company.py:1136) is
+# called unconditionally from create (:490) and write (:753). Measured:
+# income_account_id NULL on all 5 companies and the ir.default false for all 5
 account      / res.company              / inventory_period (selection)  : previously in module stock_account
 account      / res.company              / inventory_valuation (selection): previously in module stock_account
 # NOTHING TO DO: the field only changed owning module, the column is the same
@@ -220,14 +311,29 @@ account      / res.partner.bank         / account_type (False)          : NEW se
 # NOTHING TO DO: 20.0 has no account_type column on res.partner.bank, so nothing was left behind
 account      / res.partner.bank         / has_iban_warning (boolean)    : DEL
 account      / res.partner.bank         / has_money_transfer_warning (boolean): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: it was a stored COMPUTE in 19.0, holding nothing a user chose
+# -- _compute_display_account_warning set it from the IBAN institution code
+# (19.0 res_partner_bank.py:27, :105). 20.0 rebuilds the same test as
+# phishing_warnings, a Json whose 'service_not_bank' entry reads the same
+# _get_money_transfer_services table, and recomputes from the account number
+# rather than the old flag. All 19 accounts are false on both
 account      / res.partner.bank         / has_phishing_warnings (boolean): NEW isfunction: function, stored
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 119 of 119 rows, so a compute or a related field did the work
 account      / res.partner.bank         / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on res.partner.bank, so nothing was left behind
 account_add_gln / res.partner              / global_location_number (char) : not stored anymore
 account_add_gln / res.partner              / global_location_number (char) : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carry it into additional_identifiers['EAN_GLN']. 20.0 did what
+# account_add_gln's own 19.0 manifest promised: the module is gone and account
+# declares the field itself (account/models/partner.py:615-620) as a
+# NON-STORED compute over the partner's additional_identifiers JSON --
+# _compute_global_location_number returns _get_additional_identifier('EAN_GLN')
+# (:677-679). The 19.0 column survives but nothing reads it, so a stored GLN
+# becomes invisible. The script must write the JSON key directly rather than
+# call the inverse: EAN_GLN validates with ean.validate and
+# _set_additional_identifier raises ValidationError on a bad check digit, which
+# would abort the upgrade over one legacy typo -- those should be reported
+# instead. global_location_number is NULL on all 840 partners here
 stock_account / product.category         / property_cost_method (selection): selection_keys removed: [fifo]
 # NOTHING TO DO: no row holds fifo any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 stock_account / product.template         / cost_method (selection)       : selection_keys removed: [fifo]
@@ -237,12 +343,22 @@ stock_account / res.company              / account_stock_valuation_id (many2one)
 stock_account / res.company              / account_stock_valuation_id (many2one): now a function
 stock_account / res.company              / cost_method (selection)       : not stored anymore
 stock_account / res.company              / cost_method (selection)       : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 19.0 already mirrored it, and the field also changed module.
+# 20.0 declares cost_method on res.company inside ACCOUNT as a non-stored
+# compute over ir.default (company.py:367-373), with stock_account only adding
+# the 'fifo' key back. 19.0's stock_account _set_category_defaults
+# (res_company.py:365-371) wrote that ir.default on every company create and
+# write. Measured: all 5 companies hold 'standard' in the retained column and
+# the ir.default is "standard" for all 5
 stock_account / res.company              / cost_method (selection)       : selection_keys removed: [fifo]
 # NOTHING TO DO: no row holds fifo any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 stock_account / res.company              / inventory_valuation (selection): not stored anymore
 stock_account / res.company              / inventory_valuation (selection): now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the same mechanism as cost_method. 20.0 reads it through
+# company_default_for('inventory_valuation', 'product.category',
+# 'property_valuation') (company.py:343-349), and 19.0 wrote that ir.default on
+# every company create and write. Measured: 'periodic' on all 5 companies and
+# the ir.default "periodic" on all 5
 ---XML records in module 'account'---
 account.account.tag: account.account_tag_financing (noupdate switched)
 account.account.tag: account.account_tag_investing (noupdate switched)

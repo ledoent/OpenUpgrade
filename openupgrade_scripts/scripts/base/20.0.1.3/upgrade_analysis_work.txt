@@ -56,7 +56,9 @@ base         / ir.exports               / export_language_ids (many2many): NEW r
 # NOTHING TO DO: 20.0 has no export_language_ids column on ir.exports, so nothing was left behind
 base         / ir.exports.line          / _order                        : _order is now 'sequence, id' ('id')
 base         / ir.exports.line          / sequence (integer)            : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the ORM's default landed on every row -- sequence is 10 on all
+# 34 lines, a single distinct value -- so the new _order 'sequence, id' breaks
+# every tie on id, exactly the 19.0 ordering it replaced
 base         / ir.mail_server           / max_email_size (float)        : DEL
 # NOTHING TO DO: ir.mail_server holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
 base         / ir.model                 / access_ids (one2many)         : relation is now 'ir.access' ('ir.model.access') [nothing to do]
@@ -76,13 +78,23 @@ base         / ir.model.access          / perm_write (boolean)          : DEL
 # NOTHING TO DO: 20.0 has no table for ir.model.access, so no column survived to hold a wrong value
 base         / ir.model.fields          / index (boolean)               : selection_keys is now '['btree', 'btree_not_null', 'trigram']' ('False')
 base         / ir.model.fields          / index (boolean)               : type is now 'selection' ('boolean')
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: pre-migration converts the column. _convert_field_index_to_selection
+# ALTERs it to varchar USING "CASE WHEN index THEN 'btree' ELSE NULL END",
+# because the ORM's own widening writes "true"/"false", which are not in
+# FIELD_INDEX_TYPES and make Registry.check_indexes assert. Measured after: 561
+# btree, 297 btree_not_null, 25 trigram, 15399 empty. The two rows left holding
+# '1' are not residue -- product.supplierinfo.company_id and date_range's
+# date.range.type.company_id both declare `index=1`, and ir_model.py:1324
+# reflects that verbatim because `1 is True` is False
 base         / ir.model.fields          / relation_model_field (char)   : NEW
 # NOTHING TO DO: 20.0 filled it itself -- 6 distinct values over 19 of 24540 rows, so a compute or a related field did the work
 base         / ir.module.module         / iap_paid_service (boolean)    : NEW
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 600 of 732 rows, so a compute or a related field did the work
 base         / ir.module.module         / test_data (boolean)           : NEW
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: nothing in community 20.0 ever writes it. The field is
+# declared at ir_module.py:311 and read nowhere; loading.py's LoadKind is
+# Literal['data','demo'], so there is no test-data load to record and no
+# manifest key to read. 19.0 had no such field
 base         / ir.profile               / profile_query_ids (one2many)  : NEW relation: ir.profile.query
 # NOTHING TO DO: 20.0 has no profile_query_ids column on ir.profile, so nothing was left behind
 base         / ir.profile               / traces_sync (text)            : DEL
@@ -96,7 +108,12 @@ base         / ir.profile.query         / time (float)                  : NEW
 base         / ir.rule                  / active (boolean)              : DEL
 base         / ir.rule                  / domain_force (text)           : DEL
 base         / ir.rule                  / global (boolean)              : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: of the three fields this marker covers, _convert_rules carries
+# the two that hold data -- active into ir_access.active, domain_force into
+# ir_access.domain -- and `global` was never data: 19.0 computed it stored as
+# `not rule.groups` (ir_rule.py:54-56) and 20.0 says the same thing with an
+# empty ir_access.group_id. Measured: all 142 rows derived from a global rule
+# have group_id NULL, and 0 of the 242 derived from a non-global one do
 base         / ir.rule                  / groups (many2many)            : DEL relation: res.groups
 # NOTHING TO DO: 20.0 has no groups column on ir.rule, so nothing was left behind
 base         / ir.rule                  / model_id (many2one)           : DEL relation: ir.model, required
@@ -105,11 +122,23 @@ base         / ir.rule                  / perm_create (boolean)         : DEL
 base         / ir.rule                  / perm_read (boolean)           : DEL
 base         / ir.rule                  / perm_unlink (boolean)         : DEL
 base         / ir.rule                  / perm_write (boolean)          : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: pre-migration's _convert_rules folds them into ir.access -- model_id
+# and name straight across (an unnamed rule is labelled with its model, which
+# ir.access requires where ir.rule did not), the four booleans concatenated
+# into operation by _operation_sql. Measured: 358 of 360 ir_rule rows produced
+# 384 ir_access rows, one per group; the two that produced none granted no
+# permission at all. The final operation does not always mirror the booleans --
+# 56 rows derived from a perm_write rule have no 'u' -- and that is deliberate:
+# all 56 carry a core xml_id that _release_noupdate_on_csv_access unflagged so
+# 20.0's own ir.access.csv could rewrite it
 base         / ir.ui.view               / notes (html)                  : NEW
 # NOTHING TO DO: empty on all 6294 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / ir.ui.view               / technical_usage (selection)   : NEW selection_keys: []
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a concept 19.0 does not have -- neither technical_usage nor
+# mail_post_source appears anywhere in 19.0 -- and 20.0 fills it itself from
+# the attribute convert.py:532 reads off a <template>: 14 of 3663 views carry
+# mail_post_source after the load. base declares the selection empty; only mail
+# and mass_mailing extend it
 base         / ir.ui.view               / type (selection)              : selection_keys added: [card] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 base         / res.bank                 / active (boolean)              : DEL
@@ -121,23 +150,56 @@ base         / res.bank                 / name (char)                   : DEL re
 base         / res.bank                 / phone (char)                  : DEL
 base         / res.bank                 / state (many2one)              : DEL relation: res.country.state
 base         / res.bank                 / street (char)                 : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: 20.0 deletes res.bank and inlines the bank onto the account.
+# res_partner_bank gains bank_name/bank_bic/street/street2/zip/city/state_id
+# under the comment "# bank fields", labelled "Bank Name" and "Bank Address" in
+# the form (res_partner_bank_views.xml:38-47). Nothing carried them: every one
+# of those columns is empty on all 19 accounts, while the orphaned res_bank
+# table still holds the values -- 17 of 19 accounts could take a bank name, 14
+# a bic, 14 a street, 11 a street2, 14 a zip/city/state. post-migration must
+# copy the bank record across the legacy bank_id. Of the fields this marker
+# covers, email, phone and active have nowhere to go: 20.0's res.partner.bank
+# has no email or phone column, and its `active` archives the account, not the
+# bank
 base         / res.bank                 / street2 (char)                : DEL
 # NOTHING TO DO: the column held nothing on any of the 3657 rows, so its removal carries nothing away
 base         / res.bank                 / zip (char)                    : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: carried with the rest of the bank record -- see
+# base:res.bank.street. 14 of the 19 accounts reference a bank that has a zip
+# (and a city, and a state), and res_partner_bank.zip is empty on all 19
 base         / res.company              / font (selection)              : selection_keys added: [Noto_Sans_Mono], removed: [Fira_Mono]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 base         / res.company              / layout_background (selection) : DEL required, selection_keys: ['Blank', 'Custom', 'Demo logo']
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 removes the printed background outright. Neither
+# layout_background nor layout_background_image appears anywhere in 20.0, no
+# 20.0 template wraps a page in o_report_layout_background the way all seven
+# 19.0 layouts did, and the .o_report_layout_background rule is gone from
+# report.scss. Nothing was chosen here either: all 5 companies are on 'Blank',
+# and ir_attachment holds no res.company row for layout_background_image
 base         / res.company              / layout_background_image (binary): DEL attachment: True
 # NOTHING TO DO: 20.0 has no layout_background_image column on res.company, so nothing was left behind
 base         / res.company              / report_tables_id (selection)  : NEW selection_keys: ['bold', 'boxed', 'bubble', 'column', 'compact', 'light', 'striped'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: the table design was baked into the 19.0 layout template and
+# 20.0 moves it here, so the 'light' default silently restyles the documents of
+# every company that did not print with the standard layout. 19.0 hardcoded one
+# table class per layout (report_templates.xml:348-774 -- striped
+# o_table_striped, boxed o_table_boxed, bold o_table_bold, standard
+# o_table_standard, folder and wave o_table_striped, bubble
+# o_table_boxed-rounded) and 20.0's external_layout_body derives exactly those
+# classes from report_tables_id alone (447-453), so every 19.0 layout maps to a
+# key. The mapping must be read off external_report_layout_id BEFORE web's data
+# load drops the view. Not provable here: all 5 companies are on
+# external_layout_standard, whose table style IS 'light'
 base         / res.country              / zip_applicability (selection) : NEW required, selection_keys: ['not_applicable', 'optional', 'required'], hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 251 of 251 rows, so a compute or a related field did the work
 base         / res.country              / zip_required (boolean)        : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO -- DECLINED, not overlooked. 19.0's boolean cannot express
+# 20.0's three-way choice, and in 19.0 it barely held a decision: it defaulted
+# True and res_country_data.xml names it for only 10 of 251 countries, so a
+# `true` almost always means "nobody said". 20.0 ships zip_applicability for
+# all 251 and the load applied it. Forcing 'required' wherever zip_required is
+# true would overwrite core's curation on the 58 countries it now calls
+# not_applicable
 base         / res.device.log           / browser (char)                : DEL
 base         / res.device.log           / device_type (selection)       : DEL selection_keys: ['computer', 'mobile']
 base         / res.device.log           / first_activity (datetime)     : now required
@@ -157,19 +219,43 @@ base         / res.groups               / rule_groups (many2many)       : DEL re
 # NOTHING TO DO: 20.0 has no rule_groups column on res.groups, so nothing was left behind
 base         / res.groups.privilege     / description (text)            : now translatable
 base         / res.groups.privilege     / placeholder (char)            : now translatable
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the ORM does the conversion itself. convert_column_translatable
+# (tools/sql.py:388-391) ALTERs the column to jsonb USING
+# jsonb_build_object('en_US', col), so the value survives -- all 19 privileges
+# read {"en_US": ...}. A value written in another language is now labelled
+# en_US, but that is the ORM's behaviour on every char-to-translatable
+# promotion and no script can know better
 base         / res.partner              / additional_identifiers (json) : NEW
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 291 rows, so a compute or a related field did the work
 base         / res.partner              / commercial_company_name (char): not a function anymore
 base         / res.partner              / commercial_company_name (char): now related
 base         / res.partner              / company_name (char)           : DEL
 base         / res.partner              / company_registry (char)       : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: 19.0's company_registry was pure user input -- its compute was
+# the no-op `company.company_registry = company.company_registry`, store=True,
+# readonly=False -- and 20.0 replaces it with the additional_identifiers Json,
+# whose generic key 'OTHER' is labelled "Company ID" for every country
+# (tools/partner_identifiers.py:950-956), which is 19.0's own label. So
+# post-migration must write the value into additional_identifiers, under the
+# country's EN-category key where one exists (BE_EN, CH_EN, AT_EN, ...) and
+# 'OTHER' otherwise: a blanket 'OTHER' would be invisible in the form, because
+# _compute_available_additional_identifiers_metadata pops that key whenever the
+# country has another EN identifier (res_partner.py:1639-1646). This copy
+# cannot prove it -- company_registry is empty on all 840 partners
 base         / res.partner              / contact_address_inline (char) : previously in module mail
 # NOTHING TO DO: the field only changed owning module, the column is the same
 base         / res.partner              / is_company (boolean)          : now a function
 base         / res.partner.bank         / acc_holder_name (char)        : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: holder_name is not merely the new spelling, it is a compute
+# that already ran and OVERWROTE deliberate values. Both versions store it
+# readonly=False, but 20.0's _compute_account_holder_name filled the new column
+# with partner_id.name for every row during the upgrade, so a holder
+# deliberately different from the partner is replaced rather than just dropped.
+# Measured on this copy: 13 of 19 accounts held a legacy value and 4 now read
+# differently -- "Ledo Enterprises LLC" became "Ledo Enterprises", and the
+# joint holder "Don Kendall and Aimee Kendall" became "Kendall Family Budget"
+# on two accounts. post-migration must write acc_holder_name over holder_name
+# wherever the legacy column is non-empty
 base         / res.partner.bank         / acc_number (char)             : DEL required
 # NOTHING TO DO: 20.0 has no acc_number column on res.partner.bank, so nothing was left behind
 base         / res.partner.bank         / account_number (char)         : NEW required
@@ -178,17 +264,33 @@ base         / res.partner.bank         / bank_bic (char)               : is now
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / bank_bic (char)               : not related anymore
 base         / res.partner.bank         / bank_id (many2one)            : DEL relation: res.bank
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: this is the join the script needs rather than a loss of its
+# own -- bank_id survives as a legacy column on 17 of 19 accounts and the
+# res_bank table it points at is still in place, which is the only reason the
+# bank's name, bic and address are recoverable at all. See base:res.bank.street
+# for what must be copied. 20.0 has no res.bank anywhere and no replacement
+# many2one
 base         / res.partner.bank         / bank_name (char)              : is now stored
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / bank_name (char)              : not related anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# SCRIPT NEEDED: 19.0's bank_name was related='bank_id.name' and unstored, so
+# this is a new column and it arrived empty -- 0 of 19 accounts have one, while
+# 17 point at a res_bank row that does. 20.0 reads it in _compute_display_name
+# ("<account number> - <bank name>") and offers it in the list and search views,
+# so an empty column is visible everywhere a bank account is shown. Carried by
+# the same script as base:res.bank.street, together with bank_bic, which was
+# related='bank_id.bic' and is empty on all 19 where 14 could be filled
 base         / res.partner.bank         / city (char)                   : NEW
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / clearing_label_id (many2one)  : NEW relation: clearing.label, required, hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 13 distinct values over 119 of 119 rows, so a compute or a related field did the work
 base         / res.partner.bank         / company_id (many2one)         : not related anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the same column, holding its 19.0 values. In 19.0 it was
+# related='partner_id.company_id', store=True, readonly=True, so the values
+# were already stored; 20.0 only stops deriving them. The database shows they
+# were kept and not recomputed -- 11 of 19 accounts carry a company and 7 of 19
+# no longer agree with partner_id.company_id, which a fresh derivation could
+# not produce
 base         / res.partner.bank         / country_id (many2one)         : NEW relation: res.country, hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 110 distinct values over 119 of 119 rows, so a compute or a related field did the work
 base         / res.partner.bank         / currency_id (many2one)        : DEL relation: res.currency
@@ -222,7 +324,10 @@ base_vat     / res.company              / vat_check_vies (boolean)      : module
 # NOTHING TO DO: the field only changed owning module, the column is the same
 base_vat     / res.partner              / vies_valid (boolean)          : DEL
 website      / website                  / domain_punycode (char)        : is now stored
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 declares it compute='_compute_domain_punycode',
+# store=True, @api.depends('domain'), so the ORM computed it when it created
+# the column; 19.0 carried the same compute unstored and a TODO asking for
+# exactly this. Both rows came out filled
 ---XML records in module 'base'---
 NEW clearing.label: base.clearing_label_ae
 NEW clearing.label: base.clearing_label_all

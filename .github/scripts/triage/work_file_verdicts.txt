@@ -630,3 +630,353 @@ website_sale:website.rating_email_template_id
 # value is the field's own default, prepopulated for a feature that stays off:
 # send_order_rating_emails defaults to False and sale_order.py:1210 only sends
 # when a template is set on a website that has the feature on
+
+## ---------------------------------------------------------------------------
+## base -- measured against erp_mig20test 2026-10-02. NOTE the row counts in
+## this work file predate the current copy (res_bank 5 vs 3657 recorded,
+## res_partner_bank 19 vs 119, res_partner 840 vs 291), so some mechanical
+## markers above are stale -- res.bank.street2 reads "held nothing on any of
+## the 3657 rows" but street2 is set and reachable from 11 accounts.
+## ---------------------------------------------------------------------------
+
+base:res.partner.bank.acc_holder_name
+# SCRIPT NEEDED: holder_name is not merely the new spelling, it is a compute
+# that already ran and OVERWROTE deliberate values. Both versions store it
+# readonly=False, but 20.0's _compute_account_holder_name filled the new column
+# with partner_id.name for every row during the upgrade, so a holder
+# deliberately different from the partner is replaced rather than just dropped.
+# Measured on this copy: 13 of 19 accounts held a legacy value and 4 now read
+# differently -- "Ledo Enterprises LLC" became "Ledo Enterprises", and the
+# joint holder "Don Kendall and Aimee Kendall" became "Kendall Family Budget"
+# on two accounts. post-migration must write acc_holder_name over holder_name
+# wherever the legacy column is non-empty
+
+base:res.bank.street
+# SCRIPT NEEDED: 20.0 deletes res.bank and inlines the bank onto the account.
+# res_partner_bank gains bank_name/bank_bic/street/street2/zip/city/state_id
+# under the comment "# bank fields", labelled "Bank Name" and "Bank Address" in
+# the form (res_partner_bank_views.xml:38-47). Nothing carried them: every one
+# of those columns is empty on all 19 accounts, while the orphaned res_bank
+# table still holds the values -- 17 of 19 accounts could take a bank name, 14
+# a bic, 14 a street, 11 a street2, 14 a zip/city/state. post-migration must
+# copy the bank record across the legacy bank_id. Of the fields this marker
+# covers, email, phone and active have nowhere to go: 20.0's res.partner.bank
+# has no email or phone column, and its `active` archives the account, not the
+# bank
+
+base:res.bank.zip
+# SCRIPT NEEDED: carried with the rest of the bank record -- see
+# base:res.bank.street. 14 of the 19 accounts reference a bank that has a zip
+# (and a city, and a state), and res_partner_bank.zip is empty on all 19
+
+base:res.partner.bank.bank_id
+# SCRIPT NEEDED: this is the join the script needs rather than a loss of its
+# own -- bank_id survives as a legacy column on 17 of 19 accounts and the
+# res_bank table it points at is still in place, which is the only reason the
+# bank's name, bic and address are recoverable at all. See base:res.bank.street
+# for what must be copied. 20.0 has no res.bank anywhere and no replacement
+# many2one
+
+base:res.partner.bank.bank_name
+# SCRIPT NEEDED: 19.0's bank_name was related='bank_id.name' and unstored, so
+# this is a new column and it arrived empty -- 0 of 19 accounts have one, while
+# 17 point at a res_bank row that does. 20.0 reads it in _compute_display_name
+# ("<account number> - <bank name>") and offers it in the list and search views,
+# so an empty column is visible everywhere a bank account is shown. Carried by
+# the same script as base:res.bank.street, together with bank_bic, which was
+# related='bank_id.bic' and is empty on all 19 where 14 could be filled
+
+base:res.partner.company_registry
+# SCRIPT NEEDED: 19.0's company_registry was pure user input -- its compute was
+# the no-op `company.company_registry = company.company_registry`, store=True,
+# readonly=False -- and 20.0 replaces it with the additional_identifiers Json,
+# whose generic key 'OTHER' is labelled "Company ID" for every country
+# (tools/partner_identifiers.py:950-956), which is 19.0's own label. So
+# post-migration must write the value into additional_identifiers, under the
+# country's EN-category key where one exists (BE_EN, CH_EN, AT_EN, ...) and
+# 'OTHER' otherwise: a blanket 'OTHER' would be invisible in the form, because
+# _compute_available_additional_identifiers_metadata pops that key whenever the
+# country has another EN identifier (res_partner.py:1639-1646). This copy
+# cannot prove it -- company_registry is empty on all 840 partners
+
+base:res.company.report_tables_id
+# SCRIPT NEEDED: the table design was baked into the 19.0 layout template and
+# 20.0 moves it here, so the 'light' default silently restyles the documents of
+# every company that did not print with the standard layout. 19.0 hardcoded one
+# table class per layout (report_templates.xml:348-774 -- striped
+# o_table_striped, boxed o_table_boxed, bold o_table_bold, standard
+# o_table_standard, folder and wave o_table_striped, bubble
+# o_table_boxed-rounded) and 20.0's external_layout_body derives exactly those
+# classes from report_tables_id alone (447-453), so every 19.0 layout maps to a
+# key. The mapping must be read off external_report_layout_id BEFORE web's data
+# load drops the view. Not provable here: all 5 companies are on
+# external_layout_standard, whose table style IS 'light'
+
+base:ir.model.fields.index
+# DONE: pre-migration converts the column. _convert_field_index_to_selection
+# ALTERs it to varchar USING "CASE WHEN index THEN 'btree' ELSE NULL END",
+# because the ORM's own widening writes "true"/"false", which are not in
+# FIELD_INDEX_TYPES and make Registry.check_indexes assert. Measured after: 561
+# btree, 297 btree_not_null, 25 trigram, 15399 empty. The two rows left holding
+# '1' are not residue -- product.supplierinfo.company_id and date_range's
+# date.range.type.company_id both declare `index=1`, and ir_model.py:1324
+# reflects that verbatim because `1 is True` is False
+
+base:ir.rule.perm_write
+# DONE: pre-migration's _convert_rules folds them into ir.access -- model_id
+# and name straight across (an unnamed rule is labelled with its model, which
+# ir.access requires where ir.rule did not), the four booleans concatenated
+# into operation by _operation_sql. Measured: 358 of 360 ir_rule rows produced
+# 384 ir_access rows, one per group; the two that produced none granted no
+# permission at all. The final operation does not always mirror the booleans --
+# 56 rows derived from a perm_write rule have no 'u' -- and that is deliberate:
+# all 56 carry a core xml_id that _release_noupdate_on_csv_access unflagged so
+# 20.0's own ir.access.csv could rewrite it
+
+base:ir.rule.global
+# NOTHING TO DO: of the three fields this marker covers, _convert_rules carries
+# the two that hold data -- active into ir_access.active, domain_force into
+# ir_access.domain -- and `global` was never data: 19.0 computed it stored as
+# `not rule.groups` (ir_rule.py:54-56) and 20.0 says the same thing with an
+# empty ir_access.group_id. Measured: all 142 rows derived from a global rule
+# have group_id NULL, and 0 of the 242 derived from a non-global one do
+
+base:res.partner.bank.company_id
+# NOTHING TO DO: the same column, holding its 19.0 values. In 19.0 it was
+# related='partner_id.company_id', store=True, readonly=True, so the values
+# were already stored; 20.0 only stops deriving them. The database shows they
+# were kept and not recomputed -- 11 of 19 accounts carry a company and 7 of 19
+# no longer agree with partner_id.company_id, which a fresh derivation could
+# not produce
+
+base:res.country.zip_required
+# NOTHING TO DO -- DECLINED, not overlooked. 19.0's boolean cannot express
+# 20.0's three-way choice, and in 19.0 it barely held a decision: it defaulted
+# True and res_country_data.xml names it for only 10 of 251 countries, so a
+# `true` almost always means "nobody said". 20.0 ships zip_applicability for
+# all 251 and the load applied it. Forcing 'required' wherever zip_required is
+# true would overwrite core's curation on the 58 countries it now calls
+# not_applicable
+
+base:res.company.layout_background
+# NOTHING TO DO: 20.0 removes the printed background outright. Neither
+# layout_background nor layout_background_image appears anywhere in 20.0, no
+# 20.0 template wraps a page in o_report_layout_background the way all seven
+# 19.0 layouts did, and the .o_report_layout_background rule is gone from
+# report.scss. Nothing was chosen here either: all 5 companies are on 'Blank',
+# and ir_attachment holds no res.company row for layout_background_image
+
+base:res.groups.privilege.placeholder
+# NOTHING TO DO: the ORM does the conversion itself. convert_column_translatable
+# (tools/sql.py:388-391) ALTERs the column to jsonb USING
+# jsonb_build_object('en_US', col), so the value survives -- all 19 privileges
+# read {"en_US": ...}. A value written in another language is now labelled
+# en_US, but that is the ORM's behaviour on every char-to-translatable
+# promotion and no script can know better
+
+base:ir.exports.line.sequence
+# NOTHING TO DO: the ORM's default landed on every row -- sequence is 10 on all
+# 34 lines, a single distinct value -- so the new _order 'sequence, id' breaks
+# every tie on id, exactly the 19.0 ordering it replaced
+
+base:ir.module.module.test_data
+# NOTHING TO DO: nothing in community 20.0 ever writes it. The field is
+# declared at ir_module.py:311 and read nowhere; loading.py's LoadKind is
+# Literal['data','demo'], so there is no test-data load to record and no
+# manifest key to read. 19.0 had no such field
+
+base:ir.ui.view.technical_usage
+# NOTHING TO DO: a concept 19.0 does not have -- neither technical_usage nor
+# mail_post_source appears anywhere in 19.0 -- and 20.0 fills it itself from
+# the attribute convert.py:532 reads off a <template>: 14 of 3663 views carry
+# mail_post_source after the load. base declares the selection empty; only mail
+# and mass_mailing extend it
+
+website:website.domain_punycode
+# NOTHING TO DO: 20.0 declares it compute='_compute_domain_punycode',
+# store=True, @api.depends('domain'), so the ORM computed it when it created
+# the column; 19.0 carried the same compute unstored and a TODO asking for
+# exactly this. Both rows came out filled
+
+## ---------------------------------------------------------------------------
+## account -- measured against erp_mig20test 2026-10-02. The chart-of-accounts
+## and report side of this copy is much smaller than the counts recorded above
+## (356 accounts, 4 reports, 0 report lines vs 50192 / 187 / 6225); the move
+## side still matches at 7958.
+## ---------------------------------------------------------------------------
+
+account:account.move.line.deductible_percentage
+# SCRIPT NEEDED: divide by 100 -- the scale changed. 19.0's deductible_amount
+# was a percentage on a 0-100 scale, default 100 (account_move_line.py:405,
+# constraint 0..100 at :1586), and its consumer reads it that way: `percentage
+# = 1 - line.deductible_amount / 100` (account_move.py:1731). 20.0's
+# deductible_percentage is a FRACTION, default 1.0 (account_move_line.py:480)
+# with the constraint `< 0 or > 1` (:1973). The analysis reports a DEL/NEW
+# pair, not a rename, so the new column simply took its default on every row.
+# The script must set deductible_percentage = deductible_amount / 100 wherever
+# deductible_amount is not 100: left alone, a half-private expense silently
+# claims full VAT deductibility. This copy cannot show it -- deductible_amount
+# is 100 on all 16648 lines and deductible_percentage 1.0 on all 16648, the two
+# defaults agreeing by coincidence, which is precisely why it would pass
+# unnoticed
+
+account:account.report.active
+# SCRIPT NEEDED: carry the retained column into active_fallback. 19.0 had a
+# plain active = fields.Boolean(default=True) (account_report.py:53). 20.0
+# makes it company-dependent and non-stored: active is a
+# compute/compute_sql/inverse (:55) over active_fallback (:56) and
+# active_selection (:58), with _compute_active returning active_selection ==
+# 'True' or else active_fallback (:378-381). 20.0 is explicit about the
+# carrier -- its loader refuses data writes with "'active' field of
+# account.report shouldn't be directly written to in data files. Use
+# active_fallback." (:318). On upgrade active_fallback takes its default True
+# on every row, so a report an administrator archived in 19.0 silently
+# un-archives. The fix is UPDATE account_report SET active_fallback = active
+# WHERE NOT active. This copy cannot demonstrate it: all 4 reports are active
+
+account_add_gln:res.partner.global_location_number
+# SCRIPT NEEDED: carry it into additional_identifiers['EAN_GLN']. 20.0 did what
+# account_add_gln's own 19.0 manifest promised: the module is gone and account
+# declares the field itself (account/models/partner.py:615-620) as a
+# NON-STORED compute over the partner's additional_identifiers JSON --
+# _compute_global_location_number returns _get_additional_identifier('EAN_GLN')
+# (:677-679). The 19.0 column survives but nothing reads it, so a stored GLN
+# becomes invisible. The script must write the JSON key directly rather than
+# call the inverse: EAN_GLN validates with ean.validate and
+# _set_additional_identifier raises ValidationError on a bad check digit, which
+# would abort the upgrade over one legacy typo -- those should be reported
+# instead. global_location_number is NULL on all 840 partners here
+
+account:account.reconcile.model.rule_type
+# DONE: post-migration carries it. _modernise_reconcile_model_rule_type maps
+# 18.0's dormant values onto 20.0's matching_rule/reco_model and writes
+# `trigger` to agree with _compute_trigger. The copy confirms it ran: 9
+# matching_rule + 32 reco_model over 41 models, with no legacy key left
+
+account:account.move.narration
+# NOTHING TO DO: the field is still stored; only an inverse was added. 19.0
+# (account_move.py:655) and 20.0 (:689) both declare
+# compute='_compute_narration', store=True, readonly=False, and 20.0's single
+# change is inverse='_inverse_narration'. That is the whole reason the line
+# appears: the analysis flags "now a function" when isfunction() flips, and
+# isfunction is `compute and (readonly or inverse) and not related and not
+# company_dependent` (upgrade_analysis/upgrade_log.py:99-107) -- a
+# readonly=False stored compute with no inverse scores "", the same field with
+# an inverse scores "function". Hence no accompanying "not stored anymore", and
+# the column is untouched: 901 of 7958 moves still hold their terms text
+
+account:account.report.line.foldable
+# NOTHING TO DO -- DECLINED, not overlooked. 19.0's foldable was a boolean
+# "don't unfold by default" (account_report.py:387). 20.0 replaces it with
+# foldability, a three-key stored compute (:443) whose _compute_foldability
+# (:490) derives the answer from STRUCTURE and never reads foldable: children
+# -> always_unfolded, a groupby with no aggregation/external expression ->
+# foldable, aggregation/external -> never_unfolded. Carrying foldable=True
+# would override those rules exactly where they disagree, and 20.0's l10n data
+# files set foldability explicitly. This copy holds 0 report lines, so it could
+# not discriminate
+
+account:account.bank.statement.is_statement_posted
+# NOTHING TO DO: 19.0 has no statement state to carry -- its
+# account.bank.statement declares is_complete and is_valid and nothing else,
+# and posted-ness lived on each line's move. 20.0 adds is_statement_posted
+# (default=True, account_bank_statement.py:110) as a real draft/posted step.
+# The default is the only honest landing point: all 495 statements came out
+# True, and of the 1970 lines they hold 1966 already sit on posted moves.
+# Defaulting False would have pushed 495 reconciled statements into a draft
+# queue
+
+account:account.move.line.name
+# NOTHING TO DO: Char -> Text is a widening ALTER and 19.0's column was an
+# unbounded varchar, so nothing can be truncated; information_schema reports
+# the column as text now. 15909 of 16648 lines carry a label, the longest 252
+# characters, all intact
+
+account:account.report.expression.subformula
+# NOTHING TO DO: Char -> Text widening, same as account.move.line.name.
+# account_report_expression is empty in this copy, so the type change is all
+# there is to check
+
+account:account.report.column.report_id
+# NOTHING TO DO: no value was invented to satisfy the constraint. 19.0 declared
+# report_id optional (account_report.py:940); 20.0 adds required and
+# ondelete='cascade' (:1047). The column arrived already NOT NULL --
+# information_schema reports is_nullable=NO -- and all 8 columns point at one
+# of the 4 reports
+
+account:account.report.prefix_groups_threshold
+# NOTHING TO DO: 19.0 declared it and never read it. prefix_groups_threshold
+# (19.0 account_report.py:80) is the ONLY occurrence in the whole 19.0
+# community tree -- the consumer was enterprise -- and 20.0 has none at all.
+# The same marker covers filter_analytic, which 20.0 also drops with no
+# successor, and groupby, which is new on the report model
+
+account:account.report.user_groupby
+# NOTHING TO DO: both report-level groupby and user_groupby are new in 20.0.
+# 19.0 carries that pair on account.report.LINE only (19.0
+# account_report.py:379-382); the report model has neither. 20.0's
+# _compute_user_groupby is `report.user_groupby or report.groupby` (:267-269),
+# so with groupby NULL there is nothing to pick up
+
+account:account.group.parent_id
+# NOTHING TO DO: 20.0 removed the whole model, not just the field. There is no
+# account_group.py and no `_name = 'account.group'` anywhere in 20.0; the
+# hierarchy is now account.account.parent_id (account_account.py:133) with
+# parent_path (:141). Nothing to carry regardless: account_group is empty and
+# the retained group_id column is NULL on all 356 accounts
+
+account:account.cash.rounding.company_id
+# NOTHING TO DO: 19.0's account.cash.rounding has no company field at all, so a
+# rounding was global; 20.0's company_id is OPTIONAL with ondelete='cascade'
+# (account_cash_rounding.py:75) and the model uses
+# check_company_domain_parent_of (:19), so NULL means available to every
+# company -- exactly 19.0's meaning. account_cash_rounding is empty here
+
+account:account.cash.rounding.sequence
+# NOTHING TO DO: a new ordering key with no 19.0 counterpart. 20.0 declares
+# sequence required default=10 (:23) and changes _order from 'id' to
+# 'sequence, id' (:17); with every row on the same default the order
+# degenerates back to id, i.e. 19.0's order
+
+account:account.tax.group.tax_receivable_account_id
+# NOTHING TO DO: the concept is retired model-wide and data-wide. 20.0's
+# account.tax.group keeps only name, sequence, company_id, country_id,
+# preceding_subtotal and pos_receipt_label (account_tax.py:26-48);
+# tax_receivable_account_id, tax_payable_account_id and
+# advance_tax_payment_account_id have no occurrence anywhere in 20.0, and the
+# chart templates that fed them dropped the columns. The one 19.0 community
+# consumer, l10n_eu_oss, was rewritten to build its OSS account itself. 5 tax
+# groups here, 0 with any of the three set
+
+account:res.company.income_account_id
+# NOTHING TO DO: 19.0 already mirrored it into the place 20.0 now reads. 20.0
+# makes it a non-stored compute over ir.default via
+# company_default_for('income_account_id', 'product.category',
+# 'property_account_income_categ_id') (company.py:303-306), and 19.0 wrote that
+# very ir.default itself: _set_category_defaults (19.0 company.py:1136) is
+# called unconditionally from create (:490) and write (:753). Measured:
+# income_account_id NULL on all 5 companies and the ir.default false for all 5
+
+account:res.partner.bank.has_money_transfer_warning
+# NOTHING TO DO: it was a stored COMPUTE in 19.0, holding nothing a user chose
+# -- _compute_display_account_warning set it from the IBAN institution code
+# (19.0 res_partner_bank.py:27, :105). 20.0 rebuilds the same test as
+# phishing_warnings, a Json whose 'service_not_bank' entry reads the same
+# _get_money_transfer_services table, and recomputes from the account number
+# rather than the old flag. All 19 accounts are false on both
+
+stock_account:res.company.cost_method
+# NOTHING TO DO: 19.0 already mirrored it, and the field also changed module.
+# 20.0 declares cost_method on res.company inside ACCOUNT as a non-stored
+# compute over ir.default (company.py:367-373), with stock_account only adding
+# the 'fifo' key back. 19.0's stock_account _set_category_defaults
+# (res_company.py:365-371) wrote that ir.default on every company create and
+# write. Measured: all 5 companies hold 'standard' in the retained column and
+# the ir.default is "standard" for all 5
+
+stock_account:res.company.inventory_valuation
+# NOTHING TO DO: the same mechanism as cost_method. 20.0 reads it through
+# company_default_for('inventory_valuation', 'product.category',
+# 'property_valuation') (company.py:343-349), and 19.0 wrote that ir.default on
+# every company create and write. Measured: 'periodic' on all 5 companies and
+# the ir.default "periodic" on all 5
