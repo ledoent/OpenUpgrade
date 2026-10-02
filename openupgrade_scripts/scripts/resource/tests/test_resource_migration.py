@@ -93,3 +93,20 @@ class TestResourceMigration(TransactionCase):
             0,
             "a calendar that was neither flexible nor in two-weeks mode was moved",
         )
+
+    def test_the_company_took_its_default_calendars_timezone(self):
+        """resource.calendar.tz is dropped; res.company.tz replaces it.
+
+        res.company.tz is new and defaults from the company's country, so a
+        database whose calendars said otherwise silently changes what a working
+        day means -- with no error, since the column is populated either way.
+
+        The fixture puts the default calendar in Pacific/Chatham and two others
+        in Asia/Kolkata, so a majority rule would pick Kolkata. The default
+        calendar is the one the company's own records are computed against, so
+        Chatham is the answer; this fails if the tally is ever ordered by count
+        before is_default.
+        """
+        company = self.env.ref("__ou19__.ou19_tz_company", raise_if_not_found=False)
+        self.assertTrue(company, "the fixture's company is gone")
+        self.assertEqual(company.tz, "Pacific/Chatham")

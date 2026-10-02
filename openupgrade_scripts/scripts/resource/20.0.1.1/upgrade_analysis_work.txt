@@ -1,7 +1,11 @@
 ---Models in module 'resource'---
 ---Fields in module 'resource'---
 resource     / res.company              / tz (selection)                : NEW selection_keys: function, hasdefault: compute
-# NOTHING TO DO: 20.0 filled it itself -- 91 distinct values over 117 of 117 rows, so a compute or a related field did the work
+# DONE: post-migration's _carry_the_calendar_tz_onto_the_company. 20.0 does fill
+# this, but from the company's country, not from the resource.calendar.tz it
+# replaces -- on a production copy all 5 companies read UTC where their default
+# calendars said US/Eastern or America/New_York, silently shifting every working
+# day by five hours
 resource     / resource.calendar        / calendar_type (selection)     : NEW required, selection_keys: ['fixed', 'undefined', 'variable'], hasdefault: default
 resource     / resource.calendar        / days_per_week (float)         : NEW hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 128 of 128 rows, so a compute or a related field did the work
@@ -12,7 +16,9 @@ resource     / resource.calendar        / reference_calendar_id (many2one): NEW 
 resource     / resource.calendar        / schedule_type (selection)     : DEL required, selection_keys: ['flexible', 'fully_fixed']
 resource     / resource.calendar        / two_weeks_calendar (boolean)  : DEL
 resource     / resource.calendar        / tz (selection)                : DEL required, selection_keys: function
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: pre-migration preserves the column; post-migration carries it onto
+# res.company.tz, preferring the company's default calendar. 20.0 holds one zone
+# per company, so a company whose calendars disagreed is reported
 resource     / resource.calendar        / work_time_rate (float)        : is now stored
 # NOTHING TO DO: 20.0 filled it itself -- 7 distinct values over 128 of 128 rows, so a compute or a related field did the work
 resource     / resource.calendar.attendance / _order                        : _order is now 'sequence, date, dayofweek, hour_from' ('sequence, week_type, dayofweek, hour_from')

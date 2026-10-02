@@ -162,6 +162,92 @@ def _carry_the_schedule_type_into_the_calendar_type(env):
     )
 
 
+def _carry_the_calendar_tz_onto_the_company(env):
+    """resource.calendar.tz is dropped in 20.0; the timezone is res.company.tz.
+
+    res.company.tz is new and defaults from the company's country, so a
+    database whose calendars disagreed with that default silently changes what
+    a working day means. Nothing fails: the column is populated, the upgrade is
+    quiet, and every computation that localises hour_from/hour_to is simply
+    wrong by the offset between the two zones.
+
+    Measured on a production copy: all five companies defaulted to UTC while
+    their default calendars said US/Eastern or America/New_York, a five-hour
+    shift. The visible effect was in resource_booking, whose availability is
+    `calendar._work_intervals_batch(...)` intersected with the booking's own
+    interval -- a 19:30 UTC booking inside a 09:00-17:00 US/Eastern day fell
+    outside a 09:00-17:00 UTC one, so the interval set came back empty, the
+    stored combination stopped validating, and the portal answered 422 for a
+    booking that had been confirmed for months.
+
+    Per-calendar timezones cannot survive, because 20.0 has one zone per
+    company. Where a company's calendars disagree, the zone held by the MOST of
+    them wins -- that is the choice that leaves the fewest calendars meaning
+    something new -- with the company's default calendar breaking a tie. The
+    default calendar is deliberately not preferred outright: on the copy
+    measured, company 1's default calendar carried an unconfigured UTC while
+    both of the calendars actually driving bookings said US/Eastern, so
+    preferring it would have kept exactly the breakage this fixes. Resources are
+    unaffected either way, since resource.resource.tz already existed in 19.0
+    and core uses it whenever a resource is in play.
+    """
+    legacy_tz = openupgrade.get_legacy_name("tz")
+    if not openupgrade.column_exists(env.cr, "resource_calendar", legacy_tz):
+        # pre-migration did not run (a database upgraded before this script
+        # existed). Say so rather than silently leaving the zones wrong.
+        openupgrade.message(
+            env.cr, "resource", False, False,
+            "Could not carry resource.calendar.tz onto res.company.tz: the "
+            "preserved column is absent. Check each company's Timezone.",
+        )
+        return
+    openupgrade.logged_query(
+        env.cr,
+        f"""
+        WITH tallied AS (
+            SELECT cal.company_id, cal.{legacy_tz} AS tz, count(*) AS n,
+                   bool_or(cal.id = c.resource_calendar_id) AS is_default
+            FROM resource_calendar cal
+            JOIN res_company c ON c.id = cal.company_id
+            WHERE cal.{legacy_tz} IS NOT NULL AND cal.{legacy_tz} != ''
+            GROUP BY cal.company_id, cal.{legacy_tz}, c.resource_calendar_id
+        ), chosen AS (
+            SELECT DISTINCT ON (company_id) company_id, tz
+            FROM tallied
+            -- The DEFAULT calendar's zone wins, and the count only breaks ties
+            -- among the rest. Ordering by count first would let three calendars
+            -- in one zone outvote the calendar the company's own records are
+            -- actually computed against.
+            ORDER BY company_id, is_default DESC, n DESC, tz
+        )
+        UPDATE res_company c SET tz = chosen.tz
+        FROM chosen
+        WHERE chosen.company_id = c.id
+          AND c.tz IS DISTINCT FROM chosen.tz
+        """,
+    )
+    # Report only the genuinely lossy case: a company that really had more than
+    # one zone across its calendars.
+    env.cr.execute(
+        f"""
+        SELECT cal.company_id, array_agg(DISTINCT cal.{legacy_tz})
+        FROM resource_calendar cal
+        WHERE cal.company_id IS NOT NULL
+          AND cal.{legacy_tz} IS NOT NULL AND cal.{legacy_tz} != ''
+        GROUP BY cal.company_id
+        HAVING count(DISTINCT cal.{legacy_tz}) > 1
+        """
+    )
+    for company_id, zones in env.cr.fetchall():
+        openupgrade.message(
+            env.cr, "resource", False, False,
+            "Company %s had calendars in more than one timezone (%s). 20.0 "
+            "keeps one timezone per company, so the default calendar's zone "
+            "was used; review the others.",
+            company_id, ", ".join(sorted(zones)),
+        )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "resource", "20.0.1.1/noupdate_changes.xml")
@@ -170,3 +256,4 @@ def migrate(env, version):
     _fill_attendance_duration_hours(env)
     _reclassify_break_attendances(env)
     _carry_the_schedule_type_into_the_calendar_type(env)
+    _carry_the_calendar_tz_onto_the_company(env)

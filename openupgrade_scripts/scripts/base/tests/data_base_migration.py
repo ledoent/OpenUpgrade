@@ -148,11 +148,43 @@ env["ir.rule"].create(
 # sanitized column strips non-alphanumerics and upper-cases, so a test that
 # only checked account_number would pass even if the sanitized half had been
 # left to a compute that never ran.
-partner_ru = env["res.partner"].create({"name": "ou19-bank-partner"})
+partner_ru = env["res.partner"].create(
+    {
+        "name": "ou19-bank-partner",
+        # The partner's country is deliberately NOT the bank's. 20.0's
+        # country_id is a stored precompute that reads partner_id.country_id,
+        # yet it sits in the inlined bank-address block -- so a bank abroad
+        # silently acquires the holder's country, and only a disagreement here
+        # can catch it.
+        "country_id": env.ref("base.fr").id,
+    }
+)
+# 20.0 deletes res.bank and inlines its name, BIC and address onto the account.
+# Values are planted on every field that has a destination, plus email and phone
+# which have none, so the carry and the report are both exercised.
+bank_ru = env["res.bank"].create(
+    {
+        "name": "ou19-bank-name",
+        "bic": "OU19BICXXX",
+        "street": "ou19-bank-street",
+        "street2": "ou19-bank-street2",
+        "zip": "94105",
+        "city": "ou19-bank-city",
+        # Searched rather than env.ref'd: a missing xmlid raises, and a raise
+        # here aborts the whole fixture batch for every module, not just base.
+        "state": env["res.country.state"]
+        .search([("country_id.code", "=", "US"), ("code", "=", "CA")], limit=1)
+        .id,
+        "country": env.ref("base.us").id,
+        "email": "ou19-bank@example.org",
+        "phone": "+1 555 0199",
+    }
+)
 env["res.partner.bank"].create(
     {
         "acc_number": "ou19-acct 0042/7",
         "partner_id": partner_ru.id,
+        "bank_id": bank_ru.id,
         # acc_holder_name -> holder_name is the third rename on this model and
         # the one with teeth. The holder is written DIFFERENT from the partner
         # name on purpose: 20.0's _compute_account_holder_name fills an empty
@@ -160,6 +192,31 @@ env["res.partner.bank"].create(
         # partner would come out right whether the rename ran or not, and the
         # assertion would pass for the wrong reason.
         "acc_holder_name": "ou19-holder-not-the-partner",
+    }
+)
+
+# company_registry is dropped for the additional_identifiers Json. Two partners,
+# because the carry has two outcomes worth separating: a value that satisfies its
+# country's own identifier format goes under that key, and one that satisfies
+# nothing falls back to 'OTHER' -- which 20.0 then hides for any country that has
+# an identifier of its own.
+#
+# The first value has to pass FR_SIREN's real validator, which is a Luhn check
+# over 9 digits -- 404833048 sums to 40 with the even positions doubled. An
+# invented number would fail the check digit and land in the fallback branch,
+# which is what the second partner is for.
+env["res.partner"].create(
+    {
+        "name": "ou19-registry-structured",
+        "country_id": env.ref("base.fr").id,
+        "company_registry": "404833048",
+    }
+)
+env["res.partner"].create(
+    {
+        "name": "ou19-registry-unstructured",
+        "country_id": env.ref("base.fr").id,
+        "company_registry": "ou19-not-a-siren",
     }
 )
 

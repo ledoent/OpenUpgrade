@@ -152,6 +152,80 @@ class TestBaseMigration(TransactionCase):
         self.assertEqual(bank.holder_name, "ou19-holder-not-the-partner")
         self.assertNotEqual(bank.holder_name, bank.partner_id.name)
 
+    def test_the_bank_record_was_inlined_onto_the_account(self):
+        """res.bank is deleted in 20.0 and its address moves onto the account.
+
+        The fields land in a "# bank fields" block on res.partner.bank. Nothing
+        in core carries them, and the orphaned res_bank table plus the surviving
+        bank_id column are the only places the values still exist -- until
+        database_cleanup removes them.
+        """
+        bank = self.env["res.partner.bank"].search(
+            [("partner_id.name", "=", "ou19-bank-partner")]
+        )
+        self.assertTrue(bank)
+        self.assertEqual(bank.bank_name, "ou19-bank-name")
+        self.assertEqual(bank.bank_bic, "OU19BICXXX")
+        self.assertEqual(bank.street, "ou19-bank-street")
+        self.assertEqual(bank.street2, "ou19-bank-street2")
+        self.assertEqual(bank.zip, "94105")
+        self.assertEqual(bank.city, "ou19-bank-city")
+        self.assertEqual(bank.state_id.code, "CA")
+        self.assertEqual(bank.state_id.country_id.code, "US")
+
+    def test_the_inlined_country_is_the_banks_not_the_partners(self):
+        """country_id is a precompute over the PARTNER, in a bank-address block.
+
+        `_compute_country_id` assigns `partner_id.country_id or
+        company_id.country_id or env.company.country_id`
+        (res_partner_bank.py:140-143), so the upgrade fills the field from the
+        account holder while the form labels it part of the bank's address. The
+        fixture puts the partner in France and its bank in the United States,
+        which is the only arrangement that can tell the two apart.
+        """
+        bank = self.env["res.partner.bank"].search(
+            [("partner_id.name", "=", "ou19-bank-partner")]
+        )
+        self.assertTrue(bank)
+        self.assertEqual(bank.country_id, self.env.ref("base.us"))
+        self.assertNotEqual(bank.country_id, bank.partner_id.country_id)
+
+    def test_the_registry_landed_under_the_countrys_own_identifier(self):
+        """A value that fits FR_SIREN is filed as one, not as a generic ID.
+
+        'OTHER' would be lossless and invisible:
+        _compute_available_additional_identifiers_metadata pops it for any
+        country that has an EN identifier of its own, whether or not it is
+        already stored (res_partner.py:1647-1649).
+        """
+        partner = self.env["res.partner"].search(
+            [("name", "=", "ou19-registry-structured")]
+        )
+        self.assertTrue(partner)
+        self.assertEqual(partner.additional_identifiers.get("FR_SIREN"), "404833048")
+
+    def test_a_registry_fitting_no_format_stays_generic(self):
+        """The fallback must not write a value its own constraint rejects.
+
+        `@api.constrains('additional_identifiers')` revalidates every key with
+        validation='error' (res_partner.py:1378-1385), so filing free text under
+        FR_SIREN would leave the partner permanently unsavable. 'OTHER' has no
+        validator, so the value survives and the partner still saves.
+        """
+        partner = self.env["res.partner"].search(
+            [("name", "=", "ou19-registry-unstructured")]
+        )
+        self.assertTrue(partner)
+        self.assertEqual(
+            partner.additional_identifiers.get("OTHER"), "ou19-not-a-siren"
+        )
+        self.assertNotIn("FR_SIREN", partner.additional_identifiers)
+        # The record must still be writable, which is the whole point of the
+        # fallback. Re-writing the Json itself is what proves it: @api.constrains
+        # only fires for the fields it names, so touching any other field would
+        # pass regardless of what is stored here.
+        partner.write({"additional_identifiers": partner.additional_identifiers})
+
     def test_no_bank_account_lost_its_number(self):
         """The rename is global, so nothing anywhere should be left blank.
 

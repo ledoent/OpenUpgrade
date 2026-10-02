@@ -55,4 +55,30 @@ for record, name in (
         }
     )
 
+# resource.calendar.tz is dropped and the timezone becomes res.company.tz, one
+# per company. The interesting case is a company whose calendars disagree: the
+# default calendar's zone has to win, because that is the calendar the company's
+# own records are computed against. Planted so the MAJORITY says something else
+# -- two calendars in one zone against the default's -- which is the only
+# arrangement that can tell the two rules apart.
+tz_company = env["res.company"].search([("resource_calendar_id", "!=", False)], limit=1)
+assert tz_company, "the seed needs a company with a default working schedule"
+tz_company.resource_calendar_id.tz = "Pacific/Chatham"
+for n in range(2):
+    env["resource.calendar"].create(
+        {
+            "name": f"ou19-calendar-outvoting-{n}",
+            "company_id": tz_company.id,
+            "tz": "Asia/Kolkata",
+        }
+    )
+env["ir.model.data"].create(
+    {
+        "module": "__ou19__",
+        "name": "ou19_tz_company",
+        "model": "res.company",
+        "res_id": tz_company.id,
+    }
+)
+
 env.cr.commit()
