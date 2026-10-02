@@ -36,16 +36,7 @@ point_of_sale / pos.category             / pos_config_ids (many2many)    : previ
 point_of_sale / pos.config               / auto_validate_electronic_payment (boolean): NEW hasdefault: default
 point_of_sale / pos.config               / auto_validate_terminal_payment (boolean): DEL
 point_of_sale / pos.config               / closing_journal_id (many2one) : NEW relation: account.journal, required, hasdefault: compute
-# SCRIPT NEEDED: carry the old journal_id into it -- the precompute invented a
-# new journal rather than reusing the one 19.0 posted to. 19.0 posted the
-# session closing entry to config.journal_id (pos_session.py:819); 20.0 posts it
-# to config.closing_journal_id (pos_session.py:988).
-# _compute_closing_journal_id calls _ensure_company_closing_journal(), which
-# creates a POSC journal: the migrated row holds closing_journal_id = 88, whose
-# create_date is 2026-10-01 -- the migration run itself -- while journal_id is
-# still 19, the journal 19.0 would have posted to. The script must only carry
-# journals of type 'sale': 19.0's domain was ('general','sale') and 20.0's is
-# ('sale',) alone. Journal 19 qualifies
+# DONE: carried by the journal swap -- see point_of_sale:pos.config.invoice_journal_id
 point_of_sale / pos.config               / custom_email (char)           : NEW
 # NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.config               / custom_logo (binary)          : NEW attachment: True
@@ -80,14 +71,12 @@ point_of_sale / pos.config               / iface_printbill (boolean)     : previ
 point_of_sale / pos.config               / iface_scan_via_proxy (boolean): DEL
 # NOTHING TO DO: the column held nothing on any of the 6 rows, so its removal carries nothing away
 point_of_sale / pos.config               / invoice_journal_id (many2one) : DEL relation: account.journal
-# SCRIPT NEEDED: carry it into journal_id, whose meaning changed underneath it.
-# In 19.0 invoice_journal_id was the journal for POS invoices (pos_order.py:919)
-# and journal_id was the closing journal. In 20.0 _prepare_invoice_vals reads
-# config_id.journal_id (pos_order.py:1557). Nothing moved the value: the one row
-# still holds journal_id = 19 and invoice_journal_id = 1. Journal 1 (INV, sale,
-# created 2020-01-05) carries all 88 POS invoice moves; journal 19 (POSS, sale,
-# created 2020-01-06) carries 0. So after the upgrade POS invoices are cut in a
-# journal with no history instead of the one holding every POS invoice to date
+# DONE: post-migration swaps them.
+# _swap_the_two_journals_back_into_their_20_meanings moves invoice_journal_id into
+# journal_id, which is what 20.0 cuts POS invoices from, and the 19.0 journal_id
+# into closing_journal_id, guarded on type='sale' because 20.0 narrowed that from
+# ('general','sale'). One statement, since each half reads the column the other
+# overwrites. Confirmed on the seed
 point_of_sale / pos.config               / is_closing_entry_by_product (boolean): DEL
 point_of_sale / pos.config               / is_header_or_footer (boolean) : DEL
 point_of_sale / pos.config               / is_order_printer (boolean)    : DEL
@@ -122,17 +111,10 @@ point_of_sale / pos.config               / route_id (many2one)           : modul
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.config               / session_closing_daily_hour (float): NEW hasdefault: default
 point_of_sale / pos.config               / session_closing_mode (selection): NEW selection_keys: ['closing', 'daily']
-# SCRIPT NEEDED: write 'closing' on every pre-existing config -- the default
-# 'daily' changes WHEN accounting entries are generated. 19.0 built the closing
-# entry only when a session was closed and shipped no cron for it. 20.0 ships
-# point_of_sale.ir_cron_pos_auto_order_invoicing, active, every 10 minutes, and
-# its _launch_cron_generate_invoice_period selects ('config_id.
-# session_closing_mode', '=', 'daily') and calls _validate_session_accounting on
-# sessions that are still open. The migrated row holds 'daily' with
-# session_closing_daily_hour 4.0, so an upgraded database starts posting session
-# accounting at 04:00 whether or not anyone closed the session. 'closing' is
-# 20.0's spelling of what 19.0 did. The copy cannot show the effect -- the lab
-# disables every cron -- so the 20.0 data file is the evidence
+# DONE: post-migration sets it. _keep_posting_session_accounting_on_close puts
+# every pre-existing config on 'closing', which is what 19.0 did. 20.0's 'daily'
+# default arms ir_cron_pos_auto_order_invoicing to post session accounting on
+# sessions nobody closed
 point_of_sale / pos.config               / set_tip_after_payment (boolean): previously in module pos_restaurant
 point_of_sale / pos.config               / ship_later (boolean)          : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
@@ -192,14 +174,10 @@ point_of_sale / pos.payment              / amount_currency (float)       : NEW
 point_of_sale / pos.payment              / currency_rate (float)         : is now stored
 # NOTHING TO DO: empty on all 8 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 point_of_sale / pos.payment              / currency_rate (float)         : not related anymore
-# SCRIPT NEEDED: fill it from pos_order.currency_rate. 19.0 declared it
-# related='pos_order_id.currency_rate' with no store, so there was no column and
-# every read went to the order; 20.0 declares a plain stored Float
-# (pos_payment.py:39) and nothing fills it for historical rows. The source is
-# intact -- pos.order.currency_rate is a stored compute in both versions and the
-# column survives -- so UPDATE pos_payment p SET currency_rate = o.currency_rate
-# FROM pos_order o WHERE o.id = p.pos_order_id reproduces what 19.0 returned.
-# pos_payment has 0 rows here
+# DONE: post-migration carries it.
+# _carry_the_payment_currency_rate_now_that_it_is_stored copies
+# pos_order.currency_rate, a stored compute in both versions, into the payment's
+# new stored column
 point_of_sale / pos.payment              / foreign_currency_id (many2one): NEW relation: res.currency
 point_of_sale / pos.payment              / qr_code (char)                : NEW
 # NOTHING TO DO: empty on all 8 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
@@ -316,17 +294,9 @@ point_of_sale / pos.session              / correction_move_ids (one2many): NEW r
 point_of_sale / pos.session              / failed_pickings (boolean)     : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 point_of_sale / pos.session              / move_id (many2one)            : DEL relation: account.move
-# SCRIPT NEEDED: carry it into account_move.pos_session_sales_id. 19.0 kept the
-# session's closing entry as one many2one on pos.session (pos_session.py:88);
-# 20.0 inverts the link and splits it across pos_session_sales_id,
-# pos_session_refunds_id and pos_session_correction_id on account.move. The work
-# file already records all three new columns as empty on every row, while the
-# old move_id column survives with its FK intact, so the link is recoverable
-# with one UPDATE into pos_session_sales_id (19.0 posted sales and refunds into
-# one move). Not cosmetic: 20.0's _compute_always_tax_exigible depends on
-# pos_session_ids and forces always_tax_exigible True for a move belonging to a
-# session, so unlinked historical closing moves can recompute to the wrong
-# exigibility. pos_session is empty here
+# DONE: post-migration re-points it. _relink_the_session_closing_move fills
+# account_move.pos_session_sales_id from the legacy column. Not cosmetic: the link
+# drives _compute_always_tax_exigible
 point_of_sale / pos.session              / picking_count (integer)       : module is now 'pos_stock' ('point_of_sale')
 point_of_sale / pos.session              / picking_ids (one2many)        : module is now 'pos_stock' ('point_of_sale')
 # NOTHING TO DO: the field only changed owning module, the column is the same

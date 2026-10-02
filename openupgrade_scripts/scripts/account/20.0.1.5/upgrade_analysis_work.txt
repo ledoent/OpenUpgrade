@@ -124,19 +124,12 @@ account      / account.move.line        / cogs_origin_id (many2one)     : previo
 # NOTHING TO DO: the field only changed owning module, the column is the same
 account      / account.move.line        / deductible_amount (float)     : DEL
 account      / account.move.line        / deductible_percentage (float) : NEW hasdefault: default
-# SCRIPT NEEDED: divide by 100 -- the scale changed. 19.0's deductible_amount
-# was a percentage on a 0-100 scale, default 100 (account_move_line.py:405,
-# constraint 0..100 at :1586), and its consumer reads it that way: `percentage
-# = 1 - line.deductible_amount / 100` (account_move.py:1731). 20.0's
-# deductible_percentage is a FRACTION, default 1.0 (account_move_line.py:480)
-# with the constraint `< 0 or > 1` (:1973). The analysis reports a DEL/NEW
-# pair, not a rename, so the new column simply took its default on every row.
-# The script must set deductible_percentage = deductible_amount / 100 wherever
-# deductible_amount is not 100: left alone, a half-private expense silently
-# claims full VAT deductibility. This copy cannot show it -- deductible_amount
-# is 100 on all 16648 lines and deductible_percentage 1.0 on all 16648, the two
-# defaults agreeing by coincidence, which is precisely why it would pass
-# unnoticed
+# DONE: post-migration rescales it.
+# _rescale_the_deductibility_from_percent_to_fraction writes deductible_amount /
+# 100 on purchase documents only, since 20.0 forbids deductibility elsewhere, and
+# reports a non-100 value on any other document rather than writing one the move
+# could not then be saved with. Confirmed on the 19.0 seed: a line planted at 50
+# comes out 0.5
 account      / account.move.line        / discount_allocation_key (binary): type is now 'json' ('binary')
 # NOTHING TO DO: 20.0 has no discount_allocation_key column on account.move.line, so nothing was left behind
 account      / account.move.line        / discount_allocation_needed (binary): type is now 'json' ('binary')
@@ -177,18 +170,11 @@ account      / account.reconcile.model  / website_message_ids (one2many): DEL re
 # NOTHING TO DO: 20.0 has no website_message_ids column on account.reconcile.model, so nothing was left behind
 account      / account.report           / active (boolean)              : not stored anymore
 account      / account.report           / active (boolean)              : now a function
-# SCRIPT NEEDED: carry the retained column into active_fallback. 19.0 had a
-# plain active = fields.Boolean(default=True) (account_report.py:53). 20.0
-# makes it company-dependent and non-stored: active is a
-# compute/compute_sql/inverse (:55) over active_fallback (:56) and
-# active_selection (:58), with _compute_active returning active_selection ==
-# 'True' or else active_fallback (:378-381). 20.0 is explicit about the
-# carrier -- its loader refuses data writes with "'active' field of
-# account.report shouldn't be directly written to in data files. Use
-# active_fallback." (:318). On upgrade active_fallback takes its default True
-# on every row, so a report an administrator archived in 19.0 silently
-# un-archives. The fix is UPDATE account_report SET active_fallback = active
-# WHERE NOT active. This copy cannot demonstrate it: all 4 reports are active
+# DONE: post-migration carries it. _keep_archived_reports_archived writes
+# active_fallback = false wherever the retained column says the report was
+# archived -- only the False side, since True is what the default produces anyway.
+# Confirmed on the seed: account.generic_tax_report, archived before the upgrade,
+# comes out active_fallback = f and still reads as archived
 account      / account.report           / active_fallback (boolean)     : NEW hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 187 of 187 rows, so a compute or a related field did the work
 account      / account.report           / active_selection (selection)  : NEW selection_keys: ['False', 'True']
@@ -323,17 +309,12 @@ account      / res.partner.bank         / website_message_ids (one2many): DEL re
 # NOTHING TO DO: 20.0 has no website_message_ids column on res.partner.bank, so nothing was left behind
 account_add_gln / res.partner              / global_location_number (char) : not stored anymore
 account_add_gln / res.partner              / global_location_number (char) : now a function
-# SCRIPT NEEDED: carry it into additional_identifiers['EAN_GLN']. 20.0 did what
-# account_add_gln's own 19.0 manifest promised: the module is gone and account
-# declares the field itself (account/models/partner.py:615-620) as a
-# NON-STORED compute over the partner's additional_identifiers JSON --
-# _compute_global_location_number returns _get_additional_identifier('EAN_GLN')
-# (:677-679). The 19.0 column survives but nothing reads it, so a stored GLN
-# becomes invisible. The script must write the JSON key directly rather than
-# call the inverse: EAN_GLN validates with ean.validate and
-# _set_additional_identifier raises ValidationError on a bad check digit, which
-# would abort the upgrade over one legacy typo -- those should be reported
-# instead. global_location_number is NULL on all 840 partners here
+# DONE: post-migration carries it. _carry_the_gln_into_additional_identifiers
+# writes the EAN_GLN key directly, after probing each value with
+# _validate_identifier(validation=False). A failing check digit is reported and
+# left in the legacy column: @api.constrains('additional_identifiers')
+# revalidates every key on write, so filing a bad one would block every later save
+# of the partner. Confirmed on the seed: 1234567890128 carries, ...129 does not
 stock_account / product.category         / property_cost_method (selection): selection_keys removed: [fifo]
 # NOTHING TO DO: no row holds fifo any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 stock_account / product.template         / cost_method (selection)       : selection_keys removed: [fifo]

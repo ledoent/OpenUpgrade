@@ -150,23 +150,18 @@ base         / res.bank                 / name (char)                   : DEL re
 base         / res.bank                 / phone (char)                  : DEL
 base         / res.bank                 / state (many2one)              : DEL relation: res.country.state
 base         / res.bank                 / street (char)                 : DEL
-# SCRIPT NEEDED: 20.0 deletes res.bank and inlines the bank onto the account.
-# res_partner_bank gains bank_name/bank_bic/street/street2/zip/city/state_id
-# under the comment "# bank fields", labelled "Bank Name" and "Bank Address" in
-# the form (res_partner_bank_views.xml:38-47). Nothing carried them: every one
-# of those columns is empty on all 19 accounts, while the orphaned res_bank
-# table still holds the values -- 17 of 19 accounts could take a bank name, 14
-# a bic, 14 a street, 11 a street2, 14 a zip/city/state. post-migration must
-# copy the bank record across the legacy bank_id. Of the fields this marker
-# covers, email, phone and active have nowhere to go: 20.0's res.partner.bank
-# has no email or phone column, and its `active` archives the account, not the
-# bank
+# DONE: post-migration inlines the record.
+# _carry_the_bank_record_onto_the_account copies name, bic, street, street2, zip,
+# city and state onto the account across the legacy bank_id, and writes the bank's
+# own country over country_id -- a stored precompute whose body reads
+# partner_id.country_id, so a bank abroad otherwise acquires the account holder's
+# country. email, phone and active have no destination in 20.0 and are reported.
+# Confirmed on the seed: a planted bank arrives intact, its US state and country
+# against a French partner
 base         / res.bank                 / street2 (char)                : DEL
 # NOTHING TO DO: the column held nothing on any of the 3657 rows, so its removal carries nothing away
 base         / res.bank                 / zip (char)                    : DEL
-# SCRIPT NEEDED: carried with the rest of the bank record -- see
-# base:res.bank.street. 14 of the 19 accounts reference a bank that has a zip
-# (and a city, and a state), and res_partner_bank.zip is empty on all 19
+# DONE: carried with the rest of the bank record -- see base:res.bank.street
 base         / res.company              / font (selection)              : selection_keys added: [Noto_Sans_Mono], removed: [Fira_Mono]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 base         / res.company              / layout_background (selection) : DEL required, selection_keys: ['Blank', 'Custom', 'Demo logo']
@@ -179,17 +174,13 @@ base         / res.company              / layout_background (selection) : DEL re
 base         / res.company              / layout_background_image (binary): DEL attachment: True
 # NOTHING TO DO: 20.0 has no layout_background_image column on res.company, so nothing was left behind
 base         / res.company              / report_tables_id (selection)  : NEW selection_keys: ['bold', 'boxed', 'bubble', 'column', 'compact', 'light', 'striped'], hasdefault: default
-# SCRIPT NEEDED: the table design was baked into the 19.0 layout template and
-# 20.0 moves it here, so the 'light' default silently restyles the documents of
-# every company that did not print with the standard layout. 19.0 hardcoded one
-# table class per layout (report_templates.xml:348-774 -- striped
-# o_table_striped, boxed o_table_boxed, bold o_table_bold, standard
-# o_table_standard, folder and wave o_table_striped, bubble
-# o_table_boxed-rounded) and 20.0's external_layout_body derives exactly those
-# classes from report_tables_id alone (447-453), so every 19.0 layout maps to a
-# key. The mapping must be read off external_report_layout_id BEFORE web's data
-# load drops the view. Not provable here: all 5 companies are on
-# external_layout_standard, whose table style IS 'light'
+# DONE: pre-migration resolves it, post-migration applies it.
+# _remember_the_table_style_the_layout_implied maps each company's 19.0 layout to
+# the 20.0 key and keeps it in a legacy column. It has to happen there: 20.0 ships
+# neither external_layout_striped, boxed nor bold, and web's data load deletes
+# those views, so by post-migration external_report_layout_id is NULL and the
+# style cannot be derived at all. Confirmed on the seed: a company on
+# external_layout_bold comes out report_tables_id = 'bold'
 base         / res.country              / zip_applicability (selection) : NEW required, selection_keys: ['not_applicable', 'optional', 'required'], hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 251 of 251 rows, so a compute or a related field did the work
 base         / res.country              / zip_required (boolean)        : DEL
@@ -231,31 +222,25 @@ base         / res.partner              / commercial_company_name (char): not a 
 base         / res.partner              / commercial_company_name (char): now related
 base         / res.partner              / company_name (char)           : DEL
 base         / res.partner              / company_registry (char)       : DEL
-# SCRIPT NEEDED: 19.0's company_registry was pure user input -- its compute was
-# the no-op `company.company_registry = company.company_registry`, store=True,
-# readonly=False -- and 20.0 replaces it with the additional_identifiers Json,
-# whose generic key 'OTHER' is labelled "Company ID" for every country
-# (tools/partner_identifiers.py:950-956), which is 19.0's own label. So
-# post-migration must write the value into additional_identifiers, under the
-# country's EN-category key where one exists (BE_EN, CH_EN, AT_EN, ...) and
-# 'OTHER' otherwise: a blanket 'OTHER' would be invisible in the form, because
-# _compute_available_additional_identifiers_metadata pops that key whenever the
-# country has another EN identifier (res_partner.py:1639-1646). This copy
-# cannot prove it -- company_registry is empty on all 840 partners
+# DONE: post-migration carries it.
+# _carry_the_company_registry_into_additional_identifiers prefers the country's
+# own EN identifier key, probing each candidate with
+# _validate_identifier(validation=False), and falls back to 'OTHER' with a report
+# when the value fits none. Both halves matter: 'OTHER' is popped by
+# _compute_available_additional_identifiers_metadata for any country with an
+# identifier of its own, so it is invisible; and a value filed under a key it
+# fails makes the partner unsavable, the constraint checking the whole Json on
+# write. Confirmed on the seed: a valid SIREN lands under FR_SIREN, free text
+# under OTHER, and that partner still saves
 base         / res.partner              / contact_address_inline (char) : previously in module mail
 # NOTHING TO DO: the field only changed owning module, the column is the same
 base         / res.partner              / is_company (boolean)          : now a function
 base         / res.partner.bank         / acc_holder_name (char)        : DEL
-# SCRIPT NEEDED: holder_name is not merely the new spelling, it is a compute
-# that already ran and OVERWROTE deliberate values. Both versions store it
-# readonly=False, but 20.0's _compute_account_holder_name filled the new column
-# with partner_id.name for every row during the upgrade, so a holder
-# deliberately different from the partner is replaced rather than just dropped.
-# Measured on this copy: 13 of 19 accounts held a legacy value and 4 now read
-# differently -- "Ledo Enterprises LLC" became "Ledo Enterprises", and the
-# joint holder "Don Kendall and Aimee Kendall" became "Kendall Family Budget"
-# on two accounts. post-migration must write acc_holder_name over holder_name
-# wherever the legacy column is non-empty
+# DONE: pre-migration renames the column -- see _renamed_fields. The rename is the
+# whole fix: the value arrives in holder_name, and 20.0's own
+# _compute_account_holder_name guard (`if not account.holder_name`) then leaves
+# the row alone. Confirmed on the seed: a holder deliberately different from its
+# partner's name survives the upgrade
 base         / res.partner.bank         / acc_number (char)             : DEL required
 # NOTHING TO DO: 20.0 has no acc_number column on res.partner.bank, so nothing was left behind
 base         / res.partner.bank         / account_number (char)         : NEW required
@@ -264,22 +249,13 @@ base         / res.partner.bank         / bank_bic (char)               : is now
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / bank_bic (char)               : not related anymore
 base         / res.partner.bank         / bank_id (many2one)            : DEL relation: res.bank
-# SCRIPT NEEDED: this is the join the script needs rather than a loss of its
-# own -- bank_id survives as a legacy column on 17 of 19 accounts and the
-# res_bank table it points at is still in place, which is the only reason the
-# bank's name, bic and address are recoverable at all. See base:res.bank.street
-# for what must be copied. 20.0 has no res.bank anywhere and no replacement
-# many2one
+# DONE: the legacy column is the join the bank carry reads -- see
+# base:res.bank.street. Odoo leaves an obsolete column in place, which is the only
+# reason the deleted bank record is recoverable at all
 base         / res.partner.bank         / bank_name (char)              : is now stored
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / bank_name (char)              : not related anymore
-# SCRIPT NEEDED: 19.0's bank_name was related='bank_id.name' and unstored, so
-# this is a new column and it arrived empty -- 0 of 19 accounts have one, while
-# 17 point at a res_bank row that does. 20.0 reads it in _compute_display_name
-# ("<account number> - <bank name>") and offers it in the list and search views,
-# so an empty column is visible everywhere a bank account is shown. Carried by
-# the same script as base:res.bank.street, together with bank_bic, which was
-# related='bank_id.bic' and is empty on all 19 where 14 could be filled
+# DONE: filled from res_bank.name by the bank carry -- see base:res.bank.street
 base         / res.partner.bank         / city (char)                   : NEW
 # NOTHING TO DO: empty on all 119 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 base         / res.partner.bank         / clearing_label_id (many2one)  : NEW relation: clearing.label, required, hasdefault: compute

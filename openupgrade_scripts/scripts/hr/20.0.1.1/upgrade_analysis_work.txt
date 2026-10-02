@@ -92,13 +92,13 @@ hr           / hr.job                   / employee_type_id (many2one)   : NEW re
 hr           / hr.job                   / recruiter_id (many2one)       : NEW relation: hr.employee, hasdefault: default
 # NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.job                   / user_id (many2one)            : DEL relation: res.users
-# SCRIPT NEEDED: 20.0's recruiter_id is this field retyped, not a new one. Both
-# are labelled "Recruiter" and carry the same help text word for word; only the
-# comodel changed, res.users -> hr.employee. The 19.0 column survives in
-# hr_job, so pre-migration should keep it under a legacy name and
-# post-migration set recruiter_id to the hr.employee whose user_id matches,
-# reporting any recruiter with no employee record. hr_job holds 0 rows on this
-# copy, so nothing here exercises it
+# DONE: post-migration retypes it.
+# _retype_the_recruiter_from_a_user_to_an_employee resolves the 19.0 user to an
+# hr.employee inside the job's own company, which recruiter_id's
+# check_company=True requires, and reports a recruiter with no employee record
+# there. Written wherever it resolves rather than only where the column is empty:
+# recruiter_id defaults to self.env.user.employee_id, so adding it stamped every
+# job with the employee of whoever ran the upgrade. Confirmed on the seed
 hr           / hr.job                   / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on hr.job, so nothing was left behind
 hr           / hr.version               / additional_note (text)        : DEL
@@ -109,22 +109,19 @@ hr           / hr.version               / departure_date (date)         : not st
 hr           / hr.version               / departure_date (date)         : now related
 hr           / hr.version               / departure_description (html)  : not stored anymore
 hr           / hr.version               / departure_description (html)  : now related
-# SCRIPT NEEDED: carried by the same script as departure_reason_id above. 20.0
-# reads it through departure_id.departure_description, so the 19.0 hr_version
-# column is orphaned unless an hr.employee.departure row is built from it
+# DONE: carried by the same script -- see hr:hr.version.departure_reason_id
 hr           / hr.version               / departure_id (many2one)       : NEW relation: hr.employee.departure
 # NOTHING TO DO: empty on all 31 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 hr           / hr.version               / departure_reason_id (many2one): not stored anymore
 hr           / hr.version               / departure_reason_id (many2one): now related
-# SCRIPT NEEDED: what stops is the reading, not the data. 19.0 stored
-# departure_reason_id, departure_description and departure_date on hr_version;
-# 20.0 moves all three onto the new hr.employee.departure and makes
-# hr.version's related through departure_id, so the surviving hr_version
-# columns go invisible to the ORM -- hr_employee_departure holds 0 rows and
-# every hr_version.departure_id is NULL. post-migration should create one
-# hr.employee.departure per version holding any of the three and point
-# hr_version.departure_id at it. All three are NULL on both copies' versions,
-# so this copy cannot show the loss
+# DONE: post-migration builds the record.
+# _build_the_departure_record_the_version_now_reads_through inserts one
+# hr.employee.departure per version carrying a departure_date and points
+# departure_id at it. Inserted directly, not through create(), which rewrites the
+# employee's contract_date_end from the departure date and leaves apply_date NULL
+# -- the daily _cron_apply_departure then archives the employee AND their
+# res.users. A version with a reason or note but no date is reported instead of
+# being given an invented date. Confirmed on the seed
 hr           / hr.version               / employee_type (selection)     : DEL required, selection_keys: ['contractor', 'employee', 'freelance', 'student', 'trainee', 'worker']
 # NOTHING TO DO: 20.0 has no employee_type column on hr.version, so nothing was left behind
 hr           / hr.version               / employee_type_id (many2one)   : NEW relation: hr.employee.type
@@ -146,20 +143,14 @@ hr           / hr.version               / ssnid (char)                  : DEL
 hr           / hr.version               / tz (selection)                : is now stored
 hr           / hr.version               / tz (selection)                : not related anymore
 hr           / hr.version               / tz (selection)                : now required
-# SCRIPT NEEDED: every version came out UTC where every employee is
-# America/New_York, and the real value is still in the database. 19.0 declared
-# hr.version.tz related='employee_id.tz' (hr_version.py:153), so nothing was
-# stored on the version -- the value lived in resource_resource.tz. 20.0
-# inverts the relation: hr.version.tz is stored and required with
-# default=env.context tz or env.user.tz or 'UTC' (hr_version.py:162), and
-# hr.employee.tz becomes related="version_id.tz" (hr_employee.py:309). So the
-# upgrade had to materialise it and took the default instead. Measured: both
-# migrated versions hold 'UTC' while the resources behind their employees hold
-# 'America/New_York'. Nothing re-derives it -- _get_tz() returns self.tz first
-# (hr_version.py:715-717) -- so the wrong zone reaches _get_resources_per_tz
-# and every working-hours and attendance calculation downstream, a four or five
-# hour shift. post-migration must fill hr_version.tz from resource_resource.tz
-# through hr_employee.resource_id, and report any version it cannot source
+# DONE: post-migration carries it.
+# _carry_the_timezone_the_relation_stopped_deriving fills hr_version.tz from
+# resource_resource.tz through the employee's resource, unconditionally wherever
+# the resource names a zone. There is no 19.0 value to protect: the field was a
+# non-stored related with no column, so every timezone in the table was invented
+# by 20.0's default of `context tz or user tz or 'UTC'` -- the zone of whoever ran
+# the upgrade. Confirmed on the seed: a resource on Pacific/Auckland reaches its
+# version, where guarding on 'UTC' had silently carried nothing
 hr           / hr.version               / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on hr.version, so nothing was left behind
 hr           / mail.activity            / technical_usage (False)       : NEW selection_keys: ['hr_expiring_contract', 'hr_expiring_work_permit', 'none'], mode: modify
