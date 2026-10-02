@@ -84,3 +84,50 @@ class TestHrMigration(TransactionCase):
         self.assertTrue(
             self.env.cr.fetchone()[0], "the chosen employee type did not survive"
         )
+
+    def test_the_version_keeps_the_timezone_instead_of_defaulting_to_utc(self):
+        """hr_version.tz comes from the resource, not from the 20.0 default.
+
+        19.0 declared hr.version.tz as related='employee_id.tz'
+        (hr_version.py:153), so nothing was stored on the version -- the value
+        lived in resource_resource.tz, reached through resource.mixin. 20.0
+        inverts it: hr_version.tz is stored and required with a default of
+        `context tz or user tz or 'UTC'` (hr_version.py:162), and
+        hr.employee.tz becomes related="version_id.tz" (hr_employee.py:309).
+
+        Without the carry the upgrade takes that default. Measured on the
+        sanitised prod copy: both versions came out 'UTC' while their
+        resources held 'America/New_York'. Nothing re-derives it afterwards --
+        _get_tz() reads self.tz first (hr_version.py:715-717) -- so every
+        working-hours and attendance calculation silently shifts.
+
+        The fixture plants a non-UTC zone precisely because 'UTC' is the
+        default: a UTC resource would assert nothing.
+        """
+        version = self.env["hr.version"].search(
+            [("name", "=", "ou19-version-student")], limit=1
+        )
+        self.assertTrue(version, "the fixture's version is gone")
+        self.assertEqual(version.tz, "Pacific/Auckland")
+        self.assertEqual(version.tz, version.employee_id.resource_id.tz)
+
+    def test_no_version_was_left_on_a_utc_its_resource_contradicts(self):
+        """The carry is global, not just the row the fixture planted.
+
+        Asserting on the fixture alone would pass even if the UPDATE had
+        matched only the row this test created.
+        """
+        self.env.cr.execute(
+            """
+            SELECT count(*)
+            FROM hr_version v
+            JOIN hr_employee e ON e.id = v.employee_id
+            JOIN resource_resource r ON r.id = e.resource_id
+            WHERE v.tz = 'UTC' AND r.tz IS NOT NULL AND r.tz != '' AND r.tz != 'UTC'
+            """
+        )
+        self.assertEqual(
+            self.env.cr.fetchone()[0],
+            0,
+            "a version is on UTC while its resource names another zone",
+        )

@@ -153,6 +153,13 @@ env["res.partner.bank"].create(
     {
         "acc_number": "ou19-acct 0042/7",
         "partner_id": partner_ru.id,
+        # acc_holder_name -> holder_name is the third rename on this model and
+        # the one with teeth. The holder is written DIFFERENT from the partner
+        # name on purpose: 20.0's _compute_account_holder_name fills an empty
+        # holder_name with partner_id.name, so a holder that merely echoed the
+        # partner would come out right whether the rename ran or not, and the
+        # assertion would pass for the wrong reason.
+        "acc_holder_name": "ou19-holder-not-the-partner",
     }
 )
 

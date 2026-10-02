@@ -39,6 +39,29 @@ _renamed_fields = [
         "sanitized_acc_number",
         "sanitized_account_number",
     ),
+    # The third of the same family, and the one that does damage if it is left
+    # out. 20.0's holder_name is a stored compute, _compute_account_holder_name,
+    # whose body is `if not account.holder_name: account.holder_name =
+    # account.partner_id.name` (res_partner_bank.py:167-170). It does not
+    # overwrite a value -- it fills an EMPTY column, which is exactly what an
+    # unrenamed holder_name is. So the account ends up displaying the partner's
+    # name as its holder, which is plausible enough that nothing looks wrong,
+    # while the real holder sits unread in the legacy column.
+    #
+    # Measured on the sanitised prod copy 2026-10-02, before this rename: 13 of
+    # 19 accounts carried an acc_holder_name and 4 of them disagreed with what
+    # the compute wrote -- "Ledo Enterprises LLC" showed as "Ledo Enterprises",
+    # and the joint holder "Don Kendall and Aimee Kendall" showed as "Kendall
+    # Family Budget" on two accounts.
+    #
+    # Renaming is the whole fix: the value arrives in holder_name, and the
+    # compute's own guard then leaves those rows alone.
+    (
+        "res.partner.bank",
+        "res_partner_bank",
+        "acc_holder_name",
+        "holder_name",
+    ),
 ]
 
 # Keeps the source ir.rule id on the rows we derive from it, so the xml_ids can

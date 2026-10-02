@@ -127,6 +127,31 @@ class TestBaseMigration(TransactionCase):
         # sanitized value strips punctuation and upper-cases.
         self.assertEqual(bank.sanitized_account_number, "OU19ACCT00427")
 
+    def test_bank_holder_name_is_the_holder_not_the_partner(self):
+        """acc_holder_name carries, instead of being invented from the partner.
+
+        20.0 renamed the field to holder_name and made it a stored compute whose
+        body is `if not account.holder_name: account.holder_name =
+        account.partner_id.name` (res_partner_bank.py:167-170). That guard means
+        it never overwrites -- it fills an EMPTY column, which is what an
+        unrenamed holder_name is. So without the rename the account quietly
+        displays the partner's name as its holder: plausible, wrong, and
+        invisible, while the real holder sits unread in the legacy column.
+
+        Measured on the sanitised prod copy before the rename was added: 13 of
+        19 accounts carried a holder and 4 disagreed with what the compute
+        wrote, "Ledo Enterprises LLC" showing as "Ledo Enterprises".
+
+        The fixture's holder differs from its partner's name, so this assertion
+        fails if the rename is dropped rather than passing on the compute.
+        """
+        bank = self.env["res.partner.bank"].search(
+            [("partner_id.name", "=", "ou19-bank-partner")]
+        )
+        self.assertTrue(bank)
+        self.assertEqual(bank.holder_name, "ou19-holder-not-the-partner")
+        self.assertNotEqual(bank.holder_name, bank.partner_id.name)
+
     def test_no_bank_account_lost_its_number(self):
         """The rename is global, so nothing anywhere should be left blank.
 

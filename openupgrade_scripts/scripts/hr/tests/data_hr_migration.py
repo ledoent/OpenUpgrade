@@ -34,4 +34,19 @@ env.cr.execute(
     "UPDATE hr_version SET employee_type = 'student' WHERE id = %s", (other.id,)
 )
 
+# --- the timezone the inverted relation stops deriving -----------------------
+# 19.0 keeps the zone in resource_resource.tz and reads it through
+# hr.version.tz = related('employee_id.tz'); 20.0 stores hr_version.tz and makes
+# the employee read FROM it, so the upgrade has to materialise the value.
+#
+# A zone that is NOT UTC is planted, because the 20.0 default is 'UTC': a
+# resource already on UTC would come out right whether the carry ran or not.
+# Written through the resource rather than the version, since in 19.0 the
+# version has no column of its own to write to.
+tz_version = versions.search([("name", "=", "ou19-version-student")], limit=1)
+assert tz_version, "the student version is the one this reuses"
+tz_resource = tz_version.employee_id.resource_id
+assert tz_resource, "the employee needs a resource to hold the timezone"
+tz_resource.tz = "Pacific/Auckland"
+
 env.cr.commit()
