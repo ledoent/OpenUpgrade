@@ -128,3 +128,59 @@ class TestHrMigration(TransactionCase):
             0,
             "a version's timezone contradicts the resource it came from",
         )
+
+    def test_the_recruiter_became_an_employee(self):
+        """hr.job.user_id is retyped to recruiter_id, an hr.employee.
+
+        Not merely dropped and re-added: both fields are labelled "Recruiter"
+        with identical help text and only the comodel changed. The new column
+        is not empty either -- recruiter_id defaults to
+        `self.env.user.employee_id`, so the upgrade stamped every job with the
+        employee of whoever ran it, which is why the carry cannot be guarded on
+        the column still being NULL.
+        """
+        job = self.env["hr.job"].search([("name", "=", "ou19-job-recruiter")])
+        self.assertTrue(job, "the fixture's job is gone")
+        self.assertTrue(job.recruiter_id, "the recruiter was not carried")
+        self.assertEqual(job.recruiter_id.company_id, job.company_id)
+
+    def test_the_departure_record_was_built_from_the_version(self):
+        """20.0 reads the three departure fields through departure_id.
+
+        The hr_version columns survive but go invisible to the ORM, so without
+        a record to point at, a departure recorded in 19.0 reads as blank.
+        """
+        version = (
+            self.env["hr.version"]
+            .with_context(active_test=False)
+            .search([("name", "=", "ou19-version-departed")], limit=1)
+        )
+        self.assertTrue(version, "the fixture's version is gone")
+        self.assertTrue(version.departure_id, "no departure record was built")
+        self.assertEqual(str(version.departure_date), "2024-03-15")
+        self.assertIn("ou19-departure-note", version.departure_description or "")
+        self.assertTrue(version.departure_reason_id)
+
+    def test_the_carried_departure_will_not_archive_anyone(self):
+        """apply_date must be set, or the daily cron re-applies the departure.
+
+        _cron_apply_departure selects departures with `apply_date = False` and a
+        departure_date in the past, then action_register() archives the employee
+        AND their res.users (hr_employee_departure.py:134-142). Every historical
+        departure carried would archive a user account within a day of the
+        upgrade, so the rows are written as already applied.
+        """
+        version = (
+            self.env["hr.version"]
+            .with_context(active_test=False)
+            .search([("name", "=", "ou19-version-departed")], limit=1)
+        )
+        self.assertTrue(version.departure_id)
+        self.assertTrue(
+            version.departure_id.apply_date,
+            "the departure is unapplied, so the cron will archive the employee",
+        )
+        pending = self.env["hr.employee.departure"].search_count(
+            [("apply_date", "=", False), ("departure_date", "<", "2026-01-01")]
+        )
+        self.assertEqual(pending, 0, "a past departure is still queued to apply")

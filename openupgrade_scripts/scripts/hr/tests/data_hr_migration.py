@@ -49,4 +49,48 @@ tz_resource = tz_version.employee_id.resource_id
 assert tz_resource, "the employee needs a resource to hold the timezone"
 tz_resource.tz = "Pacific/Auckland"
 
+# --- the recruiter that stopped being a user ---------------------------------
+# hr.job.user_id (res.users) becomes recruiter_id (hr.employee). A job is
+# created rather than borrowed because hr_job is empty on the prod copy, and the
+# user chosen is one that actually has an employee record in the same company --
+# recruiter_id carries check_company=True, so a user whose employee sits
+# elsewhere cannot be expressed in 20.0 at all.
+recruiter_employee = env["hr.employee"].search(
+    [("user_id", "!=", False), ("company_id", "!=", False)], order="id", limit=1
+)
+assert recruiter_employee, "the seed needs an employee linked to a user"
+env["hr.job"].create(
+    {
+        "name": "ou19-job-recruiter",
+        "company_id": recruiter_employee.company_id.id,
+        "user_id": recruiter_employee.user_id.id,
+    }
+)
+
+# --- the departure that moved to its own record ------------------------------
+# 19.0 stored departure_reason_id, departure_description and departure_date on
+# hr_version; 20.0 reads all three through departure_id -> hr.employee.departure.
+# Written in SQL on purpose: 19.0's own departure handling archives the employee
+# and rewrites contract dates, and planting a value is not meant to re-enact a
+# departure -- only to leave the columns an upgraded database would carry.
+departing = versions.search(
+    [("id", "not in", (with_type.id, other.id)), ("employee_id", "!=", False)],
+    order="id",
+    limit=1,
+)
+assert departing, "the seed needs a third version to retire"
+departing.name = "ou19-version-departed"
+reason = env["hr.departure.reason"].search([], order="id desc", limit=1)
+assert reason, "the seed needs a departure reason"
+env.cr.execute(
+    """
+    UPDATE hr_version
+    SET departure_reason_id = %s,
+        departure_description = %s,
+        departure_date = DATE '2024-03-15'
+    WHERE id = %s
+    """,
+    (reason.id, "<p>ou19-departure-note</p>", departing.id),
+)
+
 env.cr.commit()
