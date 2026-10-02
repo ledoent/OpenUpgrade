@@ -89,16 +89,19 @@ env["ir.model.data"].create(
 # calendars that name a zone were the resource-less ones whose hours have no
 # other source of truth. Without this case the rule could be reduced to "the
 # default always wins" and every test would still pass.
-tz_unset_company = env["res.company"].create(
-    {"name": "ou19-company-with-an-unconfigured-default-calendar"}
+#
+# A SECOND EXISTING company, not a new one. Creating a res.company here copied
+# every per-company record in the database, including the payment.provider rows
+# the payment fixture renames -- fixtures are planted in module order, so
+# payment runs first and resource's new company duplicated its two providers,
+# failing payment's own test with "2 != 1: ou19-provider-live". A fixture must
+# not reshape the database for the fixtures that follow it.
+tz_unset_company = env["res.company"].search(
+    [("resource_calendar_id", "!=", False), ("id", "!=", tz_company.id)], limit=1
 )
-tz_unset_company.resource_calendar_id = env["resource.calendar"].create(
-    {
-        "name": "ou19-default-calendar-left-on-utc",
-        "company_id": tz_unset_company.id,
-        "tz": "UTC",
-    }
-)
+assert tz_unset_company, "the seed needs a second company with a default schedule"
+tz_unset_company.resource_calendar_id.tz = "UTC"
+tz_unset_company.resource_calendar_id.name = "ou19-default-calendar-left-on-utc"
 for n in range(2):
     env["resource.calendar"].create(
         {
