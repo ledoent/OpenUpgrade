@@ -110,3 +110,24 @@ class TestResourceMigration(TransactionCase):
         company = self.env.ref("__ou19__.ou19_tz_company", raise_if_not_found=False)
         self.assertTrue(company, "the fixture's company is gone")
         self.assertEqual(company.tz, "Pacific/Chatham")
+
+    def test_an_unconfigured_utc_default_calendar_does_not_win(self):
+        """UTC on the default calendar is 19.0's "nobody chose", not a decision.
+
+        resource.calendar.tz was required with default `self.env.user.tz or
+        'UTC'`, so a UTC default calendar is one created by a user with no
+        timezone set. Preferring it propagates the unset value over calendars
+        that do name a zone -- and on the production copy this was measured
+        against, those were the resource-less booking-type calendars, whose
+        hours have no other source of truth once the company zone is wrong.
+
+        The fixture is the previous test's arrangement with the default's zone
+        replaced by UTC, so the two together pin both halves of the rule: this
+        one fails if the default is ever preferred unconditionally, and the
+        previous one fails if the count is.
+        """
+        company = self.env.ref(
+            "__ou19__.ou19_tz_unset_company", raise_if_not_found=False
+        )
+        self.assertTrue(company, "the fixture's company is gone")
+        self.assertEqual(company.tz, "America/New_York")

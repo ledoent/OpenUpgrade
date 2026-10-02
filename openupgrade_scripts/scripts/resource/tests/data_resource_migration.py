@@ -81,4 +81,39 @@ env["ir.model.data"].create(
     }
 )
 
+# The other half of the same rule, and the arrangement an actual production copy
+# turned out to have: a default calendar left on UTC, which is what 19.0 stored
+# when nobody chose (the field was required, defaulting to
+# `self.env.user.tz or 'UTC'`), against calendars that do name a zone. Here the
+# default must NOT win -- preferring it propagates the unset value, and the
+# calendars that name a zone were the resource-less ones whose hours have no
+# other source of truth. Without this case the rule could be reduced to "the
+# default always wins" and every test would still pass.
+tz_unset_company = env["res.company"].create(
+    {"name": "ou19-company-with-an-unconfigured-default-calendar"}
+)
+tz_unset_company.resource_calendar_id = env["resource.calendar"].create(
+    {
+        "name": "ou19-default-calendar-left-on-utc",
+        "company_id": tz_unset_company.id,
+        "tz": "UTC",
+    }
+)
+for n in range(2):
+    env["resource.calendar"].create(
+        {
+            "name": f"ou19-calendar-that-names-a-zone-{n}",
+            "company_id": tz_unset_company.id,
+            "tz": "America/New_York",
+        }
+    )
+env["ir.model.data"].create(
+    {
+        "module": "__ou19__",
+        "name": "ou19_tz_unset_company",
+        "model": "res.company",
+        "res_id": tz_unset_company.id,
+    }
+)
+
 env.cr.commit()

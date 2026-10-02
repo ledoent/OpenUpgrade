@@ -181,22 +181,24 @@ def _carry_the_calendar_tz_onto_the_company(env):
     booking that had been confirmed for months.
 
     Per-calendar timezones cannot survive, because 20.0 has one zone per
-    company. Where a company's calendars disagree, the zone held by the MOST of
-    them wins -- that is the choice that leaves the fewest calendars meaning
-    something new -- with the company's default calendar breaking a tie. The
-    default calendar is deliberately not preferred outright: on the copy
-    measured, company 1's default calendar carried an unconfigured UTC while
-    both of the calendars actually driving bookings said US/Eastern, so
-    preferring it would have kept exactly the breakage this fixes. Resources are
-    unaffected either way, since resource.resource.tz already existed in 19.0
-    and core uses it whenever a resource is in play.
+    company. The default calendar's zone wins, since that is the calendar the
+    company's own records are computed against -- except where it is UTC, which
+    is 19.0's way of spelling "nobody chose" (the field was required, defaulting
+    to `self.env.user.tz or 'UTC'`). There the zone most of the other calendars
+    name wins instead. Resources are unaffected by the choice either way:
+    resource.resource.tz already existed in 19.0 and core uses it whenever a
+    resource is in play, so the company zone only decides what a RESOURCE-LESS
+    calendar's hours mean.
     """
     legacy_tz = openupgrade.get_legacy_name("tz")
     if not openupgrade.column_exists(env.cr, "resource_calendar", legacy_tz):
         # pre-migration did not run (a database upgraded before this script
         # existed). Say so rather than silently leaving the zones wrong.
         openupgrade.message(
-            env.cr, "resource", False, False,
+            env.cr,
+            "resource",
+            False,
+            False,
             "Could not carry resource.calendar.tz onto res.company.tz: the "
             "preserved column is absent. Check each company's Timezone.",
         )
@@ -218,7 +220,24 @@ def _carry_the_calendar_tz_onto_the_company(env):
             -- among the rest. Ordering by count first would let three calendars
             -- in one zone outvote the calendar the company's own records are
             -- actually computed against.
-            ORDER BY company_id, is_default DESC, n DESC, tz
+            --
+            -- Unless that default is UTC, which is 19.0's "nobody chose": the
+            -- field was required with default `self.env.user.tz or 'UTC'`, so a
+            -- UTC default calendar is one created by a user who had no timezone
+            -- set, not a company that decided on UTC. Preferring it propagates
+            -- the unset value over calendars that do name a zone. Measured on a
+            -- production copy: the default calendar said UTC while both of the
+            -- calendars actually driving bookings said US/Eastern, and those
+            -- two are resource-less, so the company zone is the ONLY thing that
+            -- says what their hours mean -- the default calendar's own
+            -- resources carry resource.resource.tz and are unaffected either
+            -- way. A company whose calendars all say UTC still gets UTC: there
+            -- is nothing else to choose.
+            ORDER BY company_id,
+                     (is_default AND tz <> 'UTC') DESC,
+                     n DESC,
+                     is_default DESC,
+                     tz
         )
         UPDATE res_company c SET tz = chosen.tz
         FROM chosen
@@ -240,11 +259,16 @@ def _carry_the_calendar_tz_onto_the_company(env):
     )
     for company_id, zones in env.cr.fetchall():
         openupgrade.message(
-            env.cr, "resource", False, False,
+            env.cr,
+            "resource",
+            False,
+            False,
             "Company %s had calendars in more than one timezone (%s). 20.0 "
             "keeps one timezone per company, so the default calendar's zone "
-            "was used; review the others.",
-            company_id, ", ".join(sorted(zones)),
+            "was used (or, where that was an unconfigured UTC, the zone most "
+            "of them named); review the others.",
+            company_id,
+            ", ".join(sorted(zones)),
         )
 
 
