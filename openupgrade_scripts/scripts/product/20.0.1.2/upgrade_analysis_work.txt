@@ -27,13 +27,20 @@ product      / product.category         / complete_name (char)          : not st
 product      / product.category         / name (char)                   : now translatable
 product      / product.combo            / name (char)                   : now translatable
 product      / product.pricelist.item   / applied_on (selection)        : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 recomputes it from references that survive.
+# _compute_applied_on reads categ_id, then product_tmpl_id, then product_id
+# (product_pricelist_item.py:198-202), all of which the upgrade leaves alone.
+# Verified against the matched pair rather than argued: the prod copy's 3 items
+# read 1_product on product_tmpl_id 31 before the upgrade and read exactly the
+# same after it
 product      / product.pricelist.item   / compute_price (selection)     : selection_keys added: [discount, markup], removed: [formula, percentage]
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 product      / product.pricelist.item   / display_applied_on (selection): DEL required, selection_keys: ['1_product', '2_product_category']
 product      / product.pricelist.item   / percent_price (float)         : DEL
 product      / product.pricelist.item   / price_markup (float)          : not stored anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: nothing to lose -- 0 of the copy's 3 pricelist items hold a
+# non-zero markup, so the column stops being stored over values that were all
+# the default
 product      / product.pricelist.item   / uom_id (many2one)             : NEW relation: uom.uom
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 product      / product.product          / base_unit_count (float)       : previously in module website_sale
@@ -62,7 +69,8 @@ product      / product.product          / virtual_available (float)     : previo
 product      / product.supplierinfo     / product_uom_id (many2one)     : DEL relation: uom.uom, required
 # NOTHING TO DO: 20.0 has no product_uom_id column on product.supplierinfo, so nothing was left behind
 product      / product.supplierinfo     / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself. The field is required with a compute
+# behind it, and the upgrade left 0 of 31 supplier records NULL
 product      / product.template         / barcode (char)                : is now stored
 # NOTHING TO DO: 20.0 filled it itself -- 13 distinct values over 13 of 199 rows, so a compute or a related field did the work
 product      / product.template         / base_unit_count (float)       : previously in module website_sale
@@ -81,7 +89,8 @@ product      / product.template         / virtual_available (float)     : previo
 # NOTHING TO DO: the field only changed owning module, the column is the same
 product      / product.template.attribute.exclusion / product_template_attribute_value_id (many2one): DEL relation: product.template.attribute.value
 product      / product.template.attribute.exclusion / product_tmpl_id (many2one)    : DEL relation: product.template, required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the table is empty on this data -- 0 exclusion rows either
+# side -- so the dropped required reference takes nothing with it
 product      / product.template.attribute.exclusion / value_ids (many2many)         : DEL relation: product.template.attribute.value
 # NOTHING TO DO: 20.0 has no value_ids column on product.template.attribute.exclusion, so nothing was left behind
 product      / product.template.attribute.value / _order                        : _order is now 'sequence, attribute_line_id, product_attribute_value_id, id' ('attribute_line_id, product_attribute_value_id, id')
@@ -95,13 +104,22 @@ product      / product.template.attribute.value / show_price_extra (boolean)    
 stock        / product.product          / qty_available (float)         : is now stored
 # NOTHING TO DO: empty on all 306 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 stock        / product.product          / qty_available (float)         : not a function anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: it is still computed, and there was never a column. 20.0
+# declares `qty_available = fields.Float(compute='_compute_quantities', ...,
+# store=False)` (stock/models/product.py:50-52), and 19.0's product_product
+# carried no such column at all, so there is nothing to carry and nothing to
+# fill -- the quantity is derived from stock.quant on read, as before
 stock        / product.product          / show_qty_update_button (boolean): not a function anymore
 stock        / product.product          / show_qty_update_button (boolean): now related
 # NOTHING TO DO: 20.0 has no show_qty_update_button column on product.product, so nothing was left behind
 website_sale / product.product          / base_unit_id (many2one)       : relation is now 'product.base.unit' ('website.base.unit') [nothing to do]
 website_sale / product.template         / base_unit_id (many2one)       : relation is now 'product.base.unit' ('website.base.unit') [nothing to do]
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO on this data, and the limit is worth stating. The comodel is
+# renamed website.base.unit -> product.base.unit, which apriori does not declare,
+# so a database that actually used base units would need rename_models and
+# rename_tables for the ids to keep meaning anything. Nothing here can show that
+# or be broken by it: both tables hold 0 rows and 0 of the seed's 199 templates
+# reference a base unit
 ---XML records in module 'product'---
 decimal.precision: product.decimal_discount (noupdate switched)
 decimal.precision: product.decimal_price (noupdate switched)

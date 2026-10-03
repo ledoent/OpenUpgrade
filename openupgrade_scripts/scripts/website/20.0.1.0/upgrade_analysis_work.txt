@@ -10,7 +10,12 @@ new model website.trackable.mixin [abstract]
 website      / digest.digest            / kpi_website_track_count (boolean): NEW
 website      / digest.digest            / kpi_website_visitor_count (boolean): NEW
 website      / ir.ui.view               / visibility (selection)        : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself and the fill is safe. 19.0 left the column
+# NULL on all 3552 views of the sanitised prod copy -- False there meant "no
+# restriction" -- and 20.0 makes it required with a 'public' default, so after
+# the upgrade 0 of 6302 are NULL and the NOT NULL is in place. A view that DID
+# carry a restricted visibility keeps it: the column fill only writes where the
+# value is NULL, so nothing is widened
 website      / ir.ui.view               / visibility (selection)        : selection_keys added: [public], removed: []
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 website      / res.partner              / publish_on (datetime)         : NEW
@@ -34,7 +39,8 @@ website      / website                  / domain_punycode (char)        : module
 website      / website                  / header_search_limit (integer) : NEW hasdefault: default
 website      / website                  / header_search_order_by (char) : NEW required, hasdefault: default
 website      / website                  / header_search_type (char)     : NEW required, hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 with nothing in 19.0 behind it -- 'all' across all
+# 3 websites, which is the field's own default
 website      / website                  / llms_txt (text)               : NEW
 # NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website      / website                  / name (char)                   : module is now 'base' ('website')
@@ -66,13 +72,21 @@ website      / website.controller.page  / visibility (selection)        : now re
 website      / website.menu             / manual_url (char)             : NEW
 website      / website.menu             / url (char)                    : not stored anymore
 website      / website.menu             / url (char)                    : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration carries it.
+# _carry_the_hand_typed_menu_url_into_manual_url copies the 19.0 column into
+# manual_url for menus that have no page. 20.0 computes `url` as
+# `(page_id.url if page_id else manual_url) or "#"` (website_menu.py:73-78), so a
+# page-backed menu is fine and a hand-typed one falls through to "#" -- the link
+# stays in the navigation bar and goes nowhere. Measured on the seed: 48 of 53
+# menus have no page, manual_url was empty on all 53, and the orphaned column
+# still held /blog, /event and the rest. '#' is not carried, since the compute
+# returns it anyway for a mega menu or one with children
 website      / website.page             / breadcrumb_color (char)       : NEW
 website      / website.page             / breadcrumb_overlay (boolean)  : NEW
 website      / website.page             / breadcrumb_text_color (char)  : NEW
 # NOTHING TO DO: empty on all 11 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website      / website.page             / breadcrumb_visible (boolean)  : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- true across all 11 pages, the field's default
 website      / website.page             / date_publish (datetime)       : DEL
 # NOTHING TO DO: the column held nothing on any of the 11 rows, so its removal carries nothing away
 website      / website.page             / name (char)                   : is now stored
@@ -80,14 +94,17 @@ website      / website.page             / name (char)                   : is now
 website      / website.page             / name (char)                   : not related anymore
 website      / website.page             / name (char)                   : now a function
 website      / website.page             / name (char)                   : now translatable
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the ORM widens the column itself. The field becoming
+# translatable turns it into jsonb, and the values came through -- 11 pages, 0
+# empty, the first reading "Thanks (Contact us)" under its en_US key
 website      / website.page             / parent_id (many2one)          : NEW relation: website.page
 website      / website.page             / publish_on (datetime)         : NEW
 # NOTHING TO DO: empty on all 11 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 website      / website.page             / published_date (datetime)     : NEW
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 4 of 11 rows, so a compute or a related field did the work
 website      / website.page             / url (char)                    : now translatable
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: carried by the same widening as website.page.name -- 11 pages,
+# 0 empty, the first holding /contactus-thank-you
 website      / website.page             / visibility (selection)        : now required
 # NOTHING TO DO: 20.0 has no visibility column on website.page, so nothing was left behind
 website      / website.rewrite          / redirect_type (selection)     : now required

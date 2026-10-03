@@ -33,7 +33,8 @@ mail         / discuss.channel.last.interest.update / channel_id (many2one)     
 mail         / discuss.channel.last.interest.update / last_interest_dt (datetime)   : NEW required
 # NOTHING TO DO: discuss.channel.last.interest.update holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
 mail         / discuss.channel.member   / channel_role (selection)      : NEW selection_keys: ['admin', 'owner']
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself -- 'owner' where a member owns the channel
+# and NULL elsewhere, across the seed's 65 memberships
 mail         / discuss.channel.member   / custom_channel_name (char)    : DEL
 # NOTHING TO DO: the column held nothing on any of the 65 rows, so its removal carries nothing away
 mail         / discuss.channel.member   / fetched_message_id (many2one) : DEL relation: mail.message
@@ -59,7 +60,8 @@ mail         / ir.actions.server        / state (False)                 : select
 mail         / ir.actions.server        / subtype_ids (many2many)       : NEW relation: mail.message.subtype, hasdefault: default
 # NOTHING TO DO: 20.0 has no table for ir.actions.server, so no column survived to hold a wrong value
 mail         / ir.ui.view               / technical_usage (False)       : NEW selection_keys: ['mail_post_source'], mode: modify
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0's own data sets it -- 'mail_post_source' on the views that
+# need it and NULL on the rest, across 6302 views
 mail         / ir.ui.view               / type (False)                  : selection_keys added: [card] (most likely nothing to do)
 # NOTHING TO DO: keys were added to the selection, so every stored value stays valid
 mail         / mail.activity            / activity_plan_id (many2one)   : NEW relation: mail.activity.plan
@@ -72,7 +74,7 @@ mail         / mail.activity            / recommended_activity_type_id (many2one
 mail         / mail.activity            / role_id (many2one)            : NEW relation: res.role, hasdefault: compute
 # NOTHING TO DO: empty on all 541 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 mail         / mail.activity            / technical_usage (selection)   : NEW selection_keys: ['none']
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 'none' across all 541 activities, the default
 mail         / mail.activity.plan.template / next_activity_ids (many2many) : DEL relation: mail.activity.type
 # NOTHING TO DO: 20.0 has no next_activity_ids column on mail.activity.plan.template, so nothing was left behind
 mail         / mail.activity.plan.template / responsible_type (selection)  : selection_keys added: [role] (most likely nothing to do)
@@ -84,7 +86,7 @@ mail         / mail.activity.type       / chaining_type (selection)     : DEL re
 mail         / mail.activity.type       / default_role_id (many2one)    : NEW relation: res.role
 # NOTHING TO DO: empty on all 15 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 mail         / mail.activity.type       / kpi_provider_visibility (selection): NEW selection_keys: ['all', 'none', 'own'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 'own' across all 15 activity types, the default
 mail         / mail.activity.type       / suggested_next_type_id (many2one): NEW relation: mail.activity.type
 # NOTHING TO DO: empty on all 15 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 mail         / mail.activity.type       / suggested_next_type_ids (many2many): DEL relation: mail.activity.type
@@ -231,12 +233,17 @@ mail         / res.users                / offline_since (datetime)      : now a 
 # NOTHING TO DO: 20.0 has no offline_since column on res.users, so nothing was left behind
 mail         / res.users.settings       / is_discuss_sidebar_category_channel_open (boolean): DEL
 mail         / res.users.settings       / is_discuss_sidebar_category_chat_open (boolean): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 has no field for it, so there is nowhere to put it. All 3
+# of the prod copy's settings rows carried a value; it stays in the orphaned
+# column, which survives until database_cleanup. A sidebar category being open
+# is interface state, not a record of anything
 mail         / res.users.settings       / push_to_talk_key (char)       : DEL
 mail         / res.users.settings       / use_push_to_talk (boolean)    : DEL
 # NOTHING TO DO: the column held nothing on any of the 2 rows, so its removal carries nothing away
 mail         / res.users.settings       / voice_active_duration (integer): DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: dropped with no destination, same as the sidebar flag above.
+# All 3 settings rows held a non-zero duration; it is a voice-detection
+# threshold, which 20.0 no longer offers
 ---XML records in module 'mail'---
 discuss.channel: mail.channel_admin (noupdate switched)
 discuss.channel: mail.channel_all_employees (noupdate switched)
