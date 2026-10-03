@@ -21,4 +21,13 @@ env["product.template"].create({"name": "ou19-sale-delay-default"})
 
 assert product.sale_delay == 7
 
+# --- the two policy settings that become company fields -----------------------
+# 19.0 kept both as ir.default rows; 20.0 adds res.company.sale_invoice_policy
+# (default "order") and res.company.picking_policy (default "direct"). The prod
+# copy holds exactly those two defaults, so the carry is invisible there -- the
+# values planted here are the OPPOSITE ones, which is the only arrangement that
+# can tell a carry from a default.
+env["ir.default"].set("product.template", "invoice_policy", "delivery")
+env["ir.default"].set("sale.order", "picking_policy", "one")
+
 env.cr.commit()

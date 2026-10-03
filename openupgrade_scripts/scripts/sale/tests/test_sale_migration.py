@@ -78,3 +78,57 @@ class TestSaleMigration(TransactionCase):
         self.assertEqual(
             self.env.cr.fetchone()[0], 0, "expense_policy was copied, not renamed"
         )
+
+    def test_the_company_took_the_19_invoicing_policy(self):
+        """19.0 kept the Invoicing Policy as an ir.default; 20.0 as a company field.
+
+        res.company.sale_invoice_policy is required with default "order", so the
+        upgrade stamps "order" on every company and a business invoicing on
+        delivered quantities silently starts defaulting new products to ordered
+        ones. The fixture sets the ir.default to "delivery" precisely because
+        the prod copy holds "order" -- the same value 20.0 defaults to, which is
+        why that data cannot show the defect.
+        """
+        companies = self.env["res.company"].search([])
+        self.assertTrue(companies)
+        self.assertEqual(
+            companies.filtered(lambda c: c.sale_invoice_policy != "delivery"),
+            self.env["res.company"],
+            "a company kept 20.0's 'order' default instead of the 19.0 setting",
+        )
+
+    def test_the_company_took_the_19_shipping_policy(self):
+        """The same shape on stock's side: sale.order.picking_policy -> company.
+
+        20.0's res.company.picking_policy defaults to 'direct', so a company
+        that had chosen "When all products are ready" starts shipping partial
+        orders. The fixture sets the ir.default to 'one' for the same reason as
+        above.
+        """
+        companies = self.env["res.company"].search([])
+        self.assertTrue(companies)
+        self.assertEqual(
+            companies.filtered(lambda c: c.picking_policy != "one"),
+            self.env["res.company"],
+            "a company kept 20.0's 'direct' default instead of the 19.0 setting",
+        )
+
+    def test_no_move_line_contradicts_its_move(self):
+        """20.0 stores stock.move.line.date as a related to move_id.date.
+
+        The column already exists, so the upgrade recomputes nothing and any
+        disagreement survives until the next write to the move silently
+        overwrites it. Post-migration settles them instead, so none is left.
+        """
+        self.env.cr.execute(
+            """
+            SELECT count(*) FROM stock_move_line l
+            JOIN stock_move m ON m.id = l.move_id
+            WHERE l.date IS DISTINCT FROM m.date
+            """
+        )
+        self.assertEqual(
+            self.env.cr.fetchone()[0],
+            0,
+            "a move line still holds a date its move does not",
+        )

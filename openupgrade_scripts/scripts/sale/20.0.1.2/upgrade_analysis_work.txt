@@ -7,7 +7,8 @@ sale         / account.analytic.line    / reinvoice_move_id (many2one)  : NEW re
 sale         / account.move             / utm_reference (reference)     : NEW
 # NOTHING TO DO: empty on all 3223 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 sale         / crm.team                 / invoiced_target (float)       : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 has no field for it and the copy has nothing to lose --
+# 0 of 3 teams hold a non-zero target
 sale         / product.category         / property_account_invoiced_not_delivered_id (many2one): NEW relation: account.account
 sale         / product.category         / property_account_invoices_to_issue_id (many2one): NEW relation: account.account
 # NOTHING TO DO: empty on all 13 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
@@ -20,7 +21,10 @@ sale         / product.product          / sale_delay (integer)          : previo
 sale         / product.template         / expense_policy (selection)    : DEL selection_keys: ['cost', 'no', 'sales_price']
 # NOTHING TO DO: 20.0 has no expense_policy column on product.template, so nothing was left behind
 sale         / product.template         / invoice_policy (selection)    : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the NOT NULL applies over data that already satisfies it --
+# 0 of the prod copy's 31 templates hold NULL, the values being delivery and
+# order. 20.0 also makes it a precompute, which would fill a NULL rather than
+# fail
 sale         / product.template         / reinvoice_policy (selection)  : NEW selection_keys: ['cost', 'no', 'sales_price'], hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 199 of 199 rows, so a compute or a related field did the work
 sale         / product.template         / sale_delay (integer)          : previously in module stock
@@ -29,7 +33,14 @@ sale         / res.company              / display_product_images_on_so (boolean)
 sale         / res.company              / sale_automatic_invoice (boolean): NEW
 # NOTHING TO DO: empty on all 117 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 sale         / res.company              / sale_invoice_policy (selection): NEW required, selection_keys: ['delivery', 'order'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration carries it.
+# _carry_the_invoicing_policy_default_onto_the_company reads the 19.0 ir.default
+# for product.template.invoice_policy onto the new company field, which is
+# required and defaults to "order". A business invoicing on delivered quantities
+# would otherwise default new products to ordered ones, invoicing goods before
+# they ship. Existing products are unaffected -- they carry their own
+# invoice_policy. The prod copy's ir.default IS "order", the same value 20.0
+# defaults to, so the migration test is what shows the difference
 sale         / res.company              / show_sol_numbers (boolean)    : NEW
 # NOTHING TO DO: empty on all 117 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 sale         / res.partner              / incoterm_id (many2one)        : NEW relation: account.incoterms
@@ -42,7 +53,12 @@ sale         / sale.order               / analytic_account_id (many2one): NEW re
 sale         / sale.order               / delivery_status (selection)   : previously in module sale_stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / sale.order               / document_tax_mode (selection) : NEW required, selection_keys: ['tax_excluded', 'tax_included'], hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it from a field 19.0 already had.
+# _compute_document_tax_mode assigns company.account_price_include
+# (sale_order.py:1252-1256) and is a stored precompute, so it ran during the
+# upgrade. Measured on the seed: companies hold BOTH tax_excluded and
+# tax_included, and 0 of 58 orders disagree with their own company -- so it
+# discriminated rather than stamping one value
 sale         / sale.order               / incoterm (many2one)           : previously in module sale_stock
 sale         / sale.order               / incoterm_location (char)      : previously in module sale_stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
@@ -53,7 +69,7 @@ sale         / sale.order               / is_unfulfilled (boolean)      : NEW st
 # NOTHING TO DO: 20.0 has no is_unfulfilled column on sale.order, so nothing was left behind
 sale         / sale.order               / note (html)                   : now a function
 sale         / sale.order               / require_payment (boolean)     : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: nothing to carry -- 0 of the copy's 3 orders had it set
 sale         / sale.order               / show_update_fpos (boolean)    : DEL stored: False
 # NOTHING TO DO: 20.0 has no show_update_fpos column on sale.order, so nothing was left behind
 sale         / sale.order               / show_update_pricelist (boolean): DEL stored: False
@@ -67,7 +83,10 @@ sale         / sale.order               / website_message_ids (one2many): DEL re
 sale         / sale.order.line          / accrual_move_ids (many2many)  : NEW relation: account.move
 # NOTHING TO DO: 20.0 has no accrual_move_ids column on sale.order.line, so nothing was left behind
 sale         / sale.order.line          / customer_lead (float)         : type is now 'integer' ('float')
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO on this data, and worth stating why it is only "this data": a
+# float to integer narrowing rounds, so a lead time of 1.5 days would move. No
+# row on either database holds a fractional value -- every customer_lead is 0
+# across the copy's 14 lines and the seed's 111 -- so nothing here can move
 sale         / sale.order.line          / deferred_revenue (boolean)    : NEW stored: False
 # NOTHING TO DO: 20.0 has no deferred_revenue column on sale.order.line, so nothing was left behind
 sale         / sale.order.line          / display_qty_widget (boolean)  : previously in module sale_stock
@@ -82,20 +101,26 @@ sale         / sale.order.line          / qty_delivered_percent (float) : NEW ha
 sale         / sale.order.line          / scheduled_date (datetime)     : previously in module sale_stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / sale.order.line          / section_qty (float)           : NEW hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 with a compute behind it -- 0.00 across all 111
+# lines of the seed
 sale         / sale.order.line          / section_uom_id (many2one)     : NEW relation: uom.uom, hasdefault: compute
 # NOTHING TO DO: empty on all 111 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 sale         / sale.order.line          / virtual_available_at_date (float): previously in module sale_stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / utm.campaign             / company_id (many2one)         : DEL relation: res.company
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 drops company scoping from utm.campaign and has nowhere to
+# put it. 6 campaigns carried one; the value stays in the orphaned column, which
+# survives until database_cleanup
 sale         / utm.campaign             / currency_id (many2one)        : not related anymore
 sale         / utm.campaign             / currency_id (many2one)        : now a function
 # NOTHING TO DO: 20.0 has no currency_id column on utm.campaign, so nothing was left behind
 sale         / utm.campaign             / invoiced_amount (integer)     : type is now 'float' ('integer')
 # NOTHING TO DO: 20.0 has no invoiced_amount column on utm.campaign, so nothing was left behind
 sale_timesheet / account.analytic.line    / order_id (many2one)           : not related anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself. The field stops being related and becomes
+# stored, and the upgrade populated it -- 141 of the seed's 531 analytic lines
+# carry an order, and 0 of them disagree with the order their so_line belongs
+# to, which is what the related field returned
 ---XML records in module 'sale'---
 NEW ir.access: sale.access_account_account_salesman
 NEW ir.access: sale.access_account_account_tag_sale_salesman

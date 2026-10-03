@@ -20,7 +20,8 @@ new model stock.zero.demand.confirmation [transient]
 ---Fields in module 'stock'---
 stock        / digest.digest            / kpi_stock_delivery_count (boolean): NEW
 stock        / digest.digest            / kpi_stock_receipt_count (boolean): NEW
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a 20.0 KPI toggle with nothing in 19.0 behind it -- true on the
+# single digest, which is the field's own default
 stock        / product.product          / free_qty (float)              : module is now 'product' ('stock')
 stock        / product.product          / incoming_qty (float)          : module is now 'product' ('stock')
 stock        / product.product          / is_storable (boolean)         : module is now 'product' ('stock')
@@ -37,14 +38,24 @@ stock        / product.template         / sale_delay (integer)          : module
 stock        / product.template         / show_qty_update_button (boolean): module is now 'product' ('stock')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 stock        / product.template         / tracking (selection)          : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration clears it. _clear_tracking_none rewrites 19.0's 'none' --
+# a key 20.0 no longer declares -- to NULL, which is how 20.0 spells "tracked by
+# quantity only". Confirmed on the sanitised prod copy: all 31 products held
+# 'none' and read NULL after, with selections-20 green over 453 selection fields
 stock        / product.template         / tracking (selection)          : selection_keys removed: [none]
 # NOTHING TO DO: no row holds none any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 stock        / product.template         / virtual_available (float)     : module is now 'product' ('stock')
 # NOTHING TO DO: the field only changed owning module, the column is the same
 stock        / res.company              / horizon_days (float)          : type is now 'integer' ('float')
 stock        / res.company              / picking_policy (selection)    : NEW required, selection_keys: ['direct', 'one'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration carries it.
+# _carry_the_shipping_policy_default_onto_the_company reads the 19.0 ir.default
+# for sale.order.picking_policy -- company-specific before global, the order 19.0
+# resolved them in -- and writes it onto the new company field, which is required
+# and defaults to 'direct'. A company that chose "When all products are ready"
+# would otherwise start shipping partial orders. The prod copy's ir.default IS
+# "direct", the same value 20.0 defaults to, so only the migration test can show
+# the difference
 stock        / stock.lot                / partner_ids (many2many)       : is now stored
 stock        / stock.lot                / partner_ids (many2many)       : not a function anymore
 stock        / stock.lot                / partner_ids (many2many)       : table is now 'res_partner_stock_lot_rel' ('False')
@@ -55,13 +66,19 @@ stock        / stock.move               / forecasted_location_id (many2one): NEW
 stock        / stock.move               / is_scrap (boolean)            : NEW
 # NOTHING TO DO: empty on all 146 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 stock        / stock.move               / location_final_id (many2one)  : DEL relation: stock.location
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 has no successor. The field held the ultimate destination
+# of a multi-step route and 20.0 computes chains differently -- the only mentions
+# left are comments in stock_move.py. 30 of the seed's 146 moves carried one; the
+# value stays in the orphaned column rather than being forced onto
+# location_dest_id, which means something else
 stock        / stock.move               / product_uom (many2one)        : DEL relation: uom.uom, required
 # NOTHING TO DO: 20.0 has no product_uom column on stock.move, so nothing was left behind
 stock        / stock.move               / quantity_product_uom (float)  : NEW isfunction: function, stored
 # NOTHING TO DO: 20.0 filled it itself -- 40 distinct values over 146 of 146 rows, so a compute or a related field did the work
 stock        / stock.move               / reference (char)              : not a function anymore
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself. The field becomes a stored compute
+# (store=True, readonly=False), so adding the column computed it for every
+# existing row -- filled on all 146 of the seed's moves
 stock        / stock.move               / scrap_id (many2one)           : DEL relation: stock.scrap
 # NOTHING TO DO: the column held nothing on any of the 146 rows, so its removal carries nothing away
 stock        / stock.move               / scrap_reason_tag_ids (many2many): NEW relation: stock.scrap.reason.tag
@@ -70,16 +87,22 @@ stock        / stock.move               / should_replenish_scrapped (boolean): N
 # NOTHING TO DO: empty on all 146 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 stock        / stock.move               / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
 stock        / stock.move.line          / date (datetime)               : now related
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration settles it. _settle_the_move_line_date_against_its_move
+# aligns the line to its move, because 20.0 declares the field `related=
+# "move_id.date", store=True` while 19.0 let the line keep its own date. The
+# column already exists so the upgrade recomputes nothing and the disagreement
+# survives -- 65 of the seed's 122 lines -- until the next write to the move
+# overwrites them silently. Doing it here makes it visible, with a count
 stock        / stock.move.line          / product_uom_id (many2one)     : DEL relation: uom.uom, required
 # NOTHING TO DO: 20.0 has no product_uom_id column on stock.move.line, so nothing was left behind
 stock        / stock.move.line          / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
 stock        / stock.picking            / show_return (boolean)         : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 with nothing in 19.0 to carry -- one value across
+# all 69 pickings, which is the default applying
 stock        / stock.picking            / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on stock.picking, so nothing was left behind
 stock        / stock.picking.batch      / priority (selection)          : NEW selection_keys: ['0', '1'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- '0' across both batches, the field's default
 stock        / stock.picking.type       / allocated_location_id (many2one): NEW relation: stock.location
 stock        / stock.picking.type       / auto_show_allocation_report (boolean): NEW
 # NOTHING TO DO: empty on all 279 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
@@ -91,7 +114,7 @@ stock        / stock.picking.type       / sequence_code (char)          : not st
 stock        / stock.picking.type       / sequence_code (char)          : now related
 stock        / stock.picking.type       / show_operations (boolean)     : DEL
 stock        / stock.picking.type       / wave_date_granularity (selection): NEW selection_keys: ['day', 'week'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 'day' across all 279 picking types, the default
 stock        / stock.picking.type       / wave_group_by_date (boolean)  : NEW
 # NOTHING TO DO: empty on all 279 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 stock        / stock.scrap              / company_id (many2one)         : DEL relation: res.company, required
@@ -130,7 +153,7 @@ stock        / stock.scrap.reason.tag   / color (char)                  : type i
 stock        / stock.warehouse.orderpoint / daily_demand (float)          : NEW required, hasdefault: default
 stock        / stock.warehouse.orderpoint / min_max_based_on (selection)  : NEW required, selection_keys: ['custom', 'last_year', 'last_year_2', 'last_year_3', 'last_year_quarter', 'one_month', 'one_week', 'one_year', 'three_months'], hasdefault: default
 stock        / stock.warehouse.orderpoint / min_max_based_on_factor (integer): NEW required, hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 100 across all 4 orderpoints, the default
 stock_picking_batch / stock.picking.batch      / _order                        : _order is now 'priority desc, name desc' ('name desc')
 stock_picking_batch / stock.picking.batch      / website_message_ids (one2many): DEL relation: mail.message
 # NOTHING TO DO: 20.0 has no website_message_ids column on stock.picking.batch, so nothing was left behind
