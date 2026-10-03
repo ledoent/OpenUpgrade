@@ -1,0 +1,17 @@
+---Models in module 'l10n_uy'---
+---Fields in module 'l10n_uy'---
+l10n_uy      / l10n_latam.identification.type / l10n_uy_dgi_code (char)       : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'l10n_uy'---
+DEL l10n_latam.identification.type: l10n_uy.it_ci
+DEL l10n_latam.identification.type: l10n_uy.it_dni
+DEL l10n_latam.identification.type: l10n_uy.it_nie
+DEL l10n_latam.identification.type: l10n_uy.it_nife
+DEL l10n_latam.identification.type: l10n_uy.it_other
+DEL l10n_latam.identification.type: l10n_uy.it_pass
+DEL l10n_latam.identification.type: l10n_uy.it_rut
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.currency: base.UYI (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL res.partner: l10n_uy.partner_dgi
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

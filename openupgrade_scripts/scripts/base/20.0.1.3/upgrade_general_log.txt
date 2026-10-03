@@ -1,0 +1,229 @@
+---Models in module 'general'---
+obsolete model account.edi.xml.oioubl_201 [module l10n_dk]
+obsolete model account.edi.xml.ubl.tr [module l10n_tr]
+obsolete model account.group [module account]
+obsolete model account_peppol.service [module account_peppol]
+obsolete model applicant.send.mail [module hr_recruitment]
+obsolete model barcodes.barcode_events_mixin [module barcodes]
+obsolete model calendar.popover.delete.wizard [module calendar]
+obsolete model calendar.provider.config [module calendar]
+obsolete model crm.lead2opportunity.partner [module crm]
+obsolete model google.calendar.sync [module google_calendar]
+obsolete model hr.attendance.overtime.line [module hr_attendance]
+obsolete model hr.attendance.overtime.rule [module hr_attendance]
+obsolete model hr.attendance.overtime.ruleset [module hr_attendance]
+obsolete model hr.contract.type (renamed to hr.employee.type) [module hr]
+obsolete model hr.departure.wizard [module hr]
+obsolete model hr.employee.certification.report [module hr_skills]
+obsolete model hr.expense.post.wizard [module hr_expense]
+obsolete model hr.leave.type [module hr_holidays]
+obsolete model hr.version.wizard [module hr]
+obsolete model hr.work.entry [module hr_work_entry]
+obsolete model hr.work.entry.regeneration.wizard [module hr_work_entry]
+obsolete model im_livechat.conversation.tag [module im_livechat]
+obsolete model ir.model.access [module base]
+obsolete model ir.rule [module base]
+obsolete model l10n_ar.payment.register.withholding [module l10n_ar_withholding]
+obsolete model l10n_in.section.alert [module l10n_in]
+obsolete model l10n_in.withhold.wizard [module l10n_in]
+obsolete model l10n_latam.identification.type [module l10n_latam_invoice_document]
+obsolete model l10n_ph_2307.wizard [module l10n_ph]
+obsolete model l10n_tr.nilvera.alias [module l10n_tr]
+obsolete model l10n_tr_nilvera_einvoice_extended.account.tax.code [module l10n_tr]
+obsolete model l10n_tr_nilvera_einvoice_extended.tax.office (renamed to l10n_tr.tax.office) [module l10n_tr]
+obsolete model l10n_tr.nilvera.trailer.plate [module l10n_tr]
+obsolete model l10n_vn_edi_viettel.cancellation [module l10n_vn_edi_viettel]
+obsolete model l10n_vn_edi_viettel.sinvoice.template [module l10n_vn_edi_viettel]
+obsolete model mail.thread.cc [module mail]
+obsolete model mail.tracking.value [module mail]
+obsolete model mailing.list.merge [module mass_mailing]
+obsolete model pdp.config.wizard [module l10n_fr_pdp]
+obsolete model peppol.config.wizard [module account_peppol]
+obsolete model pos.close.session.wizard [module point_of_sale]
+obsolete model product.template.attribute.exclusion [module product]
+obsolete model purchase.order.group [module purchase_requisition]
+obsolete model purchase.requisition.alternative.warning [module purchase_requisition]
+obsolete model purchase.requisition.create.alternative [module purchase_requisition]
+obsolete model report.product.report_producttemplatelabel2x7 [module product]
+obsolete model report.product.report_producttemplatelabel4x12 [module product]
+obsolete model report.product.report_producttemplatelabel4x12noprice [module product]
+obsolete model report.product.report_producttemplatelabel4x7 [module product]
+obsolete model report.product.report_producttemplatelabel_dymo [module product]
+obsolete model report.stock.label_lot_template_view [module stock]
+obsolete model report.stock.label_product_product_view [module stock]
+obsolete model report.stock.report_reception [module stock]
+obsolete model res.bank [module base]
+obsolete model res.partner.iap [module mail_plugin]
+obsolete model stock_account.stock.valuation.report (renamed to account.stock.valuation.report) [module stock_account]
+obsolete model stock.quantity.history [module stock]
+obsolete model stock.return.picking [module stock]
+obsolete model stock.return.picking.line [module stock]
+obsolete model stock.scrap [module stock]
+obsolete model stock.warn.insufficient.qty.repair [module repair]
+obsolete model transifex.code.translation [module transifex]
+obsolete model transifex.translation [module transifex]
+obsolete model utm.source.mixin [module utm]
+obsolete model website.base.unit [module website_sale]
+new model account.edi.xml.ubl_gr [module l10n_gr_edi]
+new model account.stock.valuation.report (renamed from stock_account.stock.valuation.report) [module account]
+new model applicant.refuse.single [module hr_recruitment]
+new model bus.sync.mixin [module mail]
+new model calendar.calendar [module calendar]
+new model calendar.event.archive.or.unlink.wizard [module calendar]
+new model calendar.event.multi.archive.or.unlink.wizard [module calendar]
+new model calendar.user [module calendar]
+new model clearing.label [module base]
+new model crm.iap.lead.industry.division [module crm_iap_mine]
+new model customer.product.reference [module sale_edi_ubl]
+new model delivery.note.wizard [module delivery]
+new model delivery.note.wizard.line [module delivery]
+new model digest.test [module digest]
+new model discuss.category [module mail]
+new model discuss.channel.last.interest.update [module mail]
+new model expense.attachment.selection.wizard [module sale_expense]
+new model forum.post.comment [module website_forum]
+new model google.event.sync [module google_calendar]
+new model google.sync [module google_calendar]
+new model hr.employee.create.version.wizard [module hr]
+new model hr.employee.departure [module hr]
+new model hr.employee.type (renamed from hr.contract.type) [module hr]
+new model hr.expense.product.job.position.limit [module hr_expense]
+new model hr.export.work.entries [module hr_work_entry]
+new model hr.export.work.entries.employee [module hr_work_entry]
+new model hr.job.tag [module hr_recruitment]
+new model hr.leave.employee.report [module hr_holidays]
+new model hr.recruitment.survey.invite [module hr_recruitment_survey]
+new model hr.time.rule [module hr_work_entry]
+new model hr.time.rule.allocation.log [module hr_holidays]
+new model hr.time.rule.source.mixin [module hr_work_entry]
+new model iap.service.pack [module iap]
+new model ir.access [module base]
+new model ir.profile.query [module base]
+new model l10n_ar.arca.activity [module l10n_ar]
+new model l10n_cn.balance.deduction [module l10n_cn]
+new model l10n_eg_edi.cancel.wizard [module l10n_eg_edi_eta]
+new model l10n_eg_edi.eta.submission [module l10n_eg_edi_eta]
+new model l10n_es_edi_sii.document [module l10n_es_edi_sii]
+new model l10n_es_edi_verifactu.issuer [module l10n_es_edi_verifactu]
+new model l10n_fr_pdp.annuaire.line [module l10n_fr_pdp]
+new model l10n_fr_pdp.partner.lookup [module l10n_fr_pdp]
+new model l10n_hu_edi.receive.bills.wizard [module l10n_hu_edi]
+new model l10n_pa.res.city.corregimiento [module l10n_pa]
+new model l10n_ro_edi.account_move_fetch_invoices.wizard [module l10n_ro_edi]
+new model l10n_sa_edi.document [module l10n_sa_edi]
+new model l10n_sa_edi.log [module l10n_sa_edi]
+new model l10n_sa_edi.transaction.type [module l10n_sa_edi]
+new model l10n_th.tax.invoice [module l10n_th]
+new model l10n_tr.tax.office (renamed from l10n_tr_nilvera_einvoice_extended.tax.office) [module l10n_tr]
+new model l10n_us.res.county [module l10n_us]
+new model load.public.holiday.wizard [module hr_holidays]
+new model load.public.holiday.wizard.line [module hr_holidays]
+new model mail.call.artifact [module mail]
+new model mail.poll [module mail]
+new model mail.poll.option [module mail]
+new model mail.poll.vote [module mail]
+new model mail.thread.subject.suggested [module mail]
+new model mail.track.mixin [module mail]
+new model mrp.finished.product.label.layout [module mrp]
+new model mysubscription.mysubscription [module mysubscription]
+new model pay.on.delivery [module stock_delivery]
+new model payment.data [module payment]
+new model portal.entry [module portal]
+new model pos.course [module pos_restaurant]
+new model pos.order.receipt [module point_of_sale]
+new model pos.prep.line [module point_of_sale]
+new model pos.prep.order [module point_of_sale]
+new model pos.price.inclusion.wizard [module point_of_sale]
+new model pos.snooze [module point_of_sale]
+new model printer.printer [module printer]
+new model product.base.unit [module product]
+new model product.catalog.line.mixin [module product]
+new model product.stock.notification [module website_sale]
+new model project.task.stage.report [module project]
+new model repair.consumption.warning [module repair]
+new model repair.consumption.warning.line [module repair]
+new model repair.service.line [module repair]
+new model report.l10n_th.report_50_tawi [module l10n_th]
+new model report.product.label.base [module product]
+new model report.product.report_product_label_dymo [module product]
+new model report.product.report_product_label_pdf [module product]
+new model report.product.report_product_label_zpl [module product]
+new model report.stock_fleet.report_cmr [module stock_fleet]
+new model report.stock_fleet.report_cmr_batch [module stock_fleet]
+new model res.currency.rate.consolidation.mixin [module account]
+new model res.session [module base]
+new model return.reason [module sale_stock]
+new model select.printers.wizard [module printer]
+new model spreadsheet.dashboard.favorite.filters [module spreadsheet_dashboard]
+new model stock.allocation.report [module stock]
+new model stock.location.label.layout [module stock]
+new model stock.orderpoint.suggest [module stock]
+new model stock.package.label.layout [module stock]
+new model stock.picking.type.label.layout [module stock]
+new model stock.zero.demand.confirmation [module stock]
+new model website.checkout.alert.mixin [module website_sale]
+new model website.llms [module website]
+new model website.located.mixin [module website]
+new model website.structured_data.mixin [module website]
+new model website.trackable.mixin [module website]
+new model withdrawal.request [module website_sale]
+new model zatca.mixin [module l10n_sa]
+new model zatca.ubl.mixin [module l10n_sa_edi]
+---Fields in module 'general'---
+# 15192 fields matched,
+# Direct match: 15024
+# Found in other module with different type: 0
+# Found in other module: 121
+# Found with different type: 47
+# In obsolete models: 282
+# New columns: 2080
+# Not matched: 1064
+---XML records in module 'general'---
+---Probably obsolete module delivery_mondialrelay---
+---Models in module 'delivery_mondialrelay'---
+---Fields in module 'delivery_mondialrelay'---
+delivery_mondialrelay / delivery.carrier         / mondialrelay_brand (char)     : DEL
+delivery_mondialrelay / delivery.carrier         / mondialrelay_packagetype (char): DEL
+---XML records in module 'delivery_mondialrelay'---
+DEL delivery.carrier: delivery_mondialrelay.delivery_carrier_mondialrelay_be_lu (noupdate)
+DEL delivery.carrier: delivery_mondialrelay.delivery_carrier_mondialrelay_es (noupdate)
+DEL delivery.carrier: delivery_mondialrelay.delivery_carrier_mondialrelay_fr_nl (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule1 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule2 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_es_1 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_es_2 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_es_3 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_fr_nl_1 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_fr_nl_2 (noupdate)
+DEL delivery.price.rule: delivery_mondialrelay.delivery_price_rule_fr_nl_3 (noupdate)
+DEL ir.ui.view: delivery_mondialrelay.address_card
+DEL ir.ui.view: delivery_mondialrelay.choose_delivery_carrier_view_form
+DEL ir.ui.view: delivery_mondialrelay.view_delivery_carrier_form_provider_mondialrelay
+DEL ir.ui.view: delivery_mondialrelay.view_delivery_carrier_tree_provider_mondialrelay
+DEL product.product: delivery_mondialrelay.product_product_delivery_mondialrelay (noupdate)
+---Probably obsolete module transifex---
+---Models in module 'transifex'---
+obsolete model transifex.code.translation
+obsolete model transifex.translation [abstract]
+---Fields in module 'transifex'---
+transifex    / transifex.code.translation / lang (selection)              : DEL selection_keys: function
+transifex    / transifex.code.translation / module (char)                 : DEL
+transifex    / transifex.code.translation / source (text)                 : DEL
+transifex    / transifex.code.translation / value (text)                  : DEL
+---XML records in module 'transifex'---
+DEL ir.actions.server: transifex.action_code_translations
+DEL ir.config_parameter: transifex.transifex_project_url (noupdate)
+DEL ir.cron: transifex.transifex_code_translation_reload (noupdate)
+DEL ir.model.access: transifex.access_transifex_code_translation
+DEL ir.ui.menu: transifex.menu_transifex_code_translations
+DEL ir.ui.view: transifex.transifex_code_translation_tree_view
+DEL ir.ui.view: transifex.transifex_code_translation_view_search
+---Probably obsolete module website_sale_mondialrelay---
+---Models in module 'website_sale_mondialrelay'---
+---Fields in module 'website_sale_mondialrelay'---
+---XML records in module 'website_sale_mondialrelay'---
+DEL ir.ui.view: website_sale_mondialrelay.address_on_checkout
+DEL ir.ui.view: website_sale_mondialrelay.delivery_carrier_view_search
+DEL ir.ui.view: website_sale_mondialrelay.mondialrelay_delivery_method
+DEL ir.ui.view: website_sale_mondialrelay.website_sale_mondialrelay_address_card
+DEL ir.ui.view: website_sale_mondialrelay.website_sale_mondialrelay_billing_address_list

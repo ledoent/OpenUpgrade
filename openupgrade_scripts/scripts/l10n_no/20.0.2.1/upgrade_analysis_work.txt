@@ -1,0 +1,13 @@
+---Models in module 'l10n_no'---
+---Fields in module 'l10n_no'---
+l10n_no      / res.partner              / l10n_no_bronnoysund_number (char): not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+l10n_no      / res.partner              / l10n_no_bronnoysund_number (char): now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+---XML records in module 'l10n_no'---
+DEL ir.ui.view: l10n_no.res_company_form_inherit_no
+DEL ir.ui.view: l10n_no.view_partner_form_inherit_l10n_no
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

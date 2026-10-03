@@ -1,0 +1,18 @@
+---Models in module 'hr_presence'---
+---Fields in module 'hr_presence'---
+hr_presence  / hr.employee              / hr_presence_state_display (selection): DEL selection_keys: ['absent', 'out_of_working_hour', 'present']
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'hr_presence'---
+NEW ir.access: hr_presence.access_sms_template_hr_manager
+NEW ir.access: hr_presence.ir_rule_sms_template_hr_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.actions.server: hr_presence.action_hr_employee_presence_log
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+ir.cron: hr_presence.ir_cron_presence_control (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: hr_presence.access_sms_template_hr_manager
+DEL ir.rule: hr_presence.ir_rule_sms_template_hr_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+mail.template: hr_presence.mail_template_presence (noupdate switched)
+sms.template: hr_presence.sms_template_data_hr_presence (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

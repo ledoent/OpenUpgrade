@@ -1,0 +1,117 @@
+---Models in module 'website_blog'---
+---Fields in module 'website_blog'---
+website_blog / blog.blog                / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on blog.blog, so nothing was left behind
+website_blog / blog.post                / breadcrumb_visible (boolean)  : NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+website_blog / blog.post                / post_date (datetime)          : DEL
+# NOTHING TO DO: 20.0 spells it published_date, which is filled on all 7 posts
+# and EQUAL to post_date on every one of them. Nothing is lost
+website_blog / blog.post                / publish_on (datetime)         : NEW
+website_blog / blog.post                / recommended_next_post_id (many2one): NEW relation: blog.post
+# NOTHING TO DO: empty on all 7 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+website_blog / blog.post                / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on blog.post, so nothing was left behind
+website_blog / res.partner              / blog_post_ids (one2many)      : NEW relation: blog.post
+# NOTHING TO DO: 20.0 has no blog_post_ids column on res.partner, so nothing was left behind
+website_blog / website.track            / blog_post_id (many2one)       : NEW relation: blog.post
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+---XML records in module 'website_blog'---
+blog.blog: website_blog.blog_blog_1 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: website_blog.blog_blog_employee
+NEW ir.access: website_blog.blog_blog_manager
+NEW ir.access: website_blog.blog_post_employee
+NEW ir.access: website_blog.blog_post_manager
+NEW ir.access: website_blog.blog_tag_category_manager
+NEW ir.access: website_blog.blog_tag_category_public
+NEW ir.access: website_blog.blog_tag_manager
+NEW ir.access: website_blog.blog_tag_public
+NEW ir.access: website_blog.website_blog_post_public
+NEW ir.access: website_blog.website_blog_public
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: website_blog.website_blog_visitor_blog_post_action
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: website_blog.blog_blog
+DEL ir.model.access: website_blog.blog_blog_employee
+DEL ir.model.access: website_blog.blog_blog_portal
+DEL ir.model.access: website_blog.blog_blog_public
+DEL ir.model.access: website_blog.blog_post
+DEL ir.model.access: website_blog.blog_post_employee
+DEL ir.model.access: website_blog.blog_post_portal
+DEL ir.model.access: website_blog.blog_post_public
+DEL ir.model.access: website_blog.blog_tag_category
+DEL ir.model.access: website_blog.blog_tag_category_employee
+DEL ir.model.access: website_blog.blog_tag_category_portal
+DEL ir.model.access: website_blog.blog_tag_category_public
+DEL ir.model.access: website_blog.blog_tag_edition
+DEL ir.model.access: website_blog.blog_tag_employee
+DEL ir.model.access: website_blog.blog_tag_portal
+DEL ir.model.access: website_blog.blog_tag_public
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: website_blog.constraint_blog_tag_category_name_uniq (changed definition: is now 'False' ('unique (name)'))
+ir.model.constraint: website_blog.constraint_blog_tag_name_uniq (changed definition: is now 'False' ('unique (name)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: website_blog.website_blog_post_public (noupdate)
+DEL ir.rule: website_blog.website_blog_public (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: website_blog.blog_post_card
+NEW ir.ui.view: website_blog.blog_post_comment_count
+NEW ir.ui.view: website_blog.blog_post_content_footer_archive
+NEW ir.ui.view: website_blog.blog_post_content_footer_share_links
+NEW ir.ui.view: website_blog.blog_post_content_mobile_toc
+NEW ir.ui.view: website_blog.blog_post_list_card
+NEW ir.ui.view: website_blog.blog_post_minimal_list_card
+NEW ir.ui.view: website_blog.blog_post_next_compact
+NEW ir.ui.view: website_blog.blog_post_next_full_cover
+NEW ir.ui.view: website_blog.blog_post_regular_cover_share_links
+NEW ir.ui.view: website_blog.blog_post_split_cover_share_links
+NEW ir.ui.view: website_blog.blog_post_split_sticky_card
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.ui.view: website_blog.blog_post_template_new_post (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.ui.view: website_blog.opt_blog_bordered_grid_view
+NEW ir.ui.view: website_blog.opt_blog_compact_list_view
+NEW ir.ui.view: website_blog.opt_blog_fullwidth
+NEW ir.ui.view: website_blog.opt_blog_grid_columns_2
+NEW ir.ui.view: website_blog.opt_blog_grid_columns_3
+NEW ir.ui.view: website_blog.opt_blog_grid_columns_4
+NEW ir.ui.view: website_blog.opt_blog_large_list_view
+NEW ir.ui.view: website_blog.opt_blog_page_title
+NEW ir.ui.view: website_blog.opt_blog_post_footer_share_links_display
+NEW ir.ui.view: website_blog.opt_blog_post_footer_tags_display
+NEW ir.ui.view: website_blog.opt_blog_post_full_container
+NEW ir.ui.view: website_blog.opt_blog_post_full_width_cover
+NEW ir.ui.view: website_blog.opt_blog_post_header_author_avatar_display
+NEW ir.ui.view: website_blog.opt_blog_post_header_share_links_display
+NEW ir.ui.view: website_blog.opt_blog_post_header_tags_display
+NEW ir.ui.view: website_blog.opt_blog_post_large_container
+NEW ir.ui.view: website_blog.opt_blog_post_split_cover
+NEW ir.ui.view: website_blog.opt_blog_post_toc_display
+NEW ir.ui.view: website_blog.opt_blog_promoted_post
+NEW ir.ui.view: website_blog.opt_blog_simple_list_view
+NEW ir.ui.view: website_blog.opt_blog_split_grid_view
+NEW ir.ui.view: website_blog.opt_posts_loop_show_date
+NEW ir.ui.view: website_blog.opt_posts_loop_show_filter
+NEW ir.ui.view: website_blog.opt_posts_loop_show_tags
+NEW ir.ui.view: website_blog.opt_sidebar_blog_index_about_us
+NEW ir.ui.view: website_blog.post_published_info
+NEW ir.ui.view: website_blog.post_tags
+NEW ir.ui.view: website_blog.post_unpublished_badge
+NEW ir.ui.view: website_blog.robots
+NEW ir.ui.view: website_blog.s_blog_posts_carousel
+NEW ir.ui.view: website_blog.s_blog_posts_carousel_preview_card
+NEW ir.ui.view: website_blog.s_dynamic_snippet_blog_posts_carousel_preview_data
+NEW ir.ui.view: website_blog.website_blog_visitor_page_view_search
+NEW ir.ui.view: website_blog.website_blog_visitor_page_view_tree
+NEW ir.ui.view: website_blog.website_blog_visitor_track_view_tree
+NEW ir.ui.view: website_blog.website_blog_visitor_view_form
+NEW ir.ui.view: website_blog.website_blog_visitor_view_tree
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+mail.message.subtype: website_blog.mt_blog_blog_published (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW res.groups: website_blog.group_website_blog_manager
+NEW res.groups.privilege: website_blog.res_groups_privilege_blog
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+website.menu: website_blog.menu_blog (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

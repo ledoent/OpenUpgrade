@@ -1,0 +1,29 @@
+---Models in module 'hr_recruitment_skills'---
+---Fields in module 'hr_recruitment_skills'---
+hr_recruitment_skills / hr.applicant             / degree_score (integer)        : NEW isfunction: function, stored
+# NOTHING TO DO: a new stored computed field, the ORM fills it in
+hr_recruitment_skills / hr.applicant             / matching_score (integer)      : is now stored
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+hr_recruitment_skills / hr.applicant             / skills_score (integer)        : NEW isfunction: function, stored
+# NOTHING TO DO: a new stored computed field, the ORM fills it in
+hr_recruitment_skills / hr.applicant.skill       / certificate_file (binary)     : NEW attachment: True
+# NOTHING TO DO: a new binary field, stored as an attachment rather than in a
+# column, and empty is the right value for existing records
+---XML records in module 'hr_recruitment_skills'---
+NEW ir.access: hr_recruitment_skills.access_hr_job_skill_recruitment_user
+NEW ir.access: hr_recruitment_skills.hr_applicant_skill_interviewer_rule
+NEW ir.access: hr_recruitment_skills.hr_applicant_skill_officer_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.actions.act_window: hr_recruitment_skills.action_find_matching_job
+DEL ir.actions.server: hr_recruitment_skills.action_applicant_search_applicant
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: hr_recruitment_skills.access_hr_applicant_skill_interviewer
+DEL ir.model.access: hr_recruitment_skills.access_hr_job_skill_recruitment_user
+DEL ir.rule: hr_recruitment_skills.hr_applicant_skill_interviewer_rule (noupdate)
+DEL ir.rule: hr_recruitment_skills.hr_applicant_skill_officer_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: hr_recruitment_skills.view_hr_job_kanban
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

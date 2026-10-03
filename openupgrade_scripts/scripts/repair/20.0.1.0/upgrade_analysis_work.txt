@@ -1,0 +1,74 @@
+---Models in module 'repair'---
+obsolete model stock.warn.insufficient.qty.repair [transient]
+new model repair.consumption.warning [transient]
+new model repair.consumption.warning.line [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+new model repair.service.line
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+---Fields in module 'repair'---
+repair       / account.move             / repair_order_id (many2one)    : NEW relation: repair.order
+# NOTHING TO DO: empty on all 3223 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+repair       / account.move.line        / repair_service_line_id (many2one): NEW relation: repair.service.line
+# NOTHING TO DO: empty on all 7824 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+repair       / product.template         / service_tracking (False)      : selection_keys added: [subcontract] (most likely nothing to do)
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+repair       / repair.order             / invoice_ids (one2many)        : NEW relation: account.move, isfunction: function, stored
+# NOTHING TO DO: 20.0 has no invoice_ids column on repair.order, so nothing was left behind
+repair       / repair.order             / product_uom (many2one)        : DEL relation: uom.uom
+# NOTHING TO DO: 20.0 has no product_uom column on repair.order, so nothing was left behind
+repair       / repair.order             / repair_service_line_ids (one2many): NEW relation: repair.service.line
+# NOTHING TO DO: 20.0 has no repair_service_line_ids column on repair.order, so nothing was left behind
+repair       / repair.order             / state (selection)             : selection_keys removed: [under_repair]
+# NOTHING TO DO: no row holds under_repair any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
+repair       / repair.order             / uom_id (many2one)             : NEW relation: uom.uom, hasdefault: compute
+# NEEDS A VERDICT: the database cannot settle this one
+repair       / repair.order             / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on repair.order, so nothing was left behind
+repair       / repair.service.line      / description (text)            : NEW translate
+# NOTHING TO DO: repair.service.line holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+repair       / repair.service.line      / invoice_line_ids (one2many)   : NEW relation: account.move.line
+# NOTHING TO DO: 20.0 has no invoice_line_ids column on repair.service.line, so nothing was left behind
+repair       / repair.service.line      / product_id (many2one)         : NEW relation: product.product
+repair       / repair.service.line      / quantity (float)              : NEW required, hasdefault: default
+repair       / repair.service.line      / repair_id (many2one)          : NEW relation: repair.order
+# NOTHING TO DO: repair.service.line holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+repair       / repair.service.line      / sale_line_id (one2many)       : NEW relation: sale.order.line
+# NOTHING TO DO: 20.0 has no sale_line_id column on repair.service.line, so nothing was left behind
+repair       / repair.service.line      / sequence (integer)            : NEW hasdefault: default
+repair       / repair.service.line      / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
+# NOTHING TO DO: repair.service.line holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+repair       / sale.order.line          / repair_service_line_id (many2one): NEW relation: repair.service.line
+# NOTHING TO DO: empty on all 111 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+---XML records in module 'repair'---
+NEW ir.access: repair.access_repair_consumption_warning
+NEW ir.access: repair.access_repair_consumption_warning_line
+NEW ir.access: repair.access_repair_service_line
+NEW ir.access: repair.access_repair_tag_user
+NEW ir.access: repair.access_repair_user
+NEW ir.access: repair.repair_order_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: repair.action_picking_repair (deleted domain)
+NEW ir.actions.act_window: repair.action_repair_consumption_warning
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: repair.action_repair_move_lines (deleted domain)
+NEW ir.actions.server: repair.action_unreserve
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: repair.access_repair_tag_user
+DEL ir.model.access: repair.access_repair_user
+DEL ir.model.access: repair.access_stock_warn_insufficient_qty_repair
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: repair.constraint_repair_tags_name_uniq (changed definition: is now 'False' ('unique (name)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: repair.repair_order_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.ui.menu: repair.repair_menu_product_product
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: repair.view_account_move_form_inherit_repair
+NEW ir.ui.view: repair.view_partner_form
+NEW ir.ui.view: repair.view_repair_consumption_warning_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: repair.stock_warn_insufficient_qty_repair_form_view
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+stock.picking.type: repair.picking_type_warehouse0_repair (noupdate switched)
+stock.warehouse: stock.warehouse0 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

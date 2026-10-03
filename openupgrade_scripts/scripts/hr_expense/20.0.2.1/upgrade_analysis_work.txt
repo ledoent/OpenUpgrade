@@ -1,0 +1,116 @@
+---Models in module 'hr_expense'---
+obsolete model hr.expense.post.wizard [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+new model hr.expense.product.job.position.limit
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+---Fields in module 'hr_expense'---
+hr_expense   / account.move             / existing_expense_ids (one2many): NEW relation: hr.expense
+# NOTHING TO DO: 20.0 has no existing_expense_ids column on account.move, so nothing was left behind
+hr_expense   / hr.expense               / existing_bill_id (many2one)   : NEW relation: account.move
+hr_expense   / hr.expense               / has_existing_bill (boolean)   : NEW
+# NOTHING TO DO: empty on all 18 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_expense   / hr.expense               / journal_id (many2one)         : not related anymore
+hr_expense   / hr.expense               / journal_id (many2one)         : now a function
+# NOTHING TO DO: 20.0 has no journal_id column on hr.expense, so nothing was left behind
+hr_expense   / hr.expense               / last_notification_date (datetime): NEW
+# NOTHING TO DO: empty on all 18 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_expense   / hr.expense               / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on hr.expense, so nothing was left behind
+hr_expense   / hr.expense.product.job.position.limit / job_ids (many2many)           : NEW relation: hr.job
+# NOTHING TO DO: 20.0 has no job_ids column on hr.expense.product.job.position.limit, so nothing was left behind
+hr_expense   / hr.expense.product.job.position.limit / limit_amount (float)          : NEW required
+hr_expense   / hr.expense.product.job.position.limit / product_id (many2one)         : NEW relation: product.product, required
+hr_expense   / hr.expense.product.job.position.limit / sequence (integer)            : NEW hasdefault: default
+# NOTHING TO DO: hr.expense.product.job.position.limit holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+hr_expense   / product.product          / expense_job_position_limit_ids (one2many): NEW relation: hr.expense.product.job.position.limit
+# NOTHING TO DO: 20.0 has no expense_job_position_limit_ids column on product.product, so nothing was left behind
+---XML records in module 'hr_expense'---
+NEW ir.access: hr_expense.access_account_journal_user
+NEW ir.access: hr_expense.access_hr_expense_approve_duplicate
+NEW ir.access: hr_expense.access_hr_expense_product_job_position_limit_manager
+NEW ir.access: hr_expense.access_hr_expense_product_job_position_limit_user
+NEW ir.access: hr_expense.access_hr_expense_refuse_wizard
+NEW ir.access: hr_expense.access_hr_expense_split_manager
+NEW ir.access: hr_expense.access_mail_activity_type_expense_user
+NEW ir.access: hr_expense.base_user_account_move_line_rule
+NEW ir.access: hr_expense.hr_expense_comp_rule
+NEW ir.access: hr_expense.hr_expense_team_approver_account_analytic_line_rule
+NEW ir.access: hr_expense.hr_expense_team_approver_account_move_line_rule
+NEW ir.access: hr_expense.hr_expense_team_approver_account_move_rule
+NEW ir.access: hr_expense.ir_rule_hr_expense_approver
+NEW ir.access: hr_expense.ir_rule_hr_expense_employee
+NEW ir.access: hr_expense.ir_rule_hr_expense_employee_not_draft
+NEW ir.access: hr_expense.ir_rule_hr_expense_manager
+NEW ir.access: hr_expense.ir_rule_hr_expense_manager_1
+NEW ir.access: hr_expense.ir_rule_hr_expense_split_accountant
+NEW ir.access: hr_expense.ir_rule_hr_expense_split_approver
+NEW ir.access: hr_expense.ir_rule_hr_expense_split_employee
+NEW ir.access: hr_expense.ir_rule_hr_expense_split_manager
+NEW ir.access: hr_expense.ir_rule_hr_expense_split_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: hr_expense.action_hr_expense_department_to_approve (deleted domain)
+ir.actions.act_window: hr_expense.hr_expense_product (deleted domain)
+ir.actions.act_window: hr_expense.mail_activity_type_action_config_hr_expense (deleted domain)
+DEL ir.cron: hr_expense.ir_cron_send_submitted_expenses_mail
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: hr_expense.access_account_analytic_line_user
+DEL ir.model.access: hr_expense.access_account_journal_user
+DEL ir.model.access: hr_expense.access_account_move_line_user
+DEL ir.model.access: hr_expense.access_account_move_user
+DEL ir.model.access: hr_expense.access_hr_expense_accountant
+DEL ir.model.access: hr_expense.access_hr_expense_approve_duplicate
+DEL ir.model.access: hr_expense.access_hr_expense_employee
+DEL ir.model.access: hr_expense.access_hr_expense_manager
+DEL ir.model.access: hr_expense.access_hr_expense_post
+DEL ir.model.access: hr_expense.access_hr_expense_refuse_wizard
+DEL ir.model.access: hr_expense.access_hr_expense_split_manager
+DEL ir.model.access: hr_expense.access_hr_expense_split_wizard_manager
+DEL ir.model.access: hr_expense.access_hr_expense_user
+DEL ir.model.access: hr_expense.access_mail_activity_type_expense_user
+DEL ir.rule: hr_expense.hr_expense_comp_rule (noupdate)
+DEL ir.rule: hr_expense.hr_expense_team_approver_account_move_line_rule (noupdate)
+DEL ir.rule: hr_expense.hr_expense_team_approver_account_move_rule (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_approver (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_employee (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_employee_not_draft (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_manager (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_split_accountant (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_split_approver (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_split_employee (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_split_manager (noupdate)
+DEL ir.rule: hr_expense.ir_rule_hr_expense_split_user (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.sequence: hr_expense.seq_hr_expense_invoice (noupdate)
+# NOTHING TO DO: left alone. _process_end only removes a stale row whose noupdate is false, and writing an orphan cleanup is the anti-pattern upstream rejected in #5630-5632
+DEL ir.ui.menu: hr_expense.menu_hr_expense_account_employee_expenses
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: hr_expense.account_journal_dashboard_kanban_view_inherit_expense
+NEW ir.ui.view: hr_expense.account_journal_view_form_inherit_hr_expense
+NEW ir.ui.view: hr_expense.hr_expense_split_form_view
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.ui.view: hr_expense.hr_expense_template_refuse_reason (noupdate switched)
+ir.ui.view: hr_expense.hr_expense_template_register (noupdate switched)
+ir.ui.view: hr_expense.hr_expense_template_register_no_user (noupdate switched)
+ir.ui.view: hr_expense.hr_expense_template_submitted_expenses (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.ui.view: hr_expense.product_template_form_view
+NEW ir.ui.view: hr_expense.view_account_invoice_filter_inherit_expense
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: hr_expense.hr_expense_post_wizard_view
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+mail.activity.type: hr_expense.mail_act_expense_approval (noupdate switched)
+mail.alias: hr_expense.mail_alias_expense (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_approved (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_entry_delete (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_entry_draft (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_paid (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_refused (noupdate switched)
+mail.message.subtype: hr_expense.mt_expense_reset (noupdate switched)
+product.product: hr_expense.expense_product_communication (noupdate switched)
+product.product: hr_expense.expense_product_gift (noupdate switched)
+product.product: hr_expense.expense_product_meal (noupdate switched)
+product.product: hr_expense.expense_product_mileage (noupdate switched)
+product.product: hr_expense.expense_product_travel_accommodation (noupdate switched)
+product.product: hr_expense.product_product_no_cost (noupdate switched)
+uom.uom: uom.product_uom_km (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

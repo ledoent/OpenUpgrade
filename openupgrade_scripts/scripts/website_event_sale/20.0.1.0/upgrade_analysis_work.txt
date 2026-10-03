@@ -1,0 +1,5 @@
+---Models in module 'website_event_sale'---
+---Fields in module 'website_event_sale'---
+---XML records in module 'website_event_sale'---
+DEL ir.ui.view: website_event_sale.index_topbar
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

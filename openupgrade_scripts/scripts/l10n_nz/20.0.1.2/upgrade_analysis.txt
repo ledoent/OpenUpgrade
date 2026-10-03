@@ -1,0 +1,10 @@
+---Models in module 'l10n_nz'---
+---Fields in module 'l10n_nz'---
+---XML records in module 'l10n_nz'---
+DEL ir.ui.view: l10n_nz.view_company_form_inherit_l10n_nz
+DEL ir.ui.view: l10n_nz.view_partner_form_inherit_l10n_nz
+res.currency: base.AUD (noupdate switched)
+res.currency: base.GBP (noupdate switched)
+res.currency: base.INR (noupdate switched)
+res.currency: base.JPY (noupdate switched)
+res.currency: base.NZD (noupdate switched)

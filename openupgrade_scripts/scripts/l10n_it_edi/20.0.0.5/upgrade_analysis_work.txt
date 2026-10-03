@@ -1,0 +1,31 @@
+---Models in module 'l10n_it_edi'---
+---Fields in module 'l10n_it_edi'---
+l10n_it_edi  / account.move             / l10n_it_convention_code (char): NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_it_edi  / account.move             / l10n_it_edi_header (html)     : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_it_edi  / account.move             / l10n_it_edi_state (selection) : selection_keys removed: [requires_user_signature]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+l10n_it_edi  / account.move             / l10n_it_invoice_cause (text)  : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_it_edi  / account_edi_proxy_client.user / proxy_type (False)            : selection_keys added: [pdp] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+l10n_it_edi  / l10n_it.document.type    / move_types (json)             : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_it_edi  / l10n_it.document.type    / type (selection)              : DEL selection_keys: ['purchase', 'sale']
+l10n_it_edi  / res.partner              / invoice_edi_format (False)    : selection_keys added: [ubl_21_fr, ubl_gr], removed: [oioubl_201, pint_sg, ubl_tr]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_it_edi'---
+NEW ir.access: l10n_it_edi.access_it_ddt_manager
+NEW ir.access: l10n_it_edi.access_l10n_it_document_type
+DEL ir.model.access: l10n_it_edi.access_it_ddt_manager
+DEL ir.model.access: l10n_it_edi.access_l10n_it_document_type
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_it_edi.constraint_account_edi_proxy_client_user_unique_identification_l10n_it_edi (changed definition: is now 'False' ('UNIQUE INDEX (edi_identification, proxy_type, edi_mode) WHERE (active AND proxy_type = 'l10n_it_edi')'))
+ir.model.constraint: l10n_it_edi.constraint_res_partner_l10n_it_codice_fiscale (changed definition: is now 'False' ('CHECK(l10n_it_codice_fiscale IS NULL OR l10n_it_codice_fiscale = '' OR LENGTH(l10n_it_codice_fiscale) >= 11)'))
+ir.model.constraint: l10n_it_edi.constraint_res_partner_l10n_it_pa_index (changed definition: is now 'False' ('CHECK(l10n_it_pa_index IS NULL OR l10n_it_pa_index = '' OR LENGTH(l10n_it_pa_index) >= 6)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+NEW ir.ui.view: l10n_it_edi.document_tax_totals_inherit_stamp_duty
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

@@ -1,0 +1,25 @@
+---Models in module 'website_payment'---
+---Fields in module 'website_payment'---
+website_payment / payment.transaction      / is_donation (boolean)         : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'website_payment'---
+DEL ir.asset: website_payment.s_donation_000_scss [renamed to website_sale module]
+# NOTHING TO DO: the record changes owning module, which apriori declares and
+# base's update_module_names performs -- it re-points every ir_model_data row
+# rather than recreating the record, so the ids and the data survive
+DEL ir.ui.view: website_payment.donation_information
+DEL ir.ui.view: website_payment.donation_input
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.ui.view: website_payment.donation_mail_body (noupdate)
+# NOTHING TO DO: a noupdate record the module stops shipping. _process_end
+# only removes stale data rows whose noupdate is false, so it survives --
+# 583 of the 753 such records on this seed do. Writing an orphan cleanup
+# is the anti-pattern upstream rejected in #5630-5632: OpenUpgrade
+# preserves information and database_cleanup removes residue later, once
+# an administrator can see what would go
+DEL ir.ui.view: website_payment.donation_pay
+DEL ir.ui.view: website_payment.payment_form
+DEL ir.ui.view: website_payment.remove_external_snippets
+DEL ir.ui.view: website_payment.s_donation
+DEL ir.ui.view: website_payment.s_donation_button
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

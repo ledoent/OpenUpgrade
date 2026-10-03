@@ -1,0 +1,16 @@
+---Models in module 'partnership'---
+---Fields in module 'partnership'---
+---XML records in module 'partnership'---
+NEW ir.access: partnership.access_res_partner_grade
+NEW ir.access: partnership.access_res_partner_grade_admin
+NEW ir.access: partnership.access_res_partner_grade_manager
+NEW ir.access: partnership.access_res_partner_grade_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: partnership.action_grade_partners (deleted domain)
+ir.actions.act_window: partnership.action_pricelist_partners (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: partnership.access_res_partner_grade
+DEL ir.model.access: partnership.access_res_partner_grade_admin
+DEL ir.model.access: partnership.access_res_partner_grade_manager
+DEL ir.model.access: partnership.access_res_partner_grade_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

@@ -1,0 +1,11 @@
+---Models in module 'purchase_requisition_stock'---
+---Fields in module 'purchase_requisition_stock'---
+---XML records in module 'purchase_requisition_stock'---
+NEW ir.access: purchase_requisition_stock.access_purchase_requisition_line_stock_manager
+NEW ir.access: purchase_requisition_stock.access_purchase_requisition_stock_manager
+DEL ir.model.access: purchase_requisition_stock.access_purchase_requisition_line_stock_manager
+DEL ir.model.access: purchase_requisition_stock.access_purchase_requisition_stock_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.ui.view: purchase_requisition_stock.purchase_order_form_inherit_purchase_requisition_stock
+DEL ir.ui.view: purchase_requisition_stock.purchase_order_line_compare_tree_inherit_purchase_requisition_stock
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

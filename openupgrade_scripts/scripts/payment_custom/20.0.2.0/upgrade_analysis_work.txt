@@ -1,0 +1,19 @@
+---Models in module 'payment_custom'---
+---Fields in module 'payment_custom'---
+payment_custom / payment.provider         / custom_mode (selection)       : selection_keys added: [pay_on_invoice] (most likely nothing to do)
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+payment_custom / payment.provider         / partner_bank_id (many2one)    : NEW relation: res.partner.bank, hasdefault: compute
+# NOTHING TO DO: 20.0 filled it itself -- 112 distinct values over 2025 of 2115 rows, so a compute or a related field did the work
+---XML records in module 'payment_custom'---
+ir.model.constraint: payment_custom.constraint_payment_provider_custom_providers_setup (changed definition: is now 'False' ('CHECK(custom_mode IS NULL OR (code = 'custom' AND custom_mode IS NOT NULL))'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+NEW ir.ui.view: payment_custom.custom_payment_transfer_details
+NEW ir.ui.view: payment_custom.payment_provider_kanban
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: payment_custom.redirect_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_custom.payment_method_pay_on_invoice
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.method: payment_custom.payment_method_wire_transfer (noupdate switched)
+payment.provider: payment.payment_provider_transfer (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

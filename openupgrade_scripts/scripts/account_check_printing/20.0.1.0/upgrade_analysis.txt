@@ -1,0 +1,7 @@
+---Models in module 'account_check_printing'---
+---Fields in module 'account_check_printing'---
+---XML records in module 'account_check_printing'---
+account.payment.method: account_check_printing.account_payment_method_check (noupdate switched)
+NEW ir.access: account_check_printing.access_print_prenumbered_checks
+ir.actions.server: account_check_printing.action_account_print_checks (noupdate switched)
+DEL ir.model.access: account_check_printing.access_print_prenumbered_checks

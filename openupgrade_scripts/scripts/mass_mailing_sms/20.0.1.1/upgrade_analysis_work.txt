@@ -1,0 +1,24 @@
+---Models in module 'mass_mailing_sms'---
+---Fields in module 'mass_mailing_sms'---
+mass_mailing_sms / mailing.trace            / failure_type (False)          : selection_keys added: [sms_database_non_active] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+---XML records in module 'mass_mailing_sms'---
+NEW ir.access: mass_mailing_sms.access_mailing_sms_test
+NEW ir.access: mass_mailing_sms.access_phone_blacklist_remove_mass_mailing_user
+NEW ir.access: mass_mailing_sms.access_sms_tracker_mailing_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: mass_mailing_sms.mailing_mailing_action_sms (deleted domain)
+ir.actions.act_window: mass_mailing_sms.mailing_trace_report_action_sms (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: mass_mailing_sms.access_mailing_sms_test
+DEL ir.model.access: mass_mailing_sms.access_phone_blacklist_remove_mass_mailing_user
+DEL ir.model.access: mass_mailing_sms.access_sms_tracker_mailing_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: mass_mailing_sms.mailing_trace_view_graph
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: mass_mailing_sms.mailing_list_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+utm.medium: mass_mailing_sms.utm_medium_sms (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW utm.source: mass_mailing_sms.utm_source_mass_sms
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

@@ -1,0 +1,78 @@
+---Models in module 'l10n_br'---
+---Fields in module 'l10n_br'---
+l10n_br      / res.partner.bank         / proxy_type (False)            : selection_keys removed: [uen]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_br'---
+NEW account.report: l10n_br.cbs_tax_report
+NEW account.report: l10n_br.cofins_tax_report
+NEW account.report: l10n_br.cprb_tax_report
+NEW account.report: l10n_br.csll_tax_report
+NEW account.report: l10n_br.ibs_tax_report
+NEW account.report: l10n_br.icms_difal_tax_report
+NEW account.report: l10n_br.icms_fcp_tax_report
+NEW account.report: l10n_br.icms_st_tax_report
+NEW account.report: l10n_br.icms_tax_report
+NEW account.report: l10n_br.ii_tax_report
+NEW account.report: l10n_br.inss_tax_report
+NEW account.report: l10n_br.ipi_tax_report
+NEW account.report: l10n_br.irpj_tax_report
+NEW account.report: l10n_br.is_tax_report
+NEW account.report: l10n_br.iss_tax_report
+NEW account.report: l10n_br.pis_tax_report
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL account.report: l10n_br.tax_report
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW account.report.column: l10n_br.cbs_tax_report_balance
+NEW account.report.column: l10n_br.cofins_tax_report_balance
+NEW account.report.column: l10n_br.cprb_tax_report_balance
+NEW account.report.column: l10n_br.csll_tax_report_balance
+NEW account.report.column: l10n_br.ibs_tax_report_balance
+NEW account.report.column: l10n_br.icms_difal_tax_report_balance
+NEW account.report.column: l10n_br.icms_fcp_tax_report_balance
+NEW account.report.column: l10n_br.icms_st_tax_report_balance
+NEW account.report.column: l10n_br.icms_tax_report_balance
+NEW account.report.column: l10n_br.ii_tax_report_balance
+NEW account.report.column: l10n_br.inss_tax_report_balance
+NEW account.report.column: l10n_br.ipi_tax_report_balance
+NEW account.report.column: l10n_br.irpj_tax_report_balance
+NEW account.report.column: l10n_br.is_tax_report_balance
+NEW account.report.column: l10n_br.iss_tax_report_balance
+NEW account.report.column: l10n_br.pis_tax_report_balance
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL account.report.column: l10n_br.tax_report_balance
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW account.report.expression: l10n_br.tax_report_cprb_1_tag
+NEW account.report.expression: l10n_br.tax_report_cprb_2_tag
+NEW account.report.expression: l10n_br.tax_report_icmsdifal_1_tag
+NEW account.report.expression: l10n_br.tax_report_icmsdifal_2_tag
+NEW account.report.expression: l10n_br.tax_report_icmsfcp_1_tag
+NEW account.report.expression: l10n_br.tax_report_icmsfcp_2_tag
+NEW account.report.line: l10n_br.tax_report_cprb
+NEW account.report.line: l10n_br.tax_report_cprb_1
+NEW account.report.line: l10n_br.tax_report_cprb_2
+NEW account.report.line: l10n_br.tax_report_icmsdifal
+NEW account.report.line: l10n_br.tax_report_icmsdifal_1
+NEW account.report.line: l10n_br.tax_report_icmsdifal_2
+NEW account.report.line: l10n_br.tax_report_icmsfcp
+NEW account.report.line: l10n_br.tax_report_icmsfcp_1
+NEW account.report.line: l10n_br.tax_report_icmsfcp_2
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW ir.access: l10n_br.access_l10n_br_zip_range_group_manager
+NEW ir.access: l10n_br.access_l10n_br_zip_range_group_user
+DEL ir.model.access: l10n_br.access_l10n_br_zip_range_group_manager
+DEL ir.model.access: l10n_br.access_l10n_br_zip_range_group_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_br.constraint_l10n_br_zip_range_uniq_end (changed definition: is now 'False' ('unique("end")'))
+ir.model.constraint: l10n_br.constraint_l10n_br_zip_range_uniq_start (changed definition: is now 'False' ('unique(start)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+NEW ir.ui.view: l10n_br.report_invoice
+NEW ir.ui.view: l10n_br.report_invoice_document
+NEW ir.ui.view: l10n_br.res_city_view_form_inherit_l10n_br
+NEW ir.ui.view: l10n_br.res_config_settings_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL l10n_latam.identification.type: l10n_br.cnpj
+DEL l10n_latam.identification.type: l10n_br.cpf
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.country: base.br (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

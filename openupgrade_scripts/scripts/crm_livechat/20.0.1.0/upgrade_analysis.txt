@@ -1,0 +1,16 @@
+---Models in module 'crm_livechat'---
+---Fields in module 'crm_livechat'---
+crm_livechat / chatbot.script.step      / step_type (False)             : selection_keys removed: [create_lead_and_forward]
+---XML records in module 'crm_livechat'---
+chatbot.script: crm_livechat.chatbot_script_lead_generation_bot (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_forward_operator (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_noone_available (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_welcome (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_welcome_step_just_looking (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_welcome_step_pricing_email (noupdate switched)
+NEW ir.access: crm_livechat.ir_rule_discuss_channel_crm_lead
+NEW ir.access: crm_livechat.ir_rule_discuss_channel_member_crm_lead
+ir.model.constraint: crm_livechat.constraint_discuss_channel_has_crm_lead_index (changed definition: is now 'False' ('INDEX (has_crm_lead) WHERE has_crm_lead IS TRUE'))
+DEL ir.rule: crm_livechat.ir_rule_discuss_channel_crm_lead (noupdate)
+DEL ir.rule: crm_livechat.ir_rule_discuss_channel_member_crm_lead (noupdate)
+DEL utm.source: crm_livechat.utm_source_livechat [renamed to utm module] (noupdate)
