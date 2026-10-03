@@ -3,7 +3,12 @@
 sale         / account.analytic.line    / order_id (many2one)           : previously in module sale_timesheet
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / account.analytic.line    / reinvoice_move_id (many2one)  : NEW relation: account.move
-# NOTHING TO DO: empty on all 531 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+# DONE: filled by sale_timesheet/20.0.1.0/post-migration.py. It is not a new
+# field but the 20.0 name of sale_timesheet's timesheet_invoice_id, whose DEL is
+# reported under that module. The carry lives there, next to the column it reads.
+# An earlier verdict here read NOTHING TO DO on the grounds that it was empty on
+# all 531 seed rows -- true, and beside the point: it is empty because nothing
+# had filled it yet, not because there was nothing to fill it with
 sale         / account.move             / utm_reference (reference)     : NEW
 # NOTHING TO DO: empty on all 3223 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 sale         / crm.team                 / invoiced_target (float)       : DEL
