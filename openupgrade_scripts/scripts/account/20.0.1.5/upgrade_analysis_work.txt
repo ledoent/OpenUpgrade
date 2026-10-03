@@ -85,7 +85,13 @@ account      / account.journal.group    / excluded_journal_ids (many2many): DEL 
 account      / account.journal.group    / included_journal_ids (one2many): NEW relation: account.journal
 # NOTHING TO DO: 20.0 has no included_journal_ids column on account.journal.group, so nothing was left behind
 account      / account.move             / checked (boolean)             : DEL
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: the retained column is what post-migration reads.
+# _carry_a_deliberate_not_reviewed_into_the_review_queue uses it to find the
+# posted moves somebody unticked by hand -- 19.0's compute would have set those
+# True, so a False was put there deliberately -- and puts exactly those into
+# 20.0's review_state as 'todo'. The True side is not carried: it merely
+# reproduces the compute, and writing 'reviewed' for it would claim a review of
+# every posted invoice in the database
 account      / account.move             / document_tax_mode (selection) : NEW selection_keys: ['tax_excluded', 'tax_included'], hasdefault: compute
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 1882 of 3223 rows, so a compute or a related field did the work
 account      / account.move             / import_source_attachment_id (many2one): NEW relation: ir.attachment

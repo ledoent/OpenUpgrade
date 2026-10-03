@@ -6,7 +6,10 @@ crm_iap_mine / crm.iap.lead.industry    / _order                        : _order
 crm_iap_mine / crm.iap.lead.industry    / division_id (many2one)        : NEW relation: crm.iap.lead.industry.division, required
 # NOTHING TO DO: 20.0 filled it itself -- 10 distinct values over 83 of 83 rows, so a compute or a related field did the work
 crm_iap_mine / crm.iap.lead.industry    / reveal_ids (char)             : DEL required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 has no field for it and the column survives orphaned. It
+# held an IAP vendor's own industry codes, which only that service can
+# interpret -- 3 of the copy's 83 industries carry one, and 20.0 offers nothing
+# to put them in
 crm_iap_mine / crm.iap.lead.industry    / sic_group (integer)           : NEW required
 # NOTHING TO DO: 20.0 filled it itself -- 83 distinct values over 83 of 83 rows, so a compute or a related field did the work
 crm_iap_mine / crm.iap.lead.industry.division / code (char)                   : NEW required

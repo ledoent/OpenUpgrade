@@ -25,7 +25,9 @@ resource     / resource.calendar.attendance / _order                        : _o
 resource     / resource.calendar.attendance / date (date)                   : NEW
 # NOTHING TO DO: empty on all 1871 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 resource     / resource.calendar.attendance / day_period (selection)        : now a function
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration rewrites it. _reclassify_break_attendances replaces 19.0's
+# 'lunch' -- a key 20.0's selection no longer declares -- using 20.0's own
+# _compute_day_period, transcribed. 600 of the seed's 1825 attendances held it
 resource     / resource.calendar.attendance / day_period (selection)        : selection_keys removed: [lunch]
 # NOTHING TO DO: no row holds lunch any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
 resource     / resource.calendar.attendance / display_type (selection)      : DEL selection_keys: ['line_section']
@@ -36,17 +38,21 @@ resource     / resource.calendar.attendance / duration_based (boolean)      : no
 resource     / resource.calendar.attendance / duration_days (float)         : DEL
 resource     / resource.calendar.attendance / duration_hours (float)        : not a function anymore
 resource     / resource.calendar.attendance / name (char)                   : DEL required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 drops the field outright and offers nothing in its place.
+# The prod copy's 60 attendances carry 12 distinct labels ("Monday Morning" and
+# the like); they describe the row rather than configure it, and the column
+# survives orphaned until database_cleanup
 resource     / resource.calendar.attendance / recurrency (boolean)          : NEW
 # NOTHING TO DO: empty on all 1871 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 resource     / resource.calendar.attendance / recurrency_count (integer)    : NEW hasdefault: default
 resource     / resource.calendar.attendance / recurrency_end_type (selection): NEW selection_keys: ['date', 'forever', 'times'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 'forever' across all 1886 attendances of the
+# seed, which is the field's own default
 resource     / resource.calendar.attendance / recurrency_excluded_occurences (json): NEW
 # NOTHING TO DO: empty on all 1871 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 resource     / resource.calendar.attendance / recurrency_interval (integer) : NEW hasdefault: default
 resource     / resource.calendar.attendance / recurrency_type (selection)   : NEW selection_keys: ['days', 'weeks'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 'weeks' across all 1886, the default
 resource     / resource.calendar.attendance / recurrency_until (date)       : NEW hasdefault: compute
 # NOTHING TO DO: empty on all 1871 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 resource     / resource.calendar.attendance / week_type (selection)         : DEL selection_keys: ['0', '1']
@@ -54,7 +60,8 @@ resource     / resource.calendar.attendance / week_type (selection)         : DE
 resource     / resource.calendar.leaves / count_as (selection)          : NEW selection_keys: ['absence', 'working_time'], hasdefault: default
 resource     / resource.calendar.leaves / time_type (selection)         : DEL selection_keys: ['leave', 'other']
 resource     / resource.resource        / calendar_id (many2one)        : now required
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: the NOT NULL applies over data that already satisfies it --
+# 0 of the seed's 28 resources hold a NULL calendar
 resource     / resource.resource        / color (integer)               : previously in module resource_mail
 # NOTHING TO DO: the field only changed owning module, the column is the same
 ---XML records in module 'resource'---

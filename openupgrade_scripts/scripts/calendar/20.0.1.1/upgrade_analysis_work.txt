@@ -11,7 +11,9 @@ new model calendar.user
 # NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
 ---Fields in module 'calendar'---
 calendar     / calendar.calendar        / calendar_default_privacy (selection): NEW required, selection_keys: ['confidential', 'members_only', 'private', 'public'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: calendar.calendar is new in 20.0, so its rows are 20.0's own --
+# 'public' across both of them, the field's default. There is no 19.0 record to
+# carry a privacy from
 calendar     / calendar.calendar        / calendar_user_ids (one2many)  : NEW relation: calendar.user, hasdefault: default
 # NOTHING TO DO: 20.0 has no calendar_user_ids column on calendar.calendar, so nothing was left behind
 calendar     / calendar.calendar        / event_ids (one2many)          : NEW relation: calendar.event
@@ -34,14 +36,16 @@ calendar     / calendar.filters         / partner_checked (boolean)     : DEL
 # NOTHING TO DO: 20.0 removes the concept -- there is no field anywhere in 20.0
 # to carry this into, so there is nothing a script could write
 calendar     / calendar.user            / access_role (selection)       : NEW required, selection_keys: ['owner', 'writer']
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: calendar.user is new in 20.0 and 20.0 creates its rows --
+# 'owner' on both, which is what it writes for the calendar's own user
 calendar     / calendar.user            / calendar_id (many2one)        : NEW relation: calendar.calendar, required
 calendar     / calendar.user            / filter_color (integer)        : NEW hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 2 rows, so a compute or a related field did the work
 calendar     / calendar.user            / is_filter_active (boolean)    : NEW hasdefault: default
 calendar     / calendar.user            / is_filter_checked (boolean)   : NEW hasdefault: default
 calendar     / calendar.user            / is_primary (boolean)          : NEW
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: set by 20.0 along with the rest of the calendar.user row --
+# true on both
 calendar     / calendar.user            / name (char)                   : NEW
 calendar     / calendar.user            / user_id (many2one)            : NEW relation: res.users, required
 # NOTHING TO DO: 20.0 filled it itself -- 2 distinct values over 2 of 2 rows, so a compute or a related field did the work
@@ -58,7 +62,7 @@ calendar     / res.users.settings       / calendar_default_privacy (selection): 
 # NOTHING TO DO: moved to calendar.calendar, where it is filled on both rows.
 # One distinct value either way, so this seed cannot discriminate
 calendar     / res.users.settings       / calendar_show_activities (boolean): NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- true on both settings rows, the default
 ---XML records in module 'calendar'---
 calendar.alarm: calendar.alarm_mail_1 (noupdate switched)
 # NOTHING TO DO: only the noupdate flag changed, the definition is the same

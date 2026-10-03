@@ -3,7 +3,17 @@ new model project.task.stage.report [sql_view]
 # NOTHING TO DO: a SQL view holds no rows of its own
 ---Fields in module 'project'---
 project      / project.collaborator     / access_mode (selection)       : NEW required, selection_keys: ['advanced_edit', 'edit', 'view'], hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# DONE: post-migration restores it.
+# _restore_what_each_collaborator_was_allowed_to_do maps 19.0's limited_access
+# boolean onto the new three-way field, which is required and defaults to
+# 'view' -- so the upgrade otherwise demotes every collaborator to a reader.
+# That is granted rights lost, not cosmetics: a collaborator row existed only
+# because a project was shared for EDITING, and a read-only share created none.
+# The mapping comes from the same method in both versions rather than from the
+# labels: 19.0's _add_collaborators(..., limited_access=False) is 20.0's
+# _add_collaborators(..., access_mode='advanced_edit'), so False is
+# advanced_edit and the remaining True is 'edit', which is what 20.0 tests for
+# editing rights at project_task.py:2281
 project      / project.collaborator     / limited_access (boolean)      : DEL
 # NOTHING TO DO: 20.0 replaces it with access_mode, a selection whose values it
 # writes itself; there is no boolean to carry
@@ -12,7 +22,8 @@ project      / project.milestone        / website_message_ids (one2many): DEL re
 project      / project.project          / allowed_internal_user_ids (many2many): NEW relation: res.users, hasdefault: compute
 # NOTHING TO DO: 20.0 has no allowed_internal_user_ids column on project.project, so nothing was left behind
 project      / project.project          / date_last_stage_update (datetime): NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it itself -- 0 of the seed's 128 projects came out
+# NULL
 project      / project.project          / duration_tracking (json)      : is now stored
 # NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 128 of 128 rows, so a compute or a related field did the work
 project      / project.project          / website_message_ids (one2many): DEL relation: mail.message
@@ -20,7 +31,7 @@ project      / project.project          / website_message_ids (one2many): DEL re
 project      / project.project.stage    / color (integer)               : DEL
 # NOTHING TO DO: the column held nothing on any of the 4 rows, so its removal carries nothing away
 project      / project.project.stage    / rotting_threshold_days (integer): NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 0 across all 4 stages, the field's default
 project      / project.role             / user_ids (many2many)          : NEW relation: res.users
 # NOTHING TO DO: 20.0 has no user_ids column on project.role, so nothing was left behind
 project      / project.task             / allow_recurring_tasks (boolean): not related anymore

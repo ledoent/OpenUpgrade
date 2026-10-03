@@ -8,7 +8,10 @@ purchase     / product.category         / property_account_bills_to_receive_id (
 purchase     / product.product          / sold_by_vendor_id (many2one)  : NEW relation: res.partner, stored: False
 # NOTHING TO DO: 20.0 has no sold_by_vendor_id column on product.product, so nothing was left behind
 purchase     / purchase.order           / document_tax_mode (selection) : NEW required, selection_keys: ['tax_excluded', 'tax_included'], hasdefault: compute
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0 fills it from a field 19.0 already had, exactly as on
+# sale.order. The compute assigns company.account_price_include and is a stored
+# precompute, so it ran during the upgrade -- 0 of the seed's 18 purchase orders
+# disagree with their own company
 purchase     / purchase.order           / incoterm_location (char)      : previously in module purchase_stock
 purchase     / purchase.order           / receipt_status (selection)    : previously in module purchase_stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
@@ -21,7 +24,9 @@ purchase     / purchase.order.line      / accrual_move_ids (many2many)  : NEW re
 purchase     / purchase.order.line      / bill_to_receive (boolean)     : NEW stored: False
 # NOTHING TO DO: 20.0 has no bill_to_receive column on purchase.order.line, so nothing was left behind
 purchase     / purchase.order.line      / non_deductible_tax (float)    : NEW isfunction: function, stored
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: a stored compute new in 20.0, which the upgrade evaluated --
+# 0 of 32 order lines came out NULL. Every one is 0.00, which is what a line
+# with fully deductible tax means
 purchase     / purchase.order.line      / prepaid_expense (boolean)     : NEW stored: False
 # NOTHING TO DO: 20.0 has no prepaid_expense column on purchase.order.line, so nothing was left behind
 purchase     / purchase.order.line      / price_unit_product_uom (float): is now stored

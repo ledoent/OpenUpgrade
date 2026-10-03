@@ -59,7 +59,8 @@ portal       / portal.entry             / placeholder_count (char)      : NEW
 portal       / portal.entry             / sequence (integer)            : NEW hasdefault: default
 # NOTHING TO DO: 20.0 filled it itself -- 15 distinct values over 20 of 20 rows, so a compute or a related field did the work
 portal       / portal.entry             / show_in_portal (boolean)      : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- true across all 17 portal entries, the field's
+# own default
 portal       / portal.entry             / url (char)                    : NEW
 # NOTHING TO DO: 20.0 filled it itself -- 20 distinct values over 20 of 20 rows, so a compute or a related field did the work
 portal       / product.category         / website_message_ids (one2many): DEL relation: mail.message

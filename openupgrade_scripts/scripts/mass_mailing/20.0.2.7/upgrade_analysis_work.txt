@@ -3,7 +3,8 @@ obsolete model mailing.list.merge [transient]
 # NOTHING TO DO: a transient model holds no persistent data
 ---Fields in module 'mass_mailing'---
 mass_mailing / ir.ui.view               / technical_usage (False)       : NEW selection_keys: ['mail_post_source', 'mass_mailing'], mode: modify
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: 20.0's own data sets it on the views that need it and leaves
+# the rest NULL, across the seed's 6302 views
 mass_mailing / mailing.contact          / last_clicked_datetime (datetime): NEW
 mass_mailing / mailing.contact          / last_opened_datetime (datetime): NEW
 mass_mailing / mailing.contact          / last_replied_datetime (datetime): NEW
@@ -15,7 +16,7 @@ mass_mailing / mailing.filter           / active (boolean)              : NEW ha
 mass_mailing / mailing.filter           / color (integer)               : NEW hasdefault: default
 # NOTHING TO DO: mailing.filter holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
 mass_mailing / mailing.list             / color (integer)               : NEW hasdefault: default
-# NEEDS A VERDICT: the database cannot settle this one
+# NOTHING TO DO: new in 20.0 -- 0 on both mailing lists, the default
 mass_mailing / mailing.mailing          / _order                        : _order is now 'state ASC, calendar_date DESC, write_date DESC' ('calendar_date DESC')
 mass_mailing / mailing.mailing          / ab_testing_version_name (char): NEW
 # NOTHING TO DO: empty on all 2 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
