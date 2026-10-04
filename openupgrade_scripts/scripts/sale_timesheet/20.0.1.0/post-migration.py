@@ -40,7 +40,47 @@ def _carry_the_invoiced_timesheet_link_onto_its_new_column(env):
     )
 
 
+def _open_the_new_gate_on_products_that_were_already_timesheet_billed(env):
+    """Keep delivered-timesheet products linking their timesheets on 20.0.
+
+    20.0 adds product.template.reinvoice_policy, default "no", and will only
+    link an invoice's analytic lines when the sale line passes
+    _is_line_reinvoicable() (sale/models/sale_order_line.py), which requires
+    that field to be something other than "no". 19.0 had no such gate: it
+    linked by sale line alone.
+
+    So every existing product arrives at "no" and quietly stops linking. An
+    invoice posts, claims no timesheets, and anything downstream that reads
+    account.move.timesheet_ids sees an empty set -- with nothing in the log.
+    The hours also keep counting as still-to-invoice, because
+    _timesheet_compute_delivered_quantity_domain treats a NULL
+    reinvoice_move_id as not yet billed.
+
+    Only products that were ALREADY billing from timesheets are touched --
+    invoice_policy 'delivery' with service_type 'timesheet', both stored on
+    both versions -- and only where the column still holds its untouched
+    default, so a deliberate choice is never overwritten. "sales_price" is the
+    value core's own sale_timesheet tests set for exactly this, and
+    sale/models/account_analytic_line.py keys its sale-line sync on it.
+
+    Worth knowing: the field also feeds sale_expense, sale_stock and
+    sale_purchase reinvoicing. On a service product that carries no expenses
+    that is inert, which is why the predicate is kept this narrow.
+    """
+    openupgrade.logged_query(
+        env.cr,
+        """
+        UPDATE product_template
+           SET reinvoice_policy = 'sales_price'
+         WHERE invoice_policy = 'delivery'
+           AND service_type = 'timesheet'
+           AND coalesce(reinvoice_policy, 'no') = 'no'
+        """,
+    )
+
+
 @openupgrade.migrate()
 def migrate(env, version):
     openupgrade.load_data(env, "sale_timesheet", "20.0.1.0/noupdate_changes.xml")
     _carry_the_invoiced_timesheet_link_onto_its_new_column(env)
+    _open_the_new_gate_on_products_that_were_already_timesheet_billed(env)

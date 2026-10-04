@@ -24,14 +24,31 @@ sale         / product.product          / previously_bought_by_customer (boolean
 sale         / product.product          / sale_delay (integer)          : previously in module stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / product.template         / expense_policy (selection)    : DEL selection_keys: ['cost', 'no', 'sales_price']
-# NOTHING TO DO: 20.0 has no expense_policy column on product.template, so nothing was left behind
+# NOTHING TO DO: not because the column held nothing, but because OpenUpgrade
+# RENAMES it -- the log reads "table product_template, column expense_policy:
+# renaming to reinvoice_policy". The values carry; see that field below for
+# why carrying them is not the end of the story
 sale         / product.template         / invoice_policy (selection)    : now required
 # NOTHING TO DO: the NOT NULL applies over data that already satisfies it --
 # 0 of the prod copy's 31 templates hold NULL, the values being delivery and
 # order. 20.0 also makes it a precompute, which would fill a NULL rather than
 # fail
 sale         / product.template         / reinvoice_policy (selection)  : NEW selection_keys: ['cost', 'no', 'sales_price'], hasdefault: default
-# NOTHING TO DO: 20.0 filled it itself -- 3 distinct values over 199 of 199 rows, so a compute or a related field did the work
+# DONE: sale_timesheet/20.0.1.0/post-migration.py opens it for products that
+# were already timesheet-billed.
+# An earlier verdict here read NOTHING TO DO on the grounds that 20.0 filled it
+# itself -- 3 distinct values over 199 of 199 rows, so a compute must have done
+# the work. It is full for a different reason: this is 19.0's expense_policy
+# renamed (see the DEL above), so every row simply kept the value it had.
+# What changed is the MEANING. On 19.0 the field only governed re-invoicing
+# costs. On 20.0 it additionally gates whether an invoice links its analytic
+# lines at all: _is_line_reinvoicable requires it to be something other than
+# 'no' (sale/models/sale_order_line.py). A delivered-timesheet product sensibly
+# carried 'no' on 19.0 -- it re-invoices no expenses -- and that same 'no' now
+# silently stops it linking timesheets, so invoices post claiming none and the
+# hours keep counting as still-to-invoice.
+# Measured on the prod copy: both delivered-timesheet products, Consulting Hours
+# and Service on Timesheets, arrived at 'no'
 sale         / product.template         / sale_delay (integer)          : previously in module stock
 # NOTHING TO DO: the field only changed owning module, the column is the same
 sale         / res.company              / display_product_images_on_so (boolean): NEW
