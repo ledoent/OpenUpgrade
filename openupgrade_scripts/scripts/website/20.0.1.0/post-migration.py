@@ -62,13 +62,15 @@ def _carry_the_hand_typed_menu_url_into_manual_url(env):
     overwrite it -- the field it belonged to is no longer stored, so the ORM
     neither reads nor writes that column.
 
-    One menu is beyond reach, and it is core's rather than ours:
-    `website.menu_home` is the template menu, carrying no website_id and no
-    page, and 20.0's own data load puts it through _inverse_url, which writes
-    `manual_url = ''` whenever the url it is handed is falsy. Its write_date is
-    the upgrade itself, so anything written here is overwritten afterwards. It
-    costs nothing: the live per-website Home menus are page-backed and resolve
-    through website.page.
+    `website.menu_home` needs no carry and must not be written: it is
+    page-backed, so the compute reads website.page. It used to arrive here
+    with no page at all, and the cause was this script -- the generated
+    noupdate_changes.xml carried an empty `<field name="url"/>`, because 20.0
+    dropped that field from core's record. Loading it ran _inverse_url, whose
+    first branch is `if not menu.url: menu.page_id = None`, and Home computed
+    to "#". Core cannot do this: its own menu_home sits in a noupdate block and
+    is never rewritten on upgrade. The field is gone from noupdate_changes.xml;
+    see the comment there before a regeneration puts it back.
     """
     if not openupgrade.column_exists(env.cr, "website_menu", "url"):
         return
