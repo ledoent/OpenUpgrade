@@ -1,0 +1,6 @@
+---Models in module 'website_event_booth_exhibitor'---
+---Fields in module 'website_event_booth_exhibitor'---
+---XML records in module 'website_event_booth_exhibitor'---
+event.booth.category: event_booth.event_booth_category_premium (noupdate switched)
+event.booth.category: event_booth.event_booth_category_vip (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

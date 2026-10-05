@@ -1,0 +1,4 @@
+---Models in module 'l10n_nl'---
+---Fields in module 'l10n_nl'---
+---XML records in module 'l10n_nl'---
+res.country.group: l10n_nl.mainland_nl (noupdate switched)

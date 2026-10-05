@@ -1,0 +1,23 @@
+---Models in module 'event_crm'---
+---Fields in module 'event_crm'---
+---XML records in module 'event_crm'---
+NEW ir.access: event_crm.access_event_crm_manager
+NEW ir.access: event_crm.access_event_crm_registration
+NEW ir.access: event_crm.access_event_lead_request_system
+NEW ir.access: event_crm.ir_rule_event_crm
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: event_crm.event_registration_action_from_lead (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.actions.act_window: event_crm.crm_lead_action_from_event
+DEL ir.actions.act_window: event_crm.crm_lead_action_from_registration
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: event_crm.access_event_crm_manager
+DEL ir.model.access: event_crm.access_event_crm_registration
+DEL ir.model.access: event_crm.access_event_crm_salesman
+DEL ir.model.access: event_crm.access_event_crm_user
+DEL ir.model.access: event_crm.access_event_lead_request_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: event_crm.constraint_event_lead_request_uniq_event (changed definition: is now 'False' ('unique(event_id)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: event_crm.ir_rule_event_crm
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

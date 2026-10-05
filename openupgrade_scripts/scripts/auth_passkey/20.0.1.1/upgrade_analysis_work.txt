@@ -1,0 +1,21 @@
+---Models in module 'auth_passkey'---
+---Fields in module 'auth_passkey'---
+---XML records in module 'auth_passkey'---
+NEW ir.access: auth_passkey.rule_auth_passkey_key_admin
+NEW ir.access: auth_passkey.rule_auth_passkey_key_create_portal
+NEW ir.access: auth_passkey.rule_auth_passkey_key_create_portal_1
+NEW ir.access: auth_passkey.rule_auth_passkey_key_user
+NEW ir.access: auth_passkey.rule_auth_passkey_key_user_1
+NEW ir.access: auth_passkey.rule_auth_passkey_key_user_2
+DEL ir.model.access: auth_passkey.access_auth_passkey_key
+DEL ir.model.access: auth_passkey.access_auth_passkey_key_admin
+DEL ir.model.access: auth_passkey.access_auth_passkey_key_create
+DEL ir.model.access: auth_passkey.access_auth_passkey_key_create_portal
+DEL ir.model.access: auth_passkey.access_auth_passkey_key_portal
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: auth_passkey.constraint_auth_passkey_key_unique_identifier (changed definition: is now 'False' ('UNIQUE(credential_identifier)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: auth_passkey.rule_auth_passkey_key_admin (noupdate)
+DEL ir.rule: auth_passkey.rule_auth_passkey_key_create_portal (noupdate)
+DEL ir.rule: auth_passkey.rule_auth_passkey_key_user (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

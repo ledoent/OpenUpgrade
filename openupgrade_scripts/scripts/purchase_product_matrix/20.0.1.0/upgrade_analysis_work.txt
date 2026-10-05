@@ -1,0 +1,5 @@
+---Models in module 'purchase_product_matrix'---
+---Fields in module 'purchase_product_matrix'---
+purchase_product_matrix / purchase.order           / report_grids (boolean)        : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'purchase_product_matrix'---

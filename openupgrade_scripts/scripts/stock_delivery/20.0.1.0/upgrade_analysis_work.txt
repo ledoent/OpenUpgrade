@@ -1,0 +1,82 @@
+---Models in module 'stock_delivery'---
+new model pay.on.delivery [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'stock_delivery'---
+stock_delivery / product.product          / country_of_origin (many2one)  : is now stored
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+stock_delivery / product.product          / country_of_origin (many2one)  : not related anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+stock_delivery / product.product          / hs_code (char)                : is now stored
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+stock_delivery / product.product          / hs_code (char)                : not related anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+stock_delivery / product.template         / country_of_origin (many2one)  : not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+stock_delivery / product.template         / country_of_origin (many2one)  : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+stock_delivery / product.template         / hs_code (char)                : not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+stock_delivery / product.template         / hs_code (char)                : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+stock_delivery / res.partner              / pickup_location_data (json)   : NEW
+stock_delivery / stock.picking.type       / auto_print_carrier_labels (boolean): NEW
+stock_delivery / stock.picking.type       / auto_print_export_documents (boolean): NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'stock_delivery'---
+NEW ir.access: stock_delivery.access_choose_delivery_carrier_stock_user
+NEW ir.access: stock_delivery.access_delivery_carrier_stock_manager
+NEW ir.access: stock_delivery.access_delivery_carrier_stock_user
+NEW ir.access: stock_delivery.access_delivery_price_rule_stock_manager
+NEW ir.access: stock_delivery.access_delivery_price_rule_stock_user
+NEW ir.access: stock_delivery.access_delivery_zip_prefix_stock_manager
+NEW ir.access: stock_delivery.access_delivery_zip_prefix_stock_user
+NEW ir.access: stock_delivery.access_pay_on_delivery_sale_user
+NEW ir.access: stock_delivery.access_pay_on_delivery_stock_user
+NEW ir.access: stock_delivery.access_printer_stock_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: stock_delivery.open_export_docs_report
+NEW ir.actions.act_window: stock_delivery.open_shipping_labels_report
+NEW ir.actions.report: stock_delivery.action_report_shipping_docs
+NEW ir.actions.report: stock_delivery.action_report_shipping_labels
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: stock_delivery.access_choose_delivery_carrier_stock_user
+DEL ir.model.access: stock_delivery.access_delivery_carrier_stock_manager
+DEL ir.model.access: stock_delivery.access_delivery_carrier_stock_user
+DEL ir.model.access: stock_delivery.access_delivery_price_rule_stock_manager
+DEL ir.model.access: stock_delivery.access_delivery_price_rule_stock_user
+DEL ir.model.access: stock_delivery.access_delivery_zip_prefix_stock_manager
+DEL ir.model.access: stock_delivery.access_delivery_zip_prefix_stock_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.menu: stock_delivery.cached_printers_action
+NEW ir.ui.menu: stock_delivery.cached_printers_section
+NEW ir.ui.menu: stock_delivery.manage_printers_action
+NEW ir.ui.view: stock_delivery.barcode_alternative_label
+NEW ir.ui.view: stock_delivery.barcode_normal_label
+NEW ir.ui.view: stock_delivery.package_pdf_label_delivery
+NEW ir.ui.view: stock_delivery.package_zpl_label_delivery
+NEW ir.ui.view: stock_delivery.pay_on_delivery_form
+NEW ir.ui.view: stock_delivery.product_product_hs_code
+NEW ir.ui.view: stock_delivery.product_product_hs_code_list
+NEW ir.ui.view: stock_delivery.report_shipping_docs
+NEW ir.ui.view: stock_delivery.report_shipping_labels
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: delivery_stock_picking_batch.view_picking_type_form_inherit
+DEL ir.ui.view: stock_delivery.alternative_zpl_label
+DEL ir.ui.view: stock_delivery.label_package_template_view_delivery
+DEL ir.ui.view: stock_delivery.normal_zpl_label
+DEL ir.ui.view: stock_delivery.report_package_barcode_small_delivery
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

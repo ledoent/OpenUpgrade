@@ -1,0 +1,4 @@
+---Models in module 'product_matrix'---
+---Fields in module 'product_matrix'---
+---XML records in module 'product_matrix'---
+res.groups: base.group_user (noupdate switched)

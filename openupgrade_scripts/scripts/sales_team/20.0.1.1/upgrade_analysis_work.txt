@@ -1,0 +1,36 @@
+---Models in module 'sales_team'---
+---Fields in module 'sales_team'---
+---XML records in module 'sales_team'---
+crm.team: sales_team.pos_sales_team (noupdate switched)
+crm.team: sales_team.salesteam_website_sales (noupdate switched)
+crm.team: sales_team.team_sales_department (noupdate switched)
+crm.team.member: sales_team.crm_team_member_admin_sales (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: sales_team.access_crm_tag_manager
+NEW ir.access: sales_team.access_crm_tag_salesman
+NEW ir.access: sales_team.access_crm_team
+NEW ir.access: sales_team.access_crm_team_member_manager
+NEW ir.access: sales_team.access_crm_team_member_user
+NEW ir.access: sales_team.crm_rule_all_salesteam
+NEW ir.access: sales_team.sale_team_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: sales_team.crm_team_action_pipeline (deleted domain)
+ir.actions.act_window: sales_team.mail_activity_type_action_config_sales (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.actions.act_window: sales_team.crm_team_action_sales
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: sales_team.access_crm_tag
+DEL ir.model.access: sales_team.access_crm_tag_manager
+DEL ir.model.access: sales_team.access_crm_tag_salesman
+DEL ir.model.access: sales_team.access_crm_team
+DEL ir.model.access: sales_team.access_crm_team_manager
+DEL ir.model.access: sales_team.access_crm_team_member_all
+DEL ir.model.access: sales_team.access_crm_team_member_manager
+DEL ir.model.access: sales_team.access_crm_team_member_user
+DEL ir.model.access: sales_team.access_crm_team_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: sales_team.constraint_crm_tag_name_uniq (changed definition: is now 'False' ('unique (name)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: sales_team.crm_rule_all_salesteam (noupdate)
+DEL ir.rule: sales_team.sale_team_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

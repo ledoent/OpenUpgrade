@@ -1,0 +1,10 @@
+---Models in module 'l10n_it_edi_doi'---
+---Fields in module 'l10n_it_edi_doi'---
+l10n_it_edi_doi / l10n_it_edi_doi.declaration_of_intent / website_message_ids (one2many): DEL relation: mail.message
+---XML records in module 'l10n_it_edi_doi'---
+NEW ir.access: l10n_it_edi_doi.access_l10n_it_edi_doi_declaration_of_intent_invoice
+NEW ir.access: l10n_it_edi_doi.access_l10n_it_edi_doi_declaration_of_intent_readonly
+DEL ir.model.access: l10n_it_edi_doi.access_l10n_it_edi_doi_declaration_of_intent_invoice
+DEL ir.model.access: l10n_it_edi_doi.access_l10n_it_edi_doi_declaration_of_intent_readonly
+ir.model.constraint: l10n_it_edi_doi.constraint_l10n_it_edi_doi_declaration_of_intent_protocol_number_unique (changed definition: is now 'False' ('unique(protocol_number_part1, protocol_number_part2)'))
+ir.model.constraint: l10n_it_edi_doi.constraint_l10n_it_edi_doi_declaration_of_intent_threshold_positive (changed definition: is now 'False' ('CHECK(threshold > 0)'))

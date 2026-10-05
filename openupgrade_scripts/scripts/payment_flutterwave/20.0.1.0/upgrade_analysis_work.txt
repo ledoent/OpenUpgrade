@@ -1,0 +1,28 @@
+---Models in module 'payment_flutterwave'---
+---Fields in module 'payment_flutterwave'---
+---XML records in module 'payment_flutterwave'---
+DEL ir.ui.view: payment_flutterwave.redirect_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_flutterwave.payment_method_amex
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_flutterwave.payment_method_bank_account [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_flutterwave.payment_method_bank_transfer [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_flutterwave.payment_method_card
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_flutterwave.payment_method_credit [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_flutterwave.payment_method_discover
+NEW payment.method: payment_flutterwave.payment_method_mastercard
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_flutterwave.payment_method_mobile_money [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_flutterwave.payment_method_mpesa [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_flutterwave.payment_method_paypal
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_flutterwave.payment_method_ussd [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_flutterwave.payment_method_visa
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_flutterwave (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

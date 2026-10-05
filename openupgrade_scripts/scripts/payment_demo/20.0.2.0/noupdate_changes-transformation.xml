@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--
+    19.0 declared payment.provider.payment_method_ids as a many2many; 20.0 makes it
+    a one2many inverted on payment.method.provider_id. The analyser sees the 20.0
+    data files no longer setting it and emits eval="None", which on a one2many does
+    not clear a relation table but unlinks the child payment.method records, and
+    core refuses that with "You cannot delete the default payment method".
+    The methods are owned by the provider modules in 20.0, so there is nothing to
+    clear here.
+    -->
+    <record id="payment.payment_provider_demo" position="replace"/>
+</odoo>

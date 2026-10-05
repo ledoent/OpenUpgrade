@@ -1,0 +1,19 @@
+---Models in module 'l10n_es_edi_tbai'---
+---Fields in module 'l10n_es_edi_tbai'---
+l10n_es_edi_tbai / account.move             / l10n_es_tbai_original_invoice_date (date): NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_es_edi_tbai / account.move             / l10n_es_tbai_refund_reason (selection): DEL selection_keys: ['R1', 'R2', 'R3', 'R4', 'R5']
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_es_edi_tbai / certificate.certificate  / scope (False)                 : selection_keys added: [ca] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+---XML records in module 'l10n_es_edi_tbai'---
+NEW ir.access: l10n_es_edi_tbai.access_l10n_es_edi_tbai_document_readonly
+NEW ir.access: l10n_es_edi_tbai.tbai_document_comp_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.config_parameter: l10n_es_edi_tbai.epigrafe_config (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: l10n_es_edi_tbai.access_l10n_es_edi_tbai_document_readonly
+DEL ir.rule: l10n_es_edi_tbai.tbai_document_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.ui.view: l10n_es_edi_tbai.view_account_move_reversal
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

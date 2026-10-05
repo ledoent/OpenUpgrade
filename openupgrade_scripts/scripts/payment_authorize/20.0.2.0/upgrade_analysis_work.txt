@@ -1,0 +1,16 @@
+---Models in module 'payment_authorize'---
+---Fields in module 'payment_authorize'---
+payment_authorize / payment.provider         / authorize_webhook_id (char)   : NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'payment_authorize'---
+NEW payment.method: payment_authorize.payment_method_ach_direct_debit
+NEW payment.method: payment_authorize.payment_method_amex
+NEW payment.method: payment_authorize.payment_method_card
+NEW payment.method: payment_authorize.payment_method_diners
+NEW payment.method: payment_authorize.payment_method_discover
+NEW payment.method: payment_authorize.payment_method_jcb
+NEW payment.method: payment_authorize.payment_method_mastercard
+NEW payment.method: payment_authorize.payment_method_visa
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_authorize (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

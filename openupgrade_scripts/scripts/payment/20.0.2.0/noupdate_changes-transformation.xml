@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!--
+    19.0 declared payment.provider.payment_method_ids as a many2many; 20.0 makes it
+    a one2many inverted on payment.method.provider_id. The analyser sees the 20.0
+    data files no longer setting it and emits eval="None", which on a one2many does
+    not clear a relation table but unlinks the child payment.method records, and
+    core refuses that with "You cannot delete the default payment method".
+    The methods are owned by the provider modules in 20.0, so there is nothing to
+    clear here.
+    -->
+    <record id="payment_provider_adyen" position="replace"/>
+    <record id="payment_provider_aps" position="replace"/>
+    <record id="payment_provider_asiapay" position="replace"/>
+    <record id="payment_provider_authorize" position="replace"/>
+    <record id="payment_provider_buckaroo" position="replace"/>
+    <record id="payment_provider_dpo" position="replace"/>
+    <record id="payment_provider_ecpay" position="replace"/>
+    <record id="payment_provider_flutterwave" position="replace"/>
+    <record id="payment_provider_iyzico" position="replace"/>
+    <record id="payment_provider_mercado_pago" position="replace"/>
+    <record id="payment_provider_mollie" position="replace"/>
+    <record id="payment_provider_nuvei" position="replace"/>
+    <record id="payment_provider_paymob" position="replace"/>
+    <record id="payment_provider_paypal" position="replace"/>
+    <record id="payment_provider_payu" position="replace"/>
+    <record id="payment_provider_razorpay" position="replace"/>
+    <record id="payment_provider_redsys" position="replace"/>
+    <xpath expr="//record[@id='payment_provider_sepa_direct_debit']/field[@name='payment_method_ids']" position="replace"/>
+    <record id="payment_provider_stripe" position="replace"/>
+    <record id="payment_provider_toss_payments" position="replace"/>
+    <record id="payment_provider_worldline" position="replace"/>
+    <record id="payment_provider_xendit" position="replace"/>
+</odoo>

@@ -1,0 +1,5 @@
+---Models in module 'pos_self_order_sale'---
+---Fields in module 'pos_self_order_sale'---
+---XML records in module 'pos_self_order_sale'---
+crm.team: pos_self_order_sale.pos_sales_team (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

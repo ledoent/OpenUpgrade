@@ -1,0 +1,50 @@
+---Models in module 'payment_worldline'---
+---Fields in module 'payment_worldline'---
+---XML records in module 'payment_worldline'---
+DEL ir.ui.view: payment_worldline.redirect_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_worldline.payment_method_alipay_plus [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_worldline.payment_method_amex
+NEW payment.method: payment_worldline.payment_method_bancontact
+NEW payment.method: payment_worldline.payment_method_bizum
+NEW payment.method: payment_worldline.payment_method_card
+NEW payment.method: payment_worldline.payment_method_cartes_bancaires
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_worldline.payment_method_cirrus [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_worldline.payment_method_cofidis [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_worldline.payment_method_dankort
+NEW payment.method: payment_worldline.payment_method_diners
+NEW payment.method: payment_worldline.payment_method_discover
+NEW payment.method: payment_worldline.payment_method_eps
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_worldline.payment_method_floa_bank [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_worldline.payment_method_ideal
+NEW payment.method: payment_worldline.payment_method_ideal_brand
+NEW payment.method: payment_worldline.payment_method_jcb
+NEW payment.method: payment_worldline.payment_method_klarna
+NEW payment.method: payment_worldline.payment_method_maestro
+NEW payment.method: payment_worldline.payment_method_mastercard
+NEW payment.method: payment_worldline.payment_method_mbway
+NEW payment.method: payment_worldline.payment_method_meeza
+NEW payment.method: payment_worldline.payment_method_multibanco
+NEW payment.method: payment_worldline.payment_method_naps
+NEW payment.method: payment_worldline.payment_method_omannet
+NEW payment.method: payment_worldline.payment_method_p24
+NEW payment.method: payment_worldline.payment_method_paypal
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_worldline.payment_method_post_finance [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_worldline.payment_method_rupay
+NEW payment.method: payment_worldline.payment_method_troy
+NEW payment.method: payment_worldline.payment_method_twint
+NEW payment.method: payment_worldline.payment_method_unionpay
+NEW payment.method: payment_worldline.payment_method_visa
+NEW payment.method: payment_worldline.payment_method_wechat_pay
+NEW payment.method: payment_worldline.payment_method_wero
+NEW payment.method: payment_worldline.payment_method_wero_brand
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_worldline (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

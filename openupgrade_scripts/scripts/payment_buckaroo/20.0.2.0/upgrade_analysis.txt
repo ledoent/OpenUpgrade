@@ -1,0 +1,36 @@
+---Models in module 'payment_buckaroo'---
+---Fields in module 'payment_buckaroo'---
+---XML records in module 'payment_buckaroo'---
+DEL ir.ui.view: payment_buckaroo.redirect_form
+NEW payment.method: payment_buckaroo.payment_method_afterpay_riverty [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_alipay
+NEW payment.method: payment_buckaroo.payment_method_amex
+NEW payment.method: payment_buckaroo.payment_method_banco_de_bogota [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_bancolombia [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_bancontact
+NEW payment.method: payment_buckaroo.payment_method_bank_reference [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_belfius [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_billink [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_card
+NEW payment.method: payment_buckaroo.payment_method_cartes_bancaires
+NEW payment.method: payment_buckaroo.payment_method_dankort
+NEW payment.method: payment_buckaroo.payment_method_davivienda [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_eps
+NEW payment.method: payment_buckaroo.payment_method_ideal
+NEW payment.method: payment_buckaroo.payment_method_ideal_brand
+NEW payment.method: payment_buckaroo.payment_method_in3 [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_kbc_cbc [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_klarna
+NEW payment.method: payment_buckaroo.payment_method_maestro
+NEW payment.method: payment_buckaroo.payment_method_mastercard
+NEW payment.method: payment_buckaroo.payment_method_p24
+NEW payment.method: payment_buckaroo.payment_method_paypal
+NEW payment.method: payment_buckaroo.payment_method_poste_pay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_sepa_direct_debit
+NEW payment.method: payment_buckaroo.payment_method_tinka [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_trustly
+NEW payment.method: payment_buckaroo.payment_method_visa
+NEW payment.method: payment_buckaroo.payment_method_wechat_pay
+NEW payment.method: payment_buckaroo.payment_method_wero [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_buckaroo.payment_method_wero_brand
+payment.provider: payment.payment_provider_buckaroo (noupdate switched)

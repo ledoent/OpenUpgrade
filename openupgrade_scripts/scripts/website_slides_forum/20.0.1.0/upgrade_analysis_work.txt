@@ -1,0 +1,22 @@
+---Models in module 'website_slides_forum'---
+---Fields in module 'website_slides_forum'---
+---XML records in module 'website_slides_forum'---
+NEW ir.access: website_slides_forum.access_forum_forum_website_slides_officer
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: website_slides_forum.forum_forum_action_channel (deleted domain)
+ir.actions.act_window: website_slides_forum.forum_post_action_channel (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: website_slides_forum.access_forum_forum_website_slides_officer
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: website_slides_forum.constraint_slide_channel_forum_uniq (changed definition: is now 'False' ('unique (forum_id)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: website_slides_forum.website_slides_forum_post_signed_in_user (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_public (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_public_post (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_public_tag (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_signed_in_user (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_tag_signed_in_user (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_website_slides_officer (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_website_slides_officer_post (noupdate)
+DEL ir.rule: website_slides_forum.website_slides_forum_website_slides_officer_tag (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

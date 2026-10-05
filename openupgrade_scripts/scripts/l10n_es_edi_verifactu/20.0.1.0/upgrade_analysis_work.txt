@@ -1,0 +1,53 @@
+---Models in module 'l10n_es_edi_verifactu'---
+new model l10n_es_edi_verifactu.issuer
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
+---Fields in module 'l10n_es_edi_verifactu'---
+l10n_es_edi_verifactu / account.move             / l10n_es_edi_verifactu_clave_regimen (selection): DEL selection_keys: function
+l10n_es_edi_verifactu / account.move             / l10n_es_edi_verifactu_refund_reason (selection): DEL selection_keys: ['R1', 'R2', 'R3', 'R4', 'R5']
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+l10n_es_edi_verifactu / account.tax              / l10n_es_applicability (selection): module is now 'l10n_es' ('l10n_es_edi_verifactu')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+l10n_es_edi_verifactu / certificate.certificate  / scope (False)                 : selection_keys added: [ca] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+l10n_es_edi_verifactu / l10n_es_edi_verifactu.document / obligado_partner_id (many2one): NEW relation: res.partner, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_es_edi_verifactu / l10n_es_edi_verifactu.issuer / chain_sequence_id (many2one)  : NEW relation: ir.sequence
+# NOTHING TO DO: empty is the right value for existing records
+l10n_es_edi_verifactu / l10n_es_edi_verifactu.issuer / company_id (many2one)         : NEW relation: res.company, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_es_edi_verifactu / l10n_es_edi_verifactu.issuer / next_batch_time (datetime)    : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_es_edi_verifactu / l10n_es_edi_verifactu.issuer / obligado_partner_id (many2one): NEW relation: res.partner, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_es_edi_verifactu / res.company              / l10n_es_edi_verifactu_chain_sequence_id (many2one): DEL relation: ir.sequence
+l10n_es_edi_verifactu / res.company              / l10n_es_edi_verifactu_next_batch_time (datetime): DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_es_edi_verifactu / res.company              / l10n_es_edi_verifactu_special_vat_regime (selection): DEL selection_keys: ['reagyp', 'recargo', 'simplified']
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_es_edi_verifactu'---
+NEW ir.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_readonly
+NEW ir.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_readonly_account_readonly
+NEW ir.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_user
+NEW ir.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_issuer_readonly
+NEW ir.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_issuer_readonly_account_readonly
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.server: l10n_es_edi_verifactu.action_l10n_es_edi_verifactu_button_cancel
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.cron: l10n_es_edi_verifactu.cron_verifactu_batch (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_readonly
+DEL ir.model.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_readonly_account_readonly
+DEL ir.model.access: l10n_es_edi_verifactu.access_l10n_es_edi_verifactu_document_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: l10n_es_edi_verifactu.constraint_l10n_es_edi_verifactu_issuer_unique_issuer_per_obligado
+NEW ir.ui.view: l10n_es_edi_verifactu.view_account_resequence_inherit_l10n_es_edi_verifactu
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_es_edi_verifactu.view_account_move_reversal_inherit_l10n_es_edi_verifactu
+DEL ir.ui.view: l10n_es_edi_verifactu.view_company_form
+DEL ir.ui.view: l10n_es_edi_verifactu.view_tax_form_inherit_l10n_es_edi_verifactu
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

@@ -1,0 +1,11 @@
+---Models in module 'payment_demo'---
+---Fields in module 'payment_demo'---
+payment_demo / payment.transaction      / capture_manually (boolean)    : module is now 'payment' ('payment_demo')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+---XML records in module 'payment_demo'---
+payment.method: payment_demo.payment_method_demo (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml
+NEW payment.method: payment_demo.payment_method_unknown [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+payment.provider: payment.payment_provider_demo (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

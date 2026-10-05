@@ -1,0 +1,77 @@
+---Models in module 'payment_xendit'---
+---Fields in module 'payment_xendit'---
+---XML records in module 'payment_xendit'---
+DEL ir.ui.view: payment_xendit.redirect_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_xendit.payment_method_7eleven [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_akulaku [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_amex
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_appota [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_bangkok_bank
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_bank_bca [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bank_permata [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_billease [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bni [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bri [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bsi [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_card
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_cashalo [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_cebuana [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_cimb_niaga [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_dana
+NEW payment.method: payment_xendit.payment_method_fpx
+NEW payment.method: payment_xendit.payment_method_gcash
+NEW payment.method: payment_xendit.payment_method_grabpay
+NEW payment.method: payment_xendit.payment_method_jcb
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_jeniuspay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_kfh [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_kredivo [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_krungthai_bank
+NEW payment.method: payment_xendit.payment_method_linepay
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_linkaja [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_mandiri [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_mastercard
+NEW payment.method: payment_xendit.payment_method_maya
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_ovo [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_paynow
+NEW payment.method: payment_xendit.payment_method_promptpay
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_qris [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_scb
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_shopeepay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_touch_n_go
+NEW payment.method: payment_xendit.payment_method_truemoney
+NEW payment.method: payment_xendit.payment_method_unionpay
+NEW payment.method: payment_xendit.payment_method_uob
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_vietcapital [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_viettelpay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_visa
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_vnptwallet [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_vpbank [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_xendit.payment_method_wechat_pay
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_xendit.payment_method_woori [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_zalopay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+payment.provider: payment.payment_provider_xendit (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

@@ -1,0 +1,24 @@
+---Models in module 'stock_landed_costs'---
+---Fields in module 'stock_landed_costs'---
+stock_landed_costs / product.template         / landed_cost_on_product_ids (many2many): NEW relation: product.product
+# NOTHING TO DO: empty is the right value for existing records
+stock_landed_costs / stock.landed.cost        / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+stock_landed_costs / stock.landed.cost.lines  / apply_on_product_ids (many2many): NEW relation: product.product, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'stock_landed_costs'---
+NEW ir.access: stock_landed_costs.access_stock_landed_cost
+NEW ir.access: stock_landed_costs.access_stock_landed_cost_lines
+NEW ir.access: stock_landed_costs.access_stock_valuation_adjustment_lines
+NEW ir.access: stock_landed_costs.stock_landed_cost_rule
+DEL ir.model.access: stock_landed_costs.access_stock_landed_cost
+DEL ir.model.access: stock_landed_costs.access_stock_landed_cost_lines
+DEL ir.model.access: stock_landed_costs.access_stock_valuation_adjustment_lines
+DEL ir.rule: stock_landed_costs.stock_landed_cost_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.sequence: stock_landed_costs.seq_stock_landed_costs (noupdate switched)
+mail.message.subtype: stock_landed_costs.mt_stock_landed_cost_open (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

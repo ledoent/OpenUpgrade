@@ -1,0 +1,10 @@
+---Models in module 'cloud_storage_migration'---
+---Fields in module 'cloud_storage_migration'---
+---XML records in module 'cloud_storage_migration'---
+NEW ir.access: cloud_storage_migration.access_cloud_storage_migration_report
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_all_models (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_max_batch_file_size (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_max_file_size (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_message_models (noupdate switched)
+ir.config_parameter: cloud_storage_migration.cloud_storage_migration_min_attachment_id (noupdate switched)
+DEL ir.model.access: cloud_storage_migration.access_cloud_storage_migration_report

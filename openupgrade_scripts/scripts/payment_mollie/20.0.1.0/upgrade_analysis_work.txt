@@ -1,0 +1,37 @@
+---Models in module 'payment_mollie'---
+---Fields in module 'payment_mollie'---
+payment_mollie / payment.token            / mollie_customer_id (char)     : NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'payment_mollie'---
+DEL ir.ui.view: payment_mollie.redirect_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_mollie.payment_method_amex
+NEW payment.method: payment_mollie.payment_method_apple_pay
+NEW payment.method: payment_mollie.payment_method_bancontact
+NEW payment.method: payment_mollie.payment_method_bank_transfer
+NEW payment.method: payment_mollie.payment_method_belfius
+NEW payment.method: payment_mollie.payment_method_blik
+NEW payment.method: payment_mollie.payment_method_card
+NEW payment.method: payment_mollie.payment_method_cartes_bancaires
+NEW payment.method: payment_mollie.payment_method_discover
+NEW payment.method: payment_mollie.payment_method_eps
+NEW payment.method: payment_mollie.payment_method_google_pay
+NEW payment.method: payment_mollie.payment_method_ideal
+NEW payment.method: payment_mollie.payment_method_ideal_brand
+NEW payment.method: payment_mollie.payment_method_in3
+NEW payment.method: payment_mollie.payment_method_kbc_cbc
+NEW payment.method: payment_mollie.payment_method_klarna
+NEW payment.method: payment_mollie.payment_method_maestro
+NEW payment.method: payment_mollie.payment_method_mastercard
+NEW payment.method: payment_mollie.payment_method_mbway
+NEW payment.method: payment_mollie.payment_method_multibanco
+NEW payment.method: payment_mollie.payment_method_p24
+NEW payment.method: payment_mollie.payment_method_paypal
+NEW payment.method: payment_mollie.payment_method_paysafecard
+NEW payment.method: payment_mollie.payment_method_swish
+NEW payment.method: payment_mollie.payment_method_twint
+NEW payment.method: payment_mollie.payment_method_visa
+NEW payment.method: payment_mollie.payment_method_wero_brand
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_mollie (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

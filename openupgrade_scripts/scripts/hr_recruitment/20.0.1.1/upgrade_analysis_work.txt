@@ -1,0 +1,213 @@
+---Models in module 'hr_recruitment'---
+obsolete model applicant.send.mail [transient]
+new model applicant.refuse.single [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+new model hr.job.tag
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+---Fields in module 'hr_recruitment'---
+hr_recruitment / hr.applicant             / duration_tracking (json)      : is now stored
+# NOTHING TO DO: 20.0 filled it itself -- 7 distinct values over 41 of 41 rows, so a compute or a related field did the work
+hr_recruitment / hr.applicant             / email_cc (char)               : DEL
+# NOTHING TO DO: the column held nothing on any of the 41 rows, so its removal carries nothing away
+hr_recruitment / hr.applicant             / linked_applicant_ids (one2many): NEW relation: hr.applicant
+# NOTHING TO DO: 20.0 has no linked_applicant_ids column on hr.applicant, so nothing was left behind
+hr_recruitment / hr.applicant             / recruiter_id (many2one)       : NEW relation: hr.employee, hasdefault: compute
+# NOTHING TO DO: empty on all 41 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_recruitment / hr.applicant             / schedule_pay (selection)      : NEW required, selection_keys: ['biweekly', 'daily', 'hourly', 'monthly', 'weekly', 'yearly'], hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+hr_recruitment / hr.applicant             / user_id (many2one)            : DEL relation: res.users
+# NOTHING TO DO: 19.0's Recruiter has no successor. 20.0's hr.applicant carries
+# only interviewer_ids, which is a different concept, and hr.job carries no
+# recruiter either -- so there is nowhere to put it. It was a stored compute
+# with readonly=False as well, so most values were derived rather than chosen
+hr_recruitment / hr.applicant             / utm_reference (reference)     : NEW
+# NOTHING TO DO: empty on all 41 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_recruitment / hr.applicant             / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on hr.applicant, so nothing was left behind
+hr_recruitment / hr.job                   / applicant_properties_definition (properties_definition): DEL
+# NOTHING TO DO: the column held nothing on any of the 9 rows, so its removal carries nothing away
+hr_recruitment / hr.job                   / favorite_recruiter_ids (many2many): NEW relation: hr.employee, hasdefault: default
+# NOTHING TO DO: 20.0 has no favorite_recruiter_ids column on hr.job, so nothing was left behind
+hr_recruitment / hr.job                   / favorite_user_ids (many2many) : DEL relation: res.users
+# NOTHING TO DO: 20.0 has no favorite_user_ids column on hr.job, so nothing was left behind
+hr_recruitment / hr.job                   / payment_interval (selection)  : NEW required, selection_keys: ['biweekly', 'daily', 'hourly', 'monthly', 'weekly', 'yearly'], hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+hr_recruitment / hr.job                   / salary_max (float)            : NEW
+hr_recruitment / hr.job                   / salary_min (float)            : NEW
+# NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_recruitment / hr.job                   / tag_ids (many2many)           : NEW relation: hr.job.tag
+# NOTHING TO DO: 20.0 has no tag_ids column on hr.job, so nothing was left behind
+hr_recruitment / hr.job.tag               / color (integer)               : NEW hasdefault: default
+hr_recruitment / hr.job.tag               / name (char)                   : NEW required
+# NOTHING TO DO: hr.job.tag holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+hr_recruitment / hr.recruitment.stage     / company_id (many2one)         : NEW relation: res.company
+# NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+hr_recruitment / hr.recruitment.stage     / legend_blocked (char)         : DEL required
+hr_recruitment / hr.recruitment.stage     / legend_done (char)            : DEL required
+hr_recruitment / hr.recruitment.stage     / legend_normal (char)          : DEL required
+hr_recruitment / hr.recruitment.stage     / legend_waiting (char)         : DEL required
+# NOTHING TO DO: 20.0 drops the per-stage kanban legends; no successor field
+hr_recruitment / hr.talent.pool           / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on hr.talent.pool, so nothing was left behind
+hr_recruitment / res.company              / applicant_properties_definition (properties_definition): NEW
+# NOTHING TO DO: empty on all 117 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+---XML records in module 'hr_recruitment'---
+digest.digest: digest.digest_digest_default (noupdate switched)
+hr.applicant.category: hr_recruitment.tag_applicant_it (noupdate switched)
+hr.applicant.category: hr_recruitment.tag_applicant_manager (noupdate switched)
+hr.applicant.category: hr_recruitment.tag_applicant_reserve (noupdate switched)
+hr.applicant.category: hr_recruitment.tag_applicant_sales (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_1 (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_2 (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_5 (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_6 (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_7 (noupdate switched)
+hr.applicant.refuse.reason: hr_recruitment.refuse_reason_8 (noupdate switched)
+hr.job.platform: hr_recruitment.indeed_job_platform (noupdate switched)
+hr.job.platform: hr_recruitment.jobsdb_job_platform (noupdate switched)
+hr.job.platform: hr_recruitment.linkedin_job_platform (noupdate switched)
+hr.recruitment.degree: hr_recruitment.degree_bac5 (noupdate switched)
+hr.recruitment.degree: hr_recruitment.degree_bachelor (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW hr.recruitment.degree: hr_recruitment.degree_diploma
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+hr.recruitment.degree: hr_recruitment.degree_graduate (noupdate switched)
+hr.recruitment.degree: hr_recruitment.degree_licenced (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job0 (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job1 (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job2 (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job3 (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job4 (noupdate switched)
+hr.recruitment.stage: hr_recruitment.stage_job5 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: hr_recruitment.access_applicant_get_refuse_reason_interviewer
+NEW ir.access: hr_recruitment.access_applicant_refuse_single_interviewer
+NEW ir.access: hr_recruitment.access_calendar_event_type_hr_officer
+NEW ir.access: hr_recruitment.access_hr_applicant_category
+NEW ir.access: hr_recruitment.access_hr_applicant_category_manager
+NEW ir.access: hr_recruitment.access_hr_job_interviewer
+NEW ir.access: hr_recruitment.access_hr_job_platform
+NEW ir.access: hr_recruitment.access_hr_job_tag_interviewer
+NEW ir.access: hr_recruitment.access_hr_job_tag_manager
+NEW ir.access: hr_recruitment.access_hr_job_user
+NEW ir.access: hr_recruitment.access_hr_recruitment_degree
+NEW ir.access: hr_recruitment.access_hr_recruitment_degree_interviewer
+NEW ir.access: hr_recruitment.access_hr_recruitment_refuse_reason
+NEW ir.access: hr_recruitment.access_hr_recruitment_refuse_reason_interviewer
+NEW ir.access: hr_recruitment.access_hr_recruitment_source_all
+NEW ir.access: hr_recruitment.access_hr_recruitment_source_hr_officer
+NEW ir.access: hr_recruitment.access_hr_recruitment_stage_interviewer
+NEW ir.access: hr_recruitment.access_hr_recruitment_stage_manager
+NEW ir.access: hr_recruitment.access_hr_talent_pool_interviewer
+NEW ir.access: hr_recruitment.access_job_add_applicants
+NEW ir.access: hr_recruitment.access_mail_activity_plan_hr_recruitment_manager
+NEW ir.access: hr_recruitment.access_mail_activity_plan_template_hr_recruitment_manager
+NEW ir.access: hr_recruitment.access_res_partner_hr_user
+NEW ir.access: hr_recruitment.access_talent_pool_add_applicants
+NEW ir.access: hr_recruitment.calendar_event_rule_employee
+NEW ir.access: hr_recruitment.hr_applicant_comp_rule
+NEW ir.access: hr_recruitment.hr_applicant_interviewer_rule
+NEW ir.access: hr_recruitment.hr_applicant_user_rule
+NEW ir.access: hr_recruitment.hr_job_user_rule
+NEW ir.access: hr_recruitment.hr_talent_pool_user_rule
+NEW ir.access: hr_recruitment.ir_rule_hr_recruitment_stage_multi_company
+NEW ir.access: hr_recruitment.mail_plan_rule_group_hr_recruitment_manager_applicant
+NEW ir.access: hr_recruitment.mail_plan_templates_rule_group_hr_recruitment_manager_applicant
+NEW ir.access: hr_recruitment.res_partner_rule_edit_all
+NEW ir.access: hr_recruitment.res_partner_rule_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: hr_recruitment.action_applicant_mass_mail
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: hr_recruitment.action_hr_job_interviewer (deleted domain)
+ir.actions.act_window: hr_recruitment.action_hr_talent_pool_applications (deleted domain)
+ir.actions.act_window: hr_recruitment.hr_applicant_action_from_department (deleted domain)
+NEW ir.actions.act_window: hr_recruitment.hr_job_tag_action
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: hr_recruitment.mail_activity_plan_action_config_hr_applicant (deleted domain)
+ir.actions.act_window: hr_recruitment.mail_activity_type_action_config_hr_applicant (deleted domain)
+NEW ir.actions.server: hr_recruitment.action_job_add_applicants
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.server: hr_recruitment.action_applicant_send_mail
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: hr_recruitment.access_applicant_get_refuse_reason
+DEL ir.model.access: hr_recruitment.access_applicant_get_refuse_reason_interviewer
+DEL ir.model.access: hr_recruitment.access_applicant_send_mail
+DEL ir.model.access: hr_recruitment.access_applicant_send_mail_interviewer
+DEL ir.model.access: hr_recruitment.access_calendar_event_hruser
+DEL ir.model.access: hr_recruitment.access_calendar_event_type_hr_officer
+DEL ir.model.access: hr_recruitment.access_hr_applicant_category
+DEL ir.model.access: hr_recruitment.access_hr_applicant_category_manager
+DEL ir.model.access: hr_recruitment.access_hr_applicant_interviewer
+DEL ir.model.access: hr_recruitment.access_hr_applicant_user
+DEL ir.model.access: hr_recruitment.access_hr_job_interviewer
+DEL ir.model.access: hr_recruitment.access_hr_job_platform
+DEL ir.model.access: hr_recruitment.access_hr_job_user
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_degree
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_refuse_reason
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_refuse_reason_interviewer
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_source_all
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_source_hr_officer
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_stage_interviewer
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_stage_manager
+DEL ir.model.access: hr_recruitment.access_hr_recruitment_stage_user
+DEL ir.model.access: hr_recruitment.access_hr_talent_pool
+DEL ir.model.access: hr_recruitment.access_hr_talent_pool_interviewer
+DEL ir.model.access: hr_recruitment.access_job_add_applicants
+DEL ir.model.access: hr_recruitment.access_job_add_applicants_interviewer
+DEL ir.model.access: hr_recruitment.access_mail_activity_plan_hr_recruitment_manager
+DEL ir.model.access: hr_recruitment.access_mail_activity_plan_template_hr_recruitment_manager
+DEL ir.model.access: hr_recruitment.access_res_partner_hr_user
+DEL ir.model.access: hr_recruitment.access_talent_pool_add_applicants
+DEL ir.model.access: hr_recruitment.access_talent_pool_add_applicants_interviewer
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: hr_recruitment.constraint_hr_applicant_category_name_uniq (changed definition: is now 'False' ('unique (name)'))
+ir.model.constraint: hr_recruitment.constraint_hr_applicant_job_id_stage_id_idx (changed definition: is now 'False' ('INDEX (job_id, stage_id) WHERE active IS TRUE'))
+ir.model.constraint: hr_recruitment.constraint_hr_job_platform_email_uniq (changed definition: is now 'False' ('unique (email)'))
+ir.model.constraint: hr_recruitment.constraint_hr_recruitment_degree_name_uniq (changed definition: is now 'False' ('unique (name)'))
+ir.model.constraint: hr_recruitment.constraint_hr_recruitment_degree_score_range (changed definition: is now 'False' ('check(score >= 0 and score <= 1)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: hr_recruitment.hr_applicant_comp_rule (noupdate)
+DEL ir.rule: hr_recruitment.hr_applicant_interviewer_rule (noupdate)
+DEL ir.rule: hr_recruitment.hr_applicant_user_rule (noupdate)
+DEL ir.rule: hr_recruitment.hr_job_user_rule (noupdate)
+DEL ir.rule: hr_recruitment.hr_talent_pool_user_rule (noupdate)
+DEL ir.rule: hr_recruitment.mail_message_user_rule (noupdate)
+DEL ir.rule: hr_recruitment.mail_plan_rule_group_hr_recruitment_manager_applicant (noupdate)
+DEL ir.rule: hr_recruitment.mail_plan_templates_rule_group_hr_recruitment_manager_applicant (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.menu: hr_recruitment.menu_hr_job_tag_menu
+NEW ir.ui.menu: hr_recruitment.menu_hr_recruitment_utm_campaigns
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.ui.view: hr_recruitment.applicant_hired_template (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.ui.view: hr_recruitment.applicant_refuse_single_view_form
+NEW ir.ui.view: hr_recruitment.hr_employee_view_form_inherit_applicant_button
+NEW ir.ui.view: hr_recruitment.hr_job_tag_view_form
+NEW ir.ui.view: hr_recruitment.hr_job_tag_view_list
+NEW ir.ui.view: hr_recruitment.job_add_applicants_from_job_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.ui.view: hr_recruitment.mail_notification_light_without_background (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.ui.view: hr_recruitment.applicant_send_mail_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+mail.message.subtype: hr_recruitment.mt_applicant_hired (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_applicant_new (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_applicant_stage_changed (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_department_new (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_job_applicant_hired (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_job_applicant_new (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_job_applicant_stage_changed (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_job_new (noupdate switched)
+mail.message.subtype: hr_recruitment.mt_talent_new (noupdate switched)
+mail.template: hr_recruitment.email_template_data_applicant_congratulations (noupdate switched)
+mail.template: hr_recruitment.email_template_data_applicant_interest (noupdate switched)
+mail.template: hr_recruitment.email_template_data_applicant_not_interested (noupdate switched)
+mail.template: hr_recruitment.email_template_data_applicant_refuse (noupdate switched)
+res.groups: base.group_user (noupdate switched)
+res.groups: hr_recruitment.group_applicant_cv_display (noupdate switched)
+res.groups: hr_recruitment.group_hr_recruitment_interviewer (noupdate switched)
+res.groups: hr_recruitment.group_hr_recruitment_manager (noupdate switched)
+res.groups: hr_recruitment.group_hr_recruitment_user (noupdate switched)
+res.groups.privilege: hr_recruitment.res_groups_privilege_recruitment (noupdate switched)
+utm.campaign: hr_recruitment.utm_campaign_job (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
