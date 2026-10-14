@@ -21,10 +21,16 @@ mass_mailing / mailing.mailing          / _order                        : _order
 mass_mailing / mailing.mailing          / ab_testing_version_name (char): NEW
 # NOTHING TO DO: empty on all 2 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
 mass_mailing / mailing.mailing          / favorite (boolean)            : DEL
+# DONE: renamed is_template in pre-migration. 19.0's template fetcher reads
+#   Domain('favorite', '=', True); 20.0's action_fetch_templates ("Return all
+#   active mailings set as template") reads Domain('is_template', '=', True).
+#   Previously marked NOTHING TO DO because `favorite` was false on both rows of
+#   the sample -- true of that database, not of the field. A prod copy with 35
+#   mailings, one favourited, came out with favorite true and is_template false.
 mass_mailing / mailing.mailing          / favorite_date (datetime)      : DEL
-# NOTHING TO DO: the column held nothing on any of the 2 rows, so its removal carries nothing away
+# NOTHING TO DO: no 20.0 counterpart; genuinely removed, nothing to carry
 mass_mailing / mailing.mailing          / is_template (boolean)         : NEW
-# NOTHING TO DO: empty on all 2 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+# DONE: the other half of the favorite rename above
 mass_mailing / mailing.mailing          / mailing_filter_id (many2one)  : DEL relation: mailing.filter
 # NOTHING TO DO: the column held nothing on any of the 2 rows, so its removal carries nothing away
 mass_mailing / mailing.mailing          / mailing_filter_ids (many2many): NEW relation: mailing.filter, hasdefault: compute
