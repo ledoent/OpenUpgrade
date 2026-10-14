@@ -1,0 +1,12 @@
+---Models in module 'l10n_pl_edi'---
+---Fields in module 'l10n_pl_edi'---
+l10n_pl_edi  / res.partner              / invoice_edi_format (False)    : selection_keys added: [ubl_21_fr, ubl_gr], removed: [oioubl_201, pint_sg, ubl_tr]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'l10n_pl_edi'---
+ir.cron: l10n_pl_edi.cron_auto_checks_the_polish_invoice_status (noupdate switched)
+ir.cron: l10n_pl_edi.cron_l10n_pl_edi_ksef_download_bills (noupdate switched)
+ir.cron: l10n_pl_edi.cron_l10n_pl_edi_refresh_tokens (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+ir.model.constraint: l10n_pl_edi.constraint_account_move_l10n_pl_edi_number_company_id_move_type_uniq (changed definition: is now 'False' ('UNIQUE(l10n_pl_edi_number, company_id, move_type)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it

@@ -1,0 +1,7 @@
+---Models in module 'stock_dropshipping'---
+---Fields in module 'stock_dropshipping'---
+---XML records in module 'stock_dropshipping'---
+ir.actions.act_window: stock_dropshipping.action_picking_tree_dropship (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+stock.route: stock_dropshipping.route_drop_shipping (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

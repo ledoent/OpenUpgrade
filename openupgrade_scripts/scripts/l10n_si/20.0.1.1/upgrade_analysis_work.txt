@@ -1,0 +1,11 @@
+---Models in module 'l10n_si'---
+---Fields in module 'l10n_si'---
+---XML records in module 'l10n_si'---
+DEL account.account.tag: l10n_si.account_account_tag_l10n_si_rp_A3
+DEL account.account.tag: l10n_si.account_account_tag_l10n_si_rp_A4
+DEL account.account.tag: l10n_si.account_account_tag_l10n_si_rp_A5
+DEL account.account.tag: l10n_si.account_account_tag_l10n_si_rp_A6
+DEL account.account.tag: l10n_si.account_account_tag_l10n_si_rp_A7
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.country: base.si (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

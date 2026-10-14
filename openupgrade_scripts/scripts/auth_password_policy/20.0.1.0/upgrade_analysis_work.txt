@@ -1,0 +1,5 @@
+---Models in module 'auth_password_policy'---
+---Fields in module 'auth_password_policy'---
+---XML records in module 'auth_password_policy'---
+ir.config_parameter: auth_password_policy.minlength (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

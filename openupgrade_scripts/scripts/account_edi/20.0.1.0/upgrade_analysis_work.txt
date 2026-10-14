@@ -1,0 +1,20 @@
+---Models in module 'account_edi'---
+---Fields in module 'account_edi'---
+---XML records in module 'account_edi'---
+NEW ir.access: account_edi.access_account_edi_document_group_invoice
+NEW ir.access: account_edi.access_account_edi_document_readonly
+NEW ir.access: account_edi.access_account_edi_format_group_invoice
+NEW ir.access: account_edi.access_account_edi_format_readonly
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: account_edi.action_open_edi_documents (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+ir.cron: account_edi.ir_cron_edi_network (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: account_edi.access_account_edi_document_group_invoice
+DEL ir.model.access: account_edi.access_account_edi_document_readonly
+DEL ir.model.access: account_edi.access_account_edi_format_group_invoice
+DEL ir.model.access: account_edi.access_account_edi_format_readonly
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: account_edi.constraint_account_edi_document_unique_edi_document_by_move_by_format (changed definition: is now 'False' ('UNIQUE(edi_format_id, move_id)'))
+ir.model.constraint: account_edi.constraint_account_edi_format_unique_code (changed definition: is now 'False' ('unique (code)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it

@@ -1,0 +1,9 @@
+---Models in module 'website_crm'---
+---Fields in module 'website_crm'---
+---XML records in module 'website_crm'---
+NEW ir.access: website_crm.access_website_track_salesman
+NEW ir.access: website_crm.access_website_visitor_salesman
+ir.actions.act_url: website_crm.action_open_website (noupdate switched)
+ir.actions.act_window: website_crm.crm_lead_action_from_visitor (deleted domain)
+DEL ir.model.access: website_crm.access_website_track_salesman
+DEL ir.model.access: website_crm.access_website_visitor_salesman

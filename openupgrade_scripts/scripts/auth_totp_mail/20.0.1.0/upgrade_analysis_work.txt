@@ -1,0 +1,6 @@
+---Models in module 'auth_totp_mail'---
+---Fields in module 'auth_totp_mail'---
+---XML records in module 'auth_totp_mail'---
+mail.template: auth_totp_mail.mail_template_totp_invite (noupdate switched)
+mail.template: auth_totp_mail.mail_template_totp_mail_code (noupdate switched)
+# DONE: post-migration: load noupdate_changes.xml

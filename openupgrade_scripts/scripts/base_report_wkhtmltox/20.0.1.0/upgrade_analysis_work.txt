@@ -1,0 +1,5 @@
+---Models in module 'base_report_wkhtmltox'---
+---Fields in module 'base_report_wkhtmltox'---
+base_report_wkhtmltox / ir.actions.report        / report_type (False)           : NEW selection_keys: ['qweb-html', 'qweb-pdf', 'qweb-pdf-wkhtmltopdf', 'qweb-text'], mode: modify
+# NOTHING TO DO: keys were added to the selection, the existing values stay valid
+---XML records in module 'base_report_wkhtmltox'---

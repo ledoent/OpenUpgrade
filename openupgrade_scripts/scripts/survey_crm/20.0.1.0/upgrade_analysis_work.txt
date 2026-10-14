@@ -1,0 +1,8 @@
+---Models in module 'survey_crm'---
+---Fields in module 'survey_crm'---
+survey_crm   / crm.lead                 / origin_survey_id (many2one)   : DEL relation: survey.survey
+# NOTHING TO DO: the column is left in place for database_cleanup
+survey_crm   / crm.team                 / origin_survey_ids (one2many)  : DEL relation: survey.survey
+survey_crm   / survey.survey            / lead_ids (one2many)           : DEL relation: crm.lead
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+---XML records in module 'survey_crm'---

@@ -1,0 +1,148 @@
+---Models in module 'im_livechat'---
+obsolete model im_livechat.conversation.tag
+# NOTHING TO DO: the table is left in place for database_cleanup rather than dropped during an upgrade, which is the anti-pattern upstream rejected in #5630-5632
+---Fields in module 'im_livechat'---
+im_livechat  / chatbot.script           / source_id (many2one)          : DEL relation: utm.source, required
+# NEEDS A VERDICT: the database cannot settle this one
+im_livechat  / discuss.channel          / livechat_conversation_tag_ids (many2many): DEL relation: im_livechat.conversation.tag
+# NOTHING TO DO: 20.0 has no livechat_conversation_tag_ids column on discuss.channel, so nothing was left behind
+im_livechat  / discuss.channel          / livechat_looking_for_help_since_dt (datetime): NEW isfunction: function, stored
+im_livechat  / discuss.channel          / livechat_operator_id (many2one): DEL relation: res.partner
+# NEEDS A VERDICT: the database cannot settle this one
+im_livechat  / discuss.channel          / livechat_rating (selection)   : NEW selection_keys: ['1', '3', '5']
+# NOTHING TO DO: empty on all 34 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+im_livechat  / discuss.channel          / livechat_status (selection)   : selection_keys removed: [waiting]
+# NOTHING TO DO: no row holds waiting any more, so the key 20.0 dropped left nothing behind -- and check_selection_values gates that across every stored selection
+im_livechat  / discuss.channel          / rating_last_text (selection)  : DEL selection_keys: function
+im_livechat  / discuss.channel          / rating_last_value (float)     : DEL
+# NEEDS A VERDICT: the database cannot settle this one
+im_livechat  / im_livechat.channel      / rating_ids (one2many)         : DEL relation: rating.rating
+# NOTHING TO DO: 20.0 has no rating_ids column on im_livechat.channel, so nothing was left behind
+im_livechat  / im_livechat.channel      / rating_percentage_satisfaction (integer): type is now 'float' ('integer')
+# NOTHING TO DO: 20.0 has no rating_percentage_satisfaction column on im_livechat.channel, so nothing was left behind
+im_livechat  / im_livechat.channel.member.history / rating (float)                : is now stored
+# NOTHING TO DO: empty on all 55 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+im_livechat  / im_livechat.channel.member.history / rating (float)                : not related anymore
+im_livechat  / im_livechat.channel.member.history / rating (float)                : now a function
+im_livechat  / im_livechat.channel.member.history / rating (float)                : selection_keys is now '['1', '3', '5']' ('False')
+im_livechat  / im_livechat.channel.member.history / rating (float)                : type is now 'selection' ('float')
+im_livechat  / im_livechat.channel.member.history / rating_id (many2one)          : DEL relation: rating.rating
+# NEEDS A VERDICT: the database cannot settle this one
+im_livechat  / im_livechat.conversation.tag / color (integer)               : DEL
+# NOTHING TO DO: im_livechat.conversation.tag holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+im_livechat  / im_livechat.conversation.tag / conversation_ids (many2many)  : DEL relation: discuss.channel
+# NOTHING TO DO: 20.0 has no conversation_ids column on im_livechat.conversation.tag, so nothing was left behind
+im_livechat  / im_livechat.conversation.tag / name (char)                   : DEL required
+# NOTHING TO DO: im_livechat.conversation.tag holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+im_livechat  / im_livechat.expertise    / color (integer)               : NEW
+# NOTHING TO DO: empty on all 2 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+im_livechat  / mail.message             / chatbot_message_ids (one2many): NEW relation: chatbot.message
+# NOTHING TO DO: 20.0 has no chatbot_message_ids column on mail.message, so nothing was left behind
+---XML records in module 'im_livechat'---
+chatbot.script: im_livechat.chatbot_script_welcome_bot (noupdate switched)
+chatbot.script.answer: im_livechat.chatbot_script_welcome_step_dispatch_answer_documentation (noupdate switched)
+chatbot.script.answer: im_livechat.chatbot_script_welcome_step_dispatch_answer_just_looking (noupdate switched)
+chatbot.script.answer: im_livechat.chatbot_script_welcome_step_dispatch_answer_pricing (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_dispatch (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_documentation_exit (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_documentation_redirect (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_just_looking (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_pricing (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_pricing_email (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_pricing_forward_operator (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_pricing_noone_available (noupdate switched)
+chatbot.script.step: im_livechat.chatbot_script_welcome_step_welcome (noupdate switched)
+digest.digest: digest.digest_digest_default (noupdate switched)
+im_livechat.channel: im_livechat.im_livechat_channel_data (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: im_livechat.access_chatbot_message_user
+NEW ir.access: im_livechat.access_chatbot_script_answer_user
+NEW ir.access: im_livechat.access_chatbot_script_step_user
+NEW ir.access: im_livechat.access_chatbot_script_user
+NEW ir.access: im_livechat.access_im_livechat_channel_member_history_user
+NEW ir.access: im_livechat.access_livechat_channel_manager
+NEW ir.access: im_livechat.access_livechat_channel_rule_manager
+NEW ir.access: im_livechat.access_livechat_channel_rule_user
+NEW ir.access: im_livechat.access_livechat_channel_user
+NEW ir.access: im_livechat.access_livechat_expertise_internal_user
+NEW ir.access: im_livechat.access_livechat_expertise_livechat_manager
+NEW ir.access: im_livechat.access_livechat_support_report_channel
+NEW ir.access: im_livechat.ir_rule_discuss_call_history_im_livechat_group_user
+NEW ir.access: im_livechat.ir_rule_discuss_channel_im_livechat_group_user
+NEW ir.access: im_livechat.ir_rule_discuss_channel_member_im_livechat_group_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: im_livechat.discuss_channel_action (deleted domain)
+ir.actions.act_window: im_livechat.discuss_channel_action_from_livechat_channel (deleted domain)
+ir.actions.act_window: im_livechat.im_livechat_agent_history_action (deleted domain)
+NEW ir.actions.act_window: im_livechat.im_livechat_channel_config_action
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.act_window: im_livechat.discuss_channel_looking_for_help_action
+DEL ir.actions.act_window: im_livechat.livechat_conversation_tag_action
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.actions.act_window.view: im_livechat.im_livechat_channel_config_action_kanban
+NEW ir.actions.act_window.view: im_livechat.im_livechat_channel_config_action_list
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.act_window.view: im_livechat.discuss_channel_looking_for_help_action_form
+DEL ir.actions.act_window.view: im_livechat.discuss_channel_looking_for_help_action_kanban
+DEL ir.actions.act_window.view: im_livechat.discuss_channel_looking_for_help_action_list
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: im_livechat.access_chatbot_message_user
+DEL ir.model.access: im_livechat.access_chatbot_script_answer
+DEL ir.model.access: im_livechat.access_chatbot_script_answer_user
+DEL ir.model.access: im_livechat.access_chatbot_script_step_user
+DEL ir.model.access: im_livechat.access_chatbot_script_user
+DEL ir.model.access: im_livechat.access_im_livechat_channel_member_history_user
+DEL ir.model.access: im_livechat.access_livechat_channel_manager
+DEL ir.model.access: im_livechat.access_livechat_channel_rule_manager
+DEL ir.model.access: im_livechat.access_livechat_channel_rule_user
+DEL ir.model.access: im_livechat.access_livechat_channel_user
+DEL ir.model.access: im_livechat.access_livechat_conversation_tag_livechat_manager
+DEL ir.model.access: im_livechat.access_livechat_conversation_tag_livechat_user
+DEL ir.model.access: im_livechat.access_livechat_expertise_internal_user
+DEL ir.model.access: im_livechat.access_livechat_expertise_livechat_manager
+DEL ir.model.access: im_livechat.access_livechat_support_report_channel
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: im_livechat.constraint_chatbot_message_channel_id_user_raw_script_answer_id_idx (changed definition: is now 'False' ('INDEX (discuss_channel_id, user_raw_script_answer_id) WHERE user_raw_script_answer_id IS NOT NULL'))
+ir.model.constraint: im_livechat.constraint_chatbot_message_unique_mail_message_id (changed definition: is now 'False' ('unique (mail_message_id)'))
+ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_channel_type_create_date_idx (changed definition: is now 'False' ('INDEX (channel_type, create_date) WHERE channel_type = 'livechat''))
+ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_end_dt_idx (changed definition: is now 'False' ('INDEX (livechat_end_dt) WHERE livechat_end_dt IS NULL'))
+ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_end_dt_status_constraint (changed definition: is now 'False' ('CHECK(livechat_end_dt IS NULL or livechat_status IS NULL)'))
+ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_failure_idx (changed definition: is now 'False' ('INDEX (livechat_failure) WHERE livechat_failure IN ('no_answer', 'no_agent')'))
+ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_is_escalated_idx (changed definition: is now 'False' ('INDEX (livechat_is_escalated) WHERE livechat_is_escalated IS TRUE'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+NEW ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_looking_for_help_since_dt_constraint
+NEW ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_rating_constraint
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: im_livechat.constraint_im_livechat_channel_max_sessions_mode_greater_than_zero (changed definition: is now 'False' ('CHECK(max_sessions > 0)'))
+ir.model.constraint: im_livechat.constraint_im_livechat_channel_member_history_channel_id_guest_id_unique (changed definition: is now 'False' ('UNIQUE INDEX (channel_id, guest_id) WHERE guest_id IS NOT NULL'))
+ir.model.constraint: im_livechat.constraint_im_livechat_channel_member_history_channel_id_partner_id_unique (changed definition: is now 'False' ('UNIQUE INDEX (channel_id, partner_id) WHERE partner_id IS NOT NULL'))
+ir.model.constraint: im_livechat.constraint_im_livechat_channel_member_history_member_id_unique (changed definition: is now 'False' ('UNIQUE(member_id)'))
+ir.model.constraint: im_livechat.constraint_im_livechat_channel_member_history_partner_id_or_guest_3b134909 (changed definition: is now 'False' ('CHECK(partner_id IS NULL OR guest_id IS NULL)'))
+ir.model.constraint: im_livechat.constraint_im_livechat_expertise_name_unique (changed definition: is now 'False' ('UNIQUE INDEX (name)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.model.constraint: im_livechat.constraint_discuss_channel_livechat_operator_id
+DEL ir.model.constraint: im_livechat.constraint_im_livechat_conversation_tag_name_unique
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.rule: im_livechat.ir_rule_discuss_call_history_im_livechat_group_user (noupdate)
+DEL ir.rule: im_livechat.ir_rule_discuss_channel_im_livechat_group_user (noupdate)
+DEL ir.rule: im_livechat.ir_rule_discuss_channel_member_im_livechat_group_user (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.menu: im_livechat.livechat_channels_config
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.menu: im_livechat.menu_livechat_all_conversations
+DEL ir.ui.menu: im_livechat.menu_livechat_conversation_tag
+DEL ir.ui.menu: im_livechat.menu_livechat_looking_for_help
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: im_livechat.im_livechat_channel_config_view_kanban
+NEW ir.ui.view: im_livechat.im_livechat_channel_view_list
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.ui.view: im_livechat.livechat_email_template (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.ui.view: im_livechat.discuss_channel_looking_for_help_view_kanban
+DEL ir.ui.view: im_livechat.discuss_channel_looking_for_help_view_list
+DEL ir.ui.view: im_livechat.discuss_channel_looking_for_help_view_search
+DEL ir.ui.view: im_livechat.im_livechat_channel_conversation_tag_view_form
+DEL ir.ui.view: im_livechat.im_livechat_channel_conversation_tag_view_list
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW utm.source: im_livechat.utm_source_chatbot
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

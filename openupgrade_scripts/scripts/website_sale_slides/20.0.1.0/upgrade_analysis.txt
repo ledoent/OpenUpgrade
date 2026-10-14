@@ -1,0 +1,6 @@
+---Models in module 'website_sale_slides'---
+---Fields in module 'website_sale_slides'---
+website_sale_slides / product.template         / service_tracking (False)      : selection_keys added: [subcontract] (most likely nothing to do)
+---XML records in module 'website_sale_slides'---
+ir.actions.act_window: website_sale_slides.sale_report_action_slides (deleted domain)
+ir.model.constraint: website_sale_slides.constraint_slide_channel_product_id_check (changed definition: is now 'False' ('CHECK( enroll!='payment' OR product_id IS NOT NULL )'))

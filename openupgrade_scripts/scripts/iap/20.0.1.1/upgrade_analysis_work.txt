@@ -1,0 +1,47 @@
+---Models in module 'iap'---
+new model iap.service.pack
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
+---Fields in module 'iap'---
+iap          / iap.account              / balance (char)                : not stored anymore
+# NOTHING TO DO: no longer stored; the column is left in place for database_cleanup
+iap          / iap.account              / balance (char)                : now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+iap          / iap.account              / balance_amount (float)        : NEW
+# NOTHING TO DO: empty is the right value for existing records
+iap          / iap.service              / name (char)                   : now translatable
+# NOTHING TO DO: the ORM widens the column to jsonb and moves the old scalar
+# under the source language, carrying any translations already stored
+iap          / iap.service              / pack_ids (one2many)           : NEW relation: iap.service.pack
+# NOTHING TO DO: a one2many has no column of its own
+iap          / iap.service              / price_description (char)      : NEW translate
+# NOTHING TO DO: empty is the right value for existing records
+iap          / iap.service.pack         / credit (float)                : NEW required
+iap          / iap.service.pack         / iap_service_pack_identifier (integer): NEW required
+iap          / iap.service.pack         / name (char)                   : NEW required
+iap          / iap.service.pack         / price (float)                 : NEW required
+iap          / iap.service.pack         / service_id (many2one)         : NEW relation: iap.service, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+---XML records in module 'iap'---
+NEW ir.access: iap.access_iap_service_manager
+NEW ir.access: iap.access_iap_service_pack
+NEW ir.access: iap.access_iap_service_user
+NEW ir.access: iap.user_iap_account
+NEW ir.access: iap.user_iap_account_1
+DEL ir.model.access: iap.access_client_iap_account_manager
+DEL ir.model.access: iap.access_client_iap_account_user
+DEL ir.model.access: iap.access_iap_service_manager
+DEL ir.model.access: iap.access_iap_service_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: iap.constraint_iap_service_pack_unique_iap_service_pack_identifier
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: iap.constraint_iap_service_unique_technical_name (changed definition: is now 'False' ('UNIQUE(technical_name)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: iap.user_iap_account (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: iap.iap_service_pack_view_tree
+NEW ir.ui.view: iap.view_iap_users_tree
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

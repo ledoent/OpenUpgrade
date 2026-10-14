@@ -1,0 +1,25 @@
+---Models in module 'hr_fleet'---
+---Fields in module 'hr_fleet'---
+hr_fleet     / fleet.vehicle            / mobility_card (char)          : DEL
+hr_fleet     / hr.employee              / mobility_card (char)          : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+hr_fleet     / mail.activity.plan.template / responsible_type (False)      : DEL selection_keys: ['coach', 'employee', 'fleet_manager', 'manager', 'on_demand', 'other'], mode: modify
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'hr_fleet'---
+NEW ir.access: hr_fleet.hr_fleet_rule_vehicle_visibility_hr_officier
+DEL ir.model.access: hr_fleet.hr_fleet_vehicle_access_right_hr_officer
+DEL ir.rule: hr_fleet.hr_fleet_rule_vehicle_visibility_hr_officier (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: hr_fleet.hr_employee_public_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: hr_fleet.hr_departure_wizard_view_form
+DEL ir.ui.view: hr_fleet.view_employee_filter
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL mail.activity.plan.template: hr_fleet.offboarding_fleet (noupdate)
+# NOTHING TO DO: a noupdate record the module stops shipping. _process_end
+# only removes stale data rows whose noupdate is false, so it survives --
+# 583 of the 753 such records on this seed do. Writing an orphan cleanup
+# is the anti-pattern upstream rejected in #5630-5632: OpenUpgrade
+# preserves information and database_cleanup removes residue later, once
+# an administrator can see what would go

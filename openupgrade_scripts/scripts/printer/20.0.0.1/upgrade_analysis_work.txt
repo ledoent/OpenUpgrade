@@ -1,0 +1,28 @@
+---Models in module 'printer'---
+new model printer.printer
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
+new model select.printers.wizard [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'printer'---
+printer      / ir.actions.report        / printer_ids (many2many)       : NEW relation: printer.printer
+printer      / printer.printer          / ip_address (char)             : NEW
+# NOTHING TO DO: empty is the right value for existing records
+printer      / printer.printer          / name (char)                   : NEW required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+printer      / printer.printer          / report_ids (many2many)        : NEW relation: ir.actions.report
+# NOTHING TO DO: empty is the right value for existing records
+printer      / printer.printer          / type (selection)              : NEW required, selection_keys: ['epos', 'zpl'], hasdefault: default
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+---XML records in module 'printer'---
+NEW ir.access: printer.access_printer_user
+NEW ir.access: printer.access_select_printers_wizard_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: printer.manage_printers_action
+NEW ir.actions.client: printer.action_reset_linked_printers
+NEW ir.ui.view: printer.act_report_xml_view_printer
+NEW ir.ui.view: printer.printer_view_form
+NEW ir.ui.view: printer.printer_view_list
+NEW ir.ui.view: printer.view_select_printers_wizard
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

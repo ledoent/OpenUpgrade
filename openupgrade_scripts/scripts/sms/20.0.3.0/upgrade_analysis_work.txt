@@ -1,0 +1,61 @@
+---Models in module 'sms'---
+---Fields in module 'sms'---
+sms          / ir.actions.server        / sms_method (selection)        : DEL selection_keys: ['comment', 'note', 'sms']
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+sms          / ir.actions.server        / state (False)                 : selection_keys added: [log_note] (most likely nothing to do)
+sms          / mail.message             / message_type (False)          : selection_keys added: [tracking] (most likely nothing to do)
+sms          / mail.notification        / failure_type (False)          : selection_keys added: [sms_database_non_active] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+sms          / mail.scheduled.message   / send_method (selection)       : NEW required, selection_keys: ['email', 'sms'], hasdefault: default
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+sms          / res.users                / message_has_sms_error (boolean): not related anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+sms          / res.users                / message_has_sms_error (boolean): now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+sms          / sms.sms                  / failure_type (selection)      : selection_keys added: [sms_database_non_active] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+sms          / sms.sms                  / sms_type (selection)          : NEW selection_keys: ['alert', 'marketing']
+# NOTHING TO DO: a new field, so empty is the right value for existing records
+---XML records in module 'sms'---
+NEW ir.access: sms.access_sms_account_registration_phone_number_wizard_system
+NEW ir.access: sms.access_sms_account_sender_name_wizard_system
+NEW ir.access: sms.access_sms_account_verification_code_wizard_system
+NEW ir.access: sms.access_sms_composer
+NEW ir.access: sms.access_sms_sms_system
+NEW ir.access: sms.access_sms_template_preview
+NEW ir.access: sms.access_sms_template_reset
+NEW ir.access: sms.access_sms_template_user
+NEW ir.access: sms.access_sms_tracker_system
+NEW ir.access: sms.ir_rule_sms_template_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: sms.sms_sms_action (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+ir.cron: sms.ir_cron_sms_scheduler_action (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL ir.model.access: sms.access_sms_account_registration_phone_number_wizard_system
+DEL ir.model.access: sms.access_sms_account_sender_name_wizard_system
+DEL ir.model.access: sms.access_sms_account_verification_code_wizard_system
+DEL ir.model.access: sms.access_sms_composer
+DEL ir.model.access: sms.access_sms_sms_all
+DEL ir.model.access: sms.access_sms_sms_system
+DEL ir.model.access: sms.access_sms_template_all
+DEL ir.model.access: sms.access_sms_template_preview
+DEL ir.model.access: sms.access_sms_template_reset
+DEL ir.model.access: sms.access_sms_template_system
+DEL ir.model.access: sms.access_sms_template_user
+DEL ir.model.access: sms.access_sms_tracker_all
+DEL ir.model.access: sms.access_sms_tracker_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: sms.constraint_sms_sms_uuid_unique (changed definition: is now 'False' ('unique(uuid)'))
+ir.model.constraint: sms.constraint_sms_tracker_sms_uuid_unique (changed definition: is now 'False' ('unique(sms_uuid)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: sms.ir_rule_sms_template_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: sms.sms_composer_view_form_template_save
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

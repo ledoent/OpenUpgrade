@@ -1,0 +1,11 @@
+---Models in module 'pos_online_payment'---
+---Fields in module 'pos_online_payment'---
+pos_online_payment / pos.payment.method       / is_online_payment (boolean)   : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'pos_online_payment'---
+NEW ir.access: pos_online_payment.payment_provider_pos_manager
+DEL ir.model.access: pos_online_payment.payment_provider_pos_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: pos_online_payment.pos_payment_status
+NEW ir.ui.view: pos_online_payment.pos_state_header
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

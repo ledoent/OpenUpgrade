@@ -1,0 +1,27 @@
+---Models in module 'payment_razorpay'---
+---Fields in module 'payment_razorpay'---
+---XML records in module 'payment_razorpay'---
+NEW payment.method: payment_razorpay.payment_method_amex
+NEW payment.method: payment_razorpay.payment_method_card
+NEW payment.method: payment_razorpay.payment_method_diners
+NEW payment.method: payment_razorpay.payment_method_discover
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_razorpay.payment_method_emi_india [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_razorpay.payment_method_fpx
+NEW payment.method: payment_razorpay.payment_method_maestro
+NEW payment.method: payment_razorpay.payment_method_mastercard
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_razorpay.payment_method_netbanking [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_razorpay.payment_method_paylater_india [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_razorpay.payment_method_paynow
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_razorpay.payment_method_rupay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_razorpay.payment_method_upi
+NEW payment.method: payment_razorpay.payment_method_visa
+NEW payment.method: payment_razorpay.payment_method_wallets_india
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_razorpay (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

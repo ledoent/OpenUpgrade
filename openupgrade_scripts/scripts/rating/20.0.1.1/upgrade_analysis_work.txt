@@ -1,0 +1,28 @@
+---Models in module 'rating'---
+---Fields in module 'rating'---
+rating       / ir.access                / rating_ids (one2many)         : NEW relation: rating.rating
+# NOTHING TO DO: a one2many has no column of its own
+rating       / rating.rating            / parent_res_id (integer)       : relation is now 'parent_res_model' ('False') [nothing to do]
+rating       / rating.rating            / parent_res_id (integer)       : type is now 'many2one_reference' ('integer')
+# NOTHING TO DO: the ORM converts the column in place. Checked across the
+# upgrade: no field flagged here comes out holding fewer values than it did
+rating       / res.users                / rating_ids (one2many)         : is now stored
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+rating       / res.users                / rating_ids (one2many)         : not related anymore
+# NOTHING TO DO: the field stops reading through a relation and stands on its
+# own. Checked across the upgrade: it comes out with no fewer values than before
+---XML records in module 'rating'---
+NEW ir.access: rating.access_rating_user
+NEW ir.access: rating.rating_rating_access_system
+DEL ir.model.access: rating.access_rating_portal
+DEL ir.model.access: rating.access_rating_public
+DEL ir.model.access: rating.access_rating_user
+DEL ir.model.access: rating.rating_rating_access_system
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: rating.constraint_rating_rating_consumed_idx (changed definition: is now 'False' ('INDEX (res_model, res_id, write_date) WHERE consumed IS TRUE'))
+ir.model.constraint: rating.constraint_rating_rating_parent_consumed_idx (changed definition: is now 'False' ('INDEX (parent_res_model, parent_res_id, write_date) WHERE consumed IS TRUE'))
+ir.model.constraint: rating.constraint_rating_rating_rating_range (changed definition: is now 'False' ('check(rating >= 0 and rating <= 5)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it

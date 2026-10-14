@@ -1,0 +1,28 @@
+---Models in module 'account_edi_ubl_cii'---
+---Fields in module 'account_edi_ubl_cii'---
+account_edi_ubl_cii / account.move             / has_grouped_lines (boolean)   : NEW
+# NOTHING TO DO: empty on all 3223 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+account_edi_ubl_cii / account.tax              / ubl_cii_tax_exemption_reason (char): NEW
+# NOTHING TO DO: empty on all 4730 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+account_edi_ubl_cii / res.partner              / peppol_eas (selection)        : DEL selection_keys: ['0002', '0007', '0009', '0037', '0060', '0088', '0096', '0097', '0106', '0130', '0135', '0142', '0151', '0183', '0184', '0188', '0190', '0191', '0192', '0193', '0195', '0196', '0198', '0199', '0200', '0201', '0202', '0204', '0208', '0209', '0210', '0211', '0213', '0216', '0218', '0221', '0225', '0230', '0235', '0240', '0244', '0245', '0246', '9910', '9913', '9914', '9915', '9918', '9919', '9920', '9922', '9923', '9924', '9925', '9926', '9927', '9928', '9929', '9930', '9931', '9932', '9933', '9934', '9935', '9936', '9937', '9938', '9939', '9940', '9941', '9942', '9943', '9944', '9945', '9946', '9947', '9948', '9949', '9950', '9951', '9952', '9953', '9955', '9957', '9959', 'AN', 'AQ', 'AS', 'AU', 'EM']
+# NOTHING TO DO -- DECLINED, not overlooked. 16 of 73 partners came out with no
+# routing_scheme and 3 more carry a different one, but BOTH versions declare the
+# field a stored compute with readonly=False: most of the gap is 20.0
+# re-deriving rather than data being lost, and nothing in the database tells a
+# hand-entered override from a computed value. check_rename_pairs carries the
+# same decision in its ACKNOWLEDGED list
+account_edi_ubl_cii / res.partner              / peppol_endpoint (char)        : DEL
+# NOTHING TO DO -- DECLINED with peppol_eas above: routing_endpoint is computed
+# alongside routing_scheme, so the same reasoning applies
+account_edi_ubl_cii / res.partner              / routing_endpoint (char)       : NEW hasdefault: compute
+# NOTHING TO DO: 20.0 filled it itself -- 59 distinct values over 72 of 291 rows, so a compute or a related field did the work
+account_edi_ubl_cii / res.partner              / routing_scheme (selection)    : NEW selection_keys: ['0002', '0007', '0009', '0037', '0060', '0088', '0096', '0097', '0106', '0130', '0135', '0142', '0151', '0183', '0184', '0188', '0190', '0191', '0192', '0193', '0195', '0196', '0198', '0199', '0200', '0201', '0202', '0204', '0208', '0209', '0210', '0211', '0213', '0216', '0218', '0221', '0225', '0230', '0235', '0240', '0244', '0245', '0246', '9910', '9913', '9914', '9915', '9918', '9919', '9920', '9922', '9923', '9924', '9925', '9926', '9927', '9928', '9929', '9930', '9931', '9932', '9933', '9934', '9935', '9936', '9937', '9938', '9939', '9940', '9941', '9942', '9943', '9944', '9945', '9946', '9947', '9948', '9949', '9950', '9951', '9952', '9953', '9955', '9957', '9959', 'AN', 'AQ', 'AS', 'AU', 'EM'], hasdefault: compute
+# NOTHING TO DO: 20.0 filled it itself -- 33 distinct values over 72 of 291 rows, so a compute or a related field did the work
+account_edi_ubl_cii / uom.uom                  / unece_code (char)             : NEW
+# NOTHING TO DO: 20.0 filled it itself -- 30 distinct values over 30 of 56 rows, so a compute or a related field did the work
+---XML records in module 'account_edi_ubl_cii'---
+ir.config_parameter: account_edi_ubl_cii.disable_pdf_in_xml (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.model.constraint: account_edi_ubl_cii.constraint_uom_uom_unece_code_unique
+NEW ir.ui.view: account_edi_ubl_cii.uom_uom_view_form_inherit
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

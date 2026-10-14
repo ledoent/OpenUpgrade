@@ -1,0 +1,45 @@
+---Models in module 'l10n_es'---
+---Fields in module 'l10n_es'---
+l10n_es      / account.move             / l10n_es_invoice_type (selection): NEW selection_keys: function, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_es      / account.move             / l10n_es_is_simplified (boolean): DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_es      / account.move             / l10n_es_original_invoice_credited (char): NEW stored: False
+# NOTHING TO DO: not stored
+l10n_es      / account.move             / l10n_es_regime_code (selection): NEW selection_keys: function, hasdefault: compute
+l10n_es      / account.move             / l10n_es_regime_code_additional (selection): NEW selection_keys: function, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_es      / account.tax              / l10n_es_applicability (selection): previously in module l10n_es_edi_verifactu
+# NOTHING TO DO: the field only changed owning module, the column is the same
+l10n_es      / account.tax              / l10n_es_regime_code (selection): NEW selection_keys: function, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_es      / res.company              / l10n_es_special_vat_regime (selection): NEW selection_keys: ['cash_basis', 'equivalence_surcharge', 'reagyp', 'simplified']
+# NOTHING TO DO: a new field, so empty is the right value for existing records
+---XML records in module 'l10n_es'---
+NEW account.account.tag: l10n_es.account_tag_mod349_A
+NEW account.account.tag: l10n_es.account_tag_mod349_C
+NEW account.account.tag: l10n_es.account_tag_mod349_D
+NEW account.account.tag: l10n_es.account_tag_mod349_E
+NEW account.account.tag: l10n_es.account_tag_mod349_H
+NEW account.account.tag: l10n_es.account_tag_mod349_I
+NEW account.account.tag: l10n_es.account_tag_mod349_M
+NEW account.account.tag: l10n_es.account_tag_mod349_R
+NEW account.account.tag: l10n_es.account_tag_mod349_S
+NEW account.account.tag: l10n_es.account_tag_mod349_T
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_es.report_invoice_document
+DEL product.product: l10n_es.product_dua_valuation_10
+DEL product.product: l10n_es.product_dua_valuation_21
+DEL product.product: l10n_es.product_dua_valuation_4
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.country.group: l10n_es.mainland_es (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

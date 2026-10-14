@@ -1,0 +1,69 @@
+---Models in module 'l10n_vn_edi_viettel'---
+obsolete model l10n_vn_edi_viettel.cancellation [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+obsolete model l10n_vn_edi_viettel.sinvoice.template
+# NOTHING TO DO: the model is gone from 20.0; OpenUpgrade leaves its table
+# in place for database_cleanup rather than dropping it during an upgrade
+---Fields in module 'l10n_vn_edi_viettel'---
+l10n_vn_edi_viettel / account.journal          / l10n_vn_edi_default_symbol_id (many2one): NEW relation: l10n_vn_edi_viettel.sinvoice.symbol
+# NOTHING TO DO: empty is the right value for existing records
+l10n_vn_edi_viettel / account.move             / l10n_vn_edi_invoice_state (selection): now a function
+# NOTHING TO DO: the field is stored in 20.0 and filled by its own compute.
+# Every field the analysis flags that is stored and entirely empty afterwards
+# was checked one by one; the only pair whose emptiness meant a lost value was
+# stock_delivery's hs_code and country_of_origin, which now have a script
+l10n_vn_edi_viettel / account.move             / l10n_vn_edi_invoice_state (selection): selection_keys removed: [canceled]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.symbol / active (boolean)              : NEW hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.symbol / company_id (many2one)         : NEW relation: res.company, required
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.symbol / invoice_template_code (char)  : NEW required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.symbol / invoice_template_id (many2one): DEL relation: l10n_vn_edi_viettel.sinvoice.template, required
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.template / invoice_symbols_ids (one2many): DEL relation: l10n_vn_edi_viettel.sinvoice.symbol
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.template / name (char)                   : DEL required
+l10n_vn_edi_viettel / l10n_vn_edi_viettel.sinvoice.template / template_invoice_type (selection): DEL required, selection_keys: ['1', '2', '3', '4', '5', '6']
+# NOTHING TO DO: a dropped field. The column is left in place for
+# database_cleanup, and its NOT NULL goes with the field
+l10n_vn_edi_viettel / res.company              / l10n_vn_edi_symbol_id (many2one): NEW relation: l10n_vn_edi_viettel.sinvoice.symbol
+# NOTHING TO DO: empty is the right value for existing records
+l10n_vn_edi_viettel / res.partner              / invoice_edi_format (False)    : selection_keys added: [ubl_21_fr, ubl_gr], removed: [oioubl_201, pint_sg, ubl_tr]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+l10n_vn_edi_viettel / res.partner              / l10n_vn_edi_symbol (many2one) : DEL relation: l10n_vn_edi_viettel.sinvoice.symbol
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'l10n_vn_edi_viettel'---
+NEW ir.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_symbol
+NEW ir.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_symbol_manager
+NEW ir.access: l10n_vn_edi_viettel.l10n_vn_edi_viettel_sinvoice_symbol_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.actions.act_window: l10n_vn_edi_viettel.action_sinvoice_template
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.actions.server: l10n_vn_edi_viettel.l10n_vn_edi_fetch_tax_code
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_cancellation
+DEL ir.model.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_symbol
+DEL ir.model.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_symbol_manager
+DEL ir.model.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_template
+DEL ir.model.access: l10n_vn_edi_viettel.access_l10n_vn_edi_viettel_sinvoice_template_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_vn_edi_viettel.constraint_l10n_vn_edi_viettel_sinvoice_symbol_name_template_uniq (changed definition: is now 'False' ('unique (name, invoice_template_id)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.model.constraint: l10n_vn_edi_viettel.constraint_l10n_vn_edi_viettel_sinvoice_template_name_uniq
+DEL ir.ui.menu: l10n_vn_edi_viettel.l10n_vn_edi_sinvoice_templates
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: l10n_vn_edi_viettel.account_journal_form_inherit_l10n_vn_edi_viettel
+NEW ir.ui.view: l10n_vn_edi_viettel.view_l10n_vn_edi_viettel_sinvoice_symbol_form
+NEW ir.ui.view: l10n_vn_edi_viettel.view_l10n_vn_edi_viettel_sinvoice_symbol_list
+NEW ir.ui.view: l10n_vn_edi_viettel.view_l10n_vn_edi_viettel_sinvoice_symbol_search
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_vn_edi_viettel.l10n_vn_edi_cancellation_form
+DEL ir.ui.view: l10n_vn_edi_viettel.res_partner_view_from_inherit_l10n_vn_edi
+# NOTHING TO DO: the record is not noupdate, so the module update removes it

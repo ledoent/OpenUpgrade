@@ -1,0 +1,25 @@
+---Models in module 'crm_livechat'---
+---Fields in module 'crm_livechat'---
+crm_livechat / chatbot.script.step      / step_type (False)             : selection_keys removed: [create_lead_and_forward]
+# NOTHING TO DO: the keys changed but no row holds one 20.0 does not declare --
+# the selection gate reads ir_model_fields_selection and reports the field clean
+---XML records in module 'crm_livechat'---
+chatbot.script: crm_livechat.chatbot_script_lead_generation_bot (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_forward_operator (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_noone_available (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_lead_generation_step_welcome (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_welcome_step_just_looking (noupdate switched)
+chatbot.script.step: crm_livechat.chatbot_script_welcome_step_pricing_email (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: crm_livechat.ir_rule_discuss_channel_crm_lead
+NEW ir.access: crm_livechat.ir_rule_discuss_channel_member_crm_lead
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: crm_livechat.constraint_discuss_channel_has_crm_lead_index (changed definition: is now 'False' ('INDEX (has_crm_lead) WHERE has_crm_lead IS TRUE'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: crm_livechat.ir_rule_discuss_channel_crm_lead (noupdate)
+DEL ir.rule: crm_livechat.ir_rule_discuss_channel_member_crm_lead (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL utm.source: crm_livechat.utm_source_livechat [renamed to utm module] (noupdate)
+# NOTHING TO DO: the record changes owning module, which apriori declares and
+# base's update_module_names performs -- it re-points every ir_model_data row
+# rather than recreating the record, so the ids and the data survive

@@ -1,0 +1,134 @@
+---Models in module 'stock_account'---
+obsolete model stock_account.stock.valuation.report (renamed to account.stock.valuation.report in module account) [abstract]
+# NOTHING TO DO: an abstract model has no table
+---Fields in module 'stock_account'---
+stock_account / account.account          / account_stock_expense_id (many2one): module is now 'account' ('stock_account')
+stock_account / account.account          / account_stock_variation_id (many2one): module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / account.move             / closing_datetime (datetime)   : NEW
+# NOTHING TO DO: empty is the right value for existing records
+stock_account / account.move             / product_value_id (one2many)   : NEW relation: product.value
+# NOTHING TO DO: a one2many has no column of its own
+stock_account / account.move.line        / cogs_origin_id (many2one)     : module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / account.move.line        / stock_move_id (many2one)      : NEW relation: stock.move
+# NOTHING TO DO: empty is the right value for existing records
+stock_account / product.category         / account_stock_variation_id (many2one): module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / product.category         / property_cost_method (False)  : NEW selection_keys: ['average', 'fifo', 'standard'], mode: modify
+# NOTHING TO DO: keys were added to the selection, the existing values stay valid
+stock_account / product.category         / property_cost_method (selection): module is now 'account' ('stock_account')
+stock_account / product.category         / property_price_difference_account_id (many2one): module is now 'account' ('stock_account')
+stock_account / product.category         / property_stock_journal (many2one): module is now 'account' ('stock_account')
+stock_account / product.category         / property_stock_valuation_account_id (many2one): module is now 'account' ('stock_account')
+stock_account / product.category         / property_valuation (selection): module is now 'account' ('stock_account')
+stock_account / product.product          / cost_method (selection)       : module is now 'account' ('stock_account')
+stock_account / product.product          / valuation (selection)         : module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / product.template         / cost_method (False)           : NEW selection_keys: ['average', 'fifo', 'standard'], mode: modify
+# NOTHING TO DO: keys were added to the selection, the existing values stay valid
+stock_account / product.template         / cost_method (selection)       : module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / product.template         / property_price_difference_account_id (many2one): DEL relation: account.account
+# NOTHING TO DO: the column is left in place for database_cleanup
+stock_account / product.template         / valuation (selection)         : module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / product.value            / account_move_id (many2one)    : NEW relation: account.move
+stock_account / product.value            / new_cost (float)              : NEW
+# NOTHING TO DO: empty is the right value for existing records
+stock_account / product.value            / new_value (float)             : NEW hasdefault: default
+# NOTHING TO DO -- and what is NOT carried is worth naming, because the
+# obvious repair is wrong. 20.0 splits product.value into a before/after pair
+# (old_value/new_value, old_cost/new_cost, quantity) and computes `adjustment`
+# from it: new_value - old_value, or (new_cost - old_cost) * quantity. 19.0
+# recorded only `value`, the delta itself, and that survives intact -- 3683
+# rows, 76 distinct. The pair defaults to 0.0 and quantity stays NULL, so
+# `adjustment` reads 0 for the entire valuation history. It cannot be repaired:
+# setting old_value = 0 and new_value = value would make adjustment come out
+# right while asserting every product had previously been worth nothing. OCA
+# 19.0 #5881 is this same trap one version down -- product.value and
+# stock.valuation.layer do not mean the same thing
+stock_account / product.value            / old_cost (float)              : NEW
+# NOTHING TO DO: empty is the right value for existing records
+stock_account / product.value            / old_value (float)             : NEW hasdefault: default
+# NOTHING TO DO -- and what is NOT carried is worth naming, because the
+# obvious repair is wrong. 20.0 splits product.value into a before/after pair
+# (old_value/new_value, old_cost/new_cost, quantity) and computes `adjustment`
+# from it: new_value - old_value, or (new_cost - old_cost) * quantity. 19.0
+# recorded only `value`, the delta itself, and that survives intact -- 3683
+# rows, 76 distinct. The pair defaults to 0.0 and quantity stays NULL, so
+# `adjustment` reads 0 for the entire valuation history. It cannot be repaired:
+# setting old_value = 0 and new_value = value would make adjustment come out
+# right while asserting every product had previously been worth nothing. OCA
+# 19.0 #5881 is this same trap one version down -- product.value and
+# stock.valuation.layer do not mean the same thing
+stock_account / product.value            / quantity (float)              : NEW
+# NOTHING TO DO: empty is the right value for existing records
+stock_account / res.company              / account_stock_journal_id (many2one): module is now 'account' ('stock_account')
+stock_account / res.company              / account_stock_valuation_id (many2one): module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / res.company              / cost_method (False)           : NEW selection_keys: ['average', 'fifo', 'standard'], mode: modify
+# NOTHING TO DO: keys were added to the selection, the existing values stay valid
+stock_account / res.company              / cost_method (selection)       : module is now 'account' ('stock_account')
+stock_account / res.company              / inventory_period (selection)  : module is now 'account' ('stock_account')
+stock_account / res.company              / inventory_valuation (selection): module is now 'account' ('stock_account')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+stock_account / stock.move               / invoice_line_ids (one2many)   : NEW relation: account.move.line
+stock_account / stock.move               / product_value_ids (one2many)  : NEW relation: product.value
+# NOTHING TO DO: a one2many has no column of its own
+---XML records in module 'stock_account'---
+NEW ir.access: stock_account.access_account_account_stock_manager
+NEW ir.access: stock_account.access_account_journal_stock_manager
+NEW ir.access: stock_account.access_product_value_account_manager
+NEW ir.access: stock_account.access_product_value_stock_manager
+NEW ir.access: stock_account.access_stock_avco_report_account_readonly
+NEW ir.access: stock_account.access_stock_avco_report_stock_manager
+NEW ir.access: stock_account.access_stock_move_invoicing_payments
+NEW ir.access: stock_account.access_stock_move_invoicing_payments_readonly
+NEW ir.access: stock_account.access_stock_picking_invoicing_payments
+NEW ir.access: stock_account.access_stock_picking_invoicing_payments_readonly
+NEW ir.access: stock_account.product_value_rule
+NEW ir.access: stock_account.stock_avco_report_rule
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: stock_account.product_value_list_action
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: stock_account.stock_avco_report_action (deleted domain)
+ir.actions.act_window: stock_account.stock_move_valuation_action (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.actions.client: stock_account.action_report_stock_valuation [renamed to account module]
+DEL ir.cron: stock_account.ir_cron_post_stock_valuation [renamed to account module] (noupdate)
+# NOTHING TO DO: the record changes owning module, which apriori declares and
+# base's update_module_names performs -- it re-points every ir_model_data row
+# rather than recreating the record, so the ids and the data survive
+NEW ir.filters: stock_account.filter_stock_move_aging_report
+NEW ir.filters: stock_account.filter_stock_move_intercompany_deliveries
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: stock_account.access_account_account_stock_manager
+DEL ir.model.access: stock_account.access_account_journal_stock_manager
+DEL ir.model.access: stock_account.access_stock_avco_report_account_readonly
+DEL ir.model.access: stock_account.access_stock_avco_report_stock_manager
+DEL ir.model.access: stock_account.access_stock_move_invoicing_payments
+DEL ir.model.access: stock_account.access_stock_move_invoicing_payments_readonly
+DEL ir.model.access: stock_account.access_stock_picking_invoicing_payments
+DEL ir.model.access: stock_account.access_stock_picking_invoicing_payments_readonly
+DEL ir.model.access: stock_account.access_stock_product_value
+DEL ir.rule: stock_account.product_value_rule (noupdate)
+DEL ir.rule: stock_account.stock_avco_report_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.menu: stock_account.valuation_adjustments_menu
+NEW ir.ui.view: stock_account.product_template_form_view_stock_account
+NEW ir.ui.view: stock_account.product_value_list_view
+NEW ir.ui.view: stock_account.product_value_search_view
+NEW ir.ui.view: stock_account.stock_move_view_pivot
+NEW ir.ui.view: stock_account.view_move_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: stock_account.product_product_view_list_at_date
+DEL ir.ui.view: stock_account.view_account_form
+DEL ir.ui.view: stock_account.view_category_property_form
+DEL ir.ui.view: stock_account.view_category_property_form_stock
+DEL ir.ui.view: stock_account.view_picking_form
+DEL ir.ui.view: stock_account.view_stock_return_picking_form_inherit_stock_account
+DEL ir.ui.view: stock_account.view_template_property_form_stock_account
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+res.groups: stock_account.group_lot_on_invoice (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

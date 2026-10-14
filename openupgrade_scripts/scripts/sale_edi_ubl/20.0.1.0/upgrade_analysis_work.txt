@@ -1,0 +1,16 @@
+---Models in module 'sale_edi_ubl'---
+new model customer.product.reference
+# NOTHING TO DO: a new model, so its table is created empty and has no rows to carry
+---Fields in module 'sale_edi_ubl'---
+sale_edi_ubl / customer.product.reference / customer_product_reference (char): NEW required
+sale_edi_ubl / customer.product.reference / partner_id (many2one)         : NEW relation: res.partner, required
+sale_edi_ubl / customer.product.reference / product_id (many2one)         : NEW relation: product.product, required
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+sale_edi_ubl / sale.order.line          / edi_customer_product_ref (char): NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'sale_edi_ubl'---
+NEW ir.access: sale_edi_ubl.access_product_partner_reference
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: sale_edi_ubl.constraint_customer_product_reference_product_partner_unique
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

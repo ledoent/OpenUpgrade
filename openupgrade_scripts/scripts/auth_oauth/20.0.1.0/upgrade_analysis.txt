@@ -1,0 +1,10 @@
+---Models in module 'auth_oauth'---
+---Fields in module 'auth_oauth'---
+auth_oauth   / auth.oauth.provider      / icon (char)                   : NEW hasdefault: default
+---XML records in module 'auth_oauth'---
+auth.oauth.provider: auth_oauth.provider_facebook (noupdate switched)
+auth.oauth.provider: auth_oauth.provider_google (noupdate switched)
+auth.oauth.provider: auth_oauth.provider_openerp (noupdate switched)
+NEW ir.access: auth_oauth.access_auth_oauth_provider
+DEL ir.model.access: auth_oauth.access_auth_oauth_provider
+ir.model.constraint: auth_oauth.constraint_res_users_uniq_users_oauth_provider_oauth_uid (changed definition: is now 'False' ('unique(oauth_provider_id, oauth_uid)'))

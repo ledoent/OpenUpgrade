@@ -1,0 +1,5 @@
+---Models in module 'mail_bot'---
+---Fields in module 'mail_bot'---
+---XML records in module 'mail_bot'---
+res.users: base.user_root (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

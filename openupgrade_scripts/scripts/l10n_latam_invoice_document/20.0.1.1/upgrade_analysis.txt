@@ -1,0 +1,40 @@
+---Models in module 'l10n_latam_invoice_document'---
+obsolete model l10n_latam.identification.type
+---Fields in module 'l10n_latam_invoice_document'---
+l10n_latam_base / l10n_latam.identification.type / active (boolean)              : DEL
+l10n_latam_base / l10n_latam.identification.type / country_id (many2one)         : DEL relation: res.country
+l10n_latam_base / l10n_latam.identification.type / description (char)            : DEL
+l10n_latam_base / l10n_latam.identification.type / is_vat (boolean)              : DEL
+l10n_latam_base / l10n_latam.identification.type / name (char)                   : DEL required
+l10n_latam_base / l10n_latam.identification.type / sequence (integer)            : DEL
+l10n_latam_base / res.partner              / l10n_latam_identification_type_id (many2one): DEL relation: l10n_latam.identification.type
+---XML records in module 'l10n_latam_invoice_document'---
+NEW ir.access: l10n_latam_invoice_document.access_l10n_latam_document_type
+NEW ir.access: l10n_latam_invoice_document.access_l10n_latam_document_type_account_manager
+ir.actions.act_window: l10n_latam_invoice_document.action_document_type (deleted domain)
+DEL ir.actions.act_window: l10n_latam_base.action_l10n_latam_identification_type
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_all
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_manager
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_portal
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_public
+DEL ir.model.access: l10n_latam_invoice_document.access_l10n_latam_document_type
+DEL ir.model.access: l10n_latam_invoice_document.access_l10n_latam_document_type_account_manager
+ir.model.constraint: l10n_latam_invoice_document.constraint_account_move_unique_name (changed definition: is now 'False' ('UNIQUE INDEX (name, journal_id) WHERE (state = 'posted' AND name != '/' AND (l10n_latam_document_type_id IS NULL OR move_type NOT IN ('in_invoice', 'in_refund', 'in_receipt')))'))
+ir.model.constraint: l10n_latam_invoice_document.constraint_account_move_unique_name_latam (changed definition: is now 'False' ('UNIQUE INDEX (name, commercial_partner_id, l10n_latam_document_type_id, company_id) WHERE (state = 'posted' AND name != '/' AND (l10n_latam_document_type_id IS NOT NULL AND move_type IN ('in_invoice', 'in_refund', 'in_receipt')))'))
+DEL ir.ui.menu: l10n_latam_base.menu_l10n_latam_identification_type
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_center
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_compact
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_dual
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_footer_content
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_lines
+DEL ir.ui.view: l10n_latam_base.address_form_fields
+DEL ir.ui.view: l10n_latam_base.view_l10n_latam_identification_type_search
+DEL ir.ui.view: l10n_latam_base.view_l10n_latam_identification_type_tree
+DEL ir.ui.view: l10n_latam_base.view_partner_latam_form
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_bold
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_boxed
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_striped
+DEL l10n_latam.identification.type: l10n_latam_base.it_fid
+DEL l10n_latam.identification.type: l10n_latam_base.it_pass
+DEL l10n_latam.identification.type: l10n_latam_base.it_vat
+DEL res.country.group: l10n_latam_base.latam (noupdate)

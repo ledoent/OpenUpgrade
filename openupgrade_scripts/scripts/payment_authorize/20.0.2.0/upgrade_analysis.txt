@@ -1,0 +1,13 @@
+---Models in module 'payment_authorize'---
+---Fields in module 'payment_authorize'---
+payment_authorize / payment.provider         / authorize_webhook_id (char)   : NEW
+---XML records in module 'payment_authorize'---
+NEW payment.method: payment_authorize.payment_method_ach_direct_debit
+NEW payment.method: payment_authorize.payment_method_amex
+NEW payment.method: payment_authorize.payment_method_card
+NEW payment.method: payment_authorize.payment_method_diners
+NEW payment.method: payment_authorize.payment_method_discover
+NEW payment.method: payment_authorize.payment_method_jcb
+NEW payment.method: payment_authorize.payment_method_mastercard
+NEW payment.method: payment_authorize.payment_method_visa
+payment.provider: payment.payment_provider_authorize (noupdate switched)

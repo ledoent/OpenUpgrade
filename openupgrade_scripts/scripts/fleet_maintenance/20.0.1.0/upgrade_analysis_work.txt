@@ -1,0 +1,19 @@
+---Models in module 'fleet_maintenance'---
+---Fields in module 'fleet_maintenance'---
+fleet_maintenance / fleet.vehicle            / equipment_ids (one2many)      : NEW relation: maintenance.equipment
+# NOTHING TO DO: a one2many has no column of its own
+fleet_maintenance / maintenance.equipment    / equipment_assign_to (False)   : NEW required, selection_keys: ['other', 'vehicle'], mode: modify, hasdefault: default
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+fleet_maintenance / maintenance.equipment    / vehicle_id (many2one)         : NEW relation: fleet.vehicle, hasdefault: compute
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+---XML records in module 'fleet_maintenance'---
+NEW ir.ui.view: fleet_maintenance.fleet_vehicle_view_form
+NEW ir.ui.view: fleet_maintenance.maintenance_equipment_view_form_inherit_fleet
+NEW ir.ui.view: fleet_maintenance.maintenance_equipment_view_kanban_inherit_fleet
+NEW ir.ui.view: fleet_maintenance.maintenance_equipment_view_search_inherit_fleet
+NEW ir.ui.view: fleet_maintenance.maintenance_equipment_view_tree_inherit_fleet
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

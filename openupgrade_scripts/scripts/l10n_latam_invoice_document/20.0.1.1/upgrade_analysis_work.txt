@@ -1,0 +1,60 @@
+---Models in module 'l10n_latam_invoice_document'---
+obsolete model l10n_latam.identification.type
+# NOTHING TO DO: the model is gone from 20.0; OpenUpgrade leaves its table
+# in place for database_cleanup rather than dropping it during an upgrade
+---Fields in module 'l10n_latam_invoice_document'---
+l10n_latam_base / l10n_latam.identification.type / active (boolean)              : DEL
+l10n_latam_base / l10n_latam.identification.type / country_id (many2one)         : DEL relation: res.country
+l10n_latam_base / l10n_latam.identification.type / description (char)            : DEL
+l10n_latam_base / l10n_latam.identification.type / is_vat (boolean)              : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+l10n_latam_base / l10n_latam.identification.type / name (char)                   : DEL required
+# NOTHING TO DO: a dropped field. The column is left in place for
+# database_cleanup, and its NOT NULL goes with the field
+l10n_latam_base / l10n_latam.identification.type / sequence (integer)            : DEL
+l10n_latam_base / res.partner              / l10n_latam_identification_type_id (many2one): DEL relation: l10n_latam.identification.type
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'l10n_latam_invoice_document'---
+NEW ir.access: l10n_latam_invoice_document.access_l10n_latam_document_type
+NEW ir.access: l10n_latam_invoice_document.access_l10n_latam_document_type_account_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: l10n_latam_invoice_document.action_document_type (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.actions.act_window: l10n_latam_base.action_l10n_latam_identification_type
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_all
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_manager
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_portal
+DEL ir.model.access: l10n_latam_base.access_latam_identification_type_public
+DEL ir.model.access: l10n_latam_invoice_document.access_l10n_latam_document_type
+DEL ir.model.access: l10n_latam_invoice_document.access_l10n_latam_document_type_account_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_latam_invoice_document.constraint_account_move_unique_name (changed definition: is now 'False' ('UNIQUE INDEX (name, journal_id) WHERE (state = 'posted' AND name != '/' AND (l10n_latam_document_type_id IS NULL OR move_type NOT IN ('in_invoice', 'in_refund', 'in_receipt')))'))
+ir.model.constraint: l10n_latam_invoice_document.constraint_account_move_unique_name_latam (changed definition: is now 'False' ('UNIQUE INDEX (name, commercial_partner_id, l10n_latam_document_type_id, company_id) WHERE (state = 'posted' AND name != '/' AND (l10n_latam_document_type_id IS NOT NULL AND move_type IN ('in_invoice', 'in_refund', 'in_receipt')))'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.ui.menu: l10n_latam_base.menu_l10n_latam_identification_type
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_center
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_compact
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_dual
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_footer_content
+NEW ir.ui.view: l10n_latam_invoice_document.external_layout_lines
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_latam_base.address_form_fields
+DEL ir.ui.view: l10n_latam_base.view_l10n_latam_identification_type_search
+DEL ir.ui.view: l10n_latam_base.view_l10n_latam_identification_type_tree
+DEL ir.ui.view: l10n_latam_base.view_partner_latam_form
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_bold
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_boxed
+DEL ir.ui.view: l10n_latam_invoice_document.external_layout_striped
+DEL l10n_latam.identification.type: l10n_latam_base.it_fid
+DEL l10n_latam.identification.type: l10n_latam_base.it_pass
+DEL l10n_latam.identification.type: l10n_latam_base.it_vat
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL res.country.group: l10n_latam_base.latam (noupdate)
+# NOTHING TO DO: a noupdate record the module stops shipping. _process_end
+# only removes stale data rows whose noupdate is false, so it survives --
+# 583 of the 753 such records on this seed do. Writing an orphan cleanup
+# is the anti-pattern upstream rejected in #5630-5632: OpenUpgrade
+# preserves information and database_cleanup removes residue later, once
+# an administrator can see what would go

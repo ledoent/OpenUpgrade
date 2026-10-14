@@ -1,0 +1,20 @@
+---Models in module 'event_booth_sale'---
+---Fields in module 'event_booth_sale'---
+event_booth_sale / product.template         / service_tracking (False)      : selection_keys added: [subcontract] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+---XML records in module 'event_booth_sale'---
+event.booth.category: event_booth.event_booth_category_premium (noupdate switched)
+event.booth.category: event_booth.event_booth_category_standard (noupdate switched)
+event.booth.category: event_booth.event_booth_category_vip (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: event_booth_sale.access_event_booth_configurator_salesman
+NEW ir.access: event_booth_sale.access_event_booth_registration_event_desk
+NEW ir.access: event_booth_sale.access_event_booth_registration_event_user
+NEW ir.access: event_booth_sale.access_event_booth_registration_salesman
+DEL ir.model.access: event_booth_sale.access_event_booth_configurator_salesman
+DEL ir.model.access: event_booth_sale.access_event_booth_registration_event_desk
+DEL ir.model.access: event_booth_sale.access_event_booth_registration_event_user
+DEL ir.model.access: event_booth_sale.access_event_booth_registration_salesman
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: event_booth_sale.constraint_event_booth_registration_unique_registration (changed definition: is now 'False' ('unique(sale_order_line_id, event_booth_id)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it

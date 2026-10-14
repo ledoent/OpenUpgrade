@@ -1,0 +1,52 @@
+---Models in module 'payment_xendit'---
+---Fields in module 'payment_xendit'---
+---XML records in module 'payment_xendit'---
+DEL ir.ui.view: payment_xendit.redirect_form
+NEW payment.method: payment_xendit.payment_method_7eleven [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_akulaku [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_amex
+NEW payment.method: payment_xendit.payment_method_appota [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bangkok_bank
+NEW payment.method: payment_xendit.payment_method_bank_bca [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bank_permata [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_billease [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bni [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bri [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_bsi [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_card
+NEW payment.method: payment_xendit.payment_method_cashalo [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_cebuana [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_cimb_niaga [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_dana
+NEW payment.method: payment_xendit.payment_method_fpx
+NEW payment.method: payment_xendit.payment_method_gcash
+NEW payment.method: payment_xendit.payment_method_grabpay
+NEW payment.method: payment_xendit.payment_method_jcb
+NEW payment.method: payment_xendit.payment_method_jeniuspay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_kfh [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_kredivo [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_krungthai_bank
+NEW payment.method: payment_xendit.payment_method_linepay
+NEW payment.method: payment_xendit.payment_method_linkaja [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_mandiri [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_mastercard
+NEW payment.method: payment_xendit.payment_method_maya
+NEW payment.method: payment_xendit.payment_method_ovo [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_paynow
+NEW payment.method: payment_xendit.payment_method_promptpay
+NEW payment.method: payment_xendit.payment_method_qris [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_scb
+NEW payment.method: payment_xendit.payment_method_shopeepay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_touch_n_go
+NEW payment.method: payment_xendit.payment_method_truemoney
+NEW payment.method: payment_xendit.payment_method_unionpay
+NEW payment.method: payment_xendit.payment_method_uob
+NEW payment.method: payment_xendit.payment_method_vietcapital [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_viettelpay [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_visa
+NEW payment.method: payment_xendit.payment_method_vnptwallet [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_vpbank [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_wechat_pay
+NEW payment.method: payment_xendit.payment_method_woori [renamed from payment module] (noupdate switched)
+NEW payment.method: payment_xendit.payment_method_zalopay [renamed from payment module] (noupdate switched)
+payment.provider: payment.payment_provider_xendit (noupdate switched)

@@ -1,0 +1,13 @@
+---Models in module 'website_livechat'---
+---Fields in module 'website_livechat'---
+website_livechat / website.visitor          / livechat_operator_id (many2one): DEL relation: res.partner
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'website_livechat'---
+NEW ir.access: website_livechat.access_website_track_livechat_users
+NEW ir.access: website_livechat.access_website_visitor_livechat_users
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.actions.act_window: website_livechat.website_visitor_livechat_session_action (deleted domain)
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites the domain
+DEL ir.model.access: website_livechat.access_website_track_livechat_users
+DEL ir.model.access: website_livechat.access_website_visitor_livechat_users
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids

@@ -1,0 +1,36 @@
+---Models in module 'l10n_id_efaktur_coretax'---
+---Fields in module 'l10n_id_efaktur_coretax'---
+l10n_id_efaktur_coretax / l10n_id_efaktur_coretax.document / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+l10n_id_efaktur_coretax / res.partner              / l10n_id_nik (char)            : DEL
+l10n_id_efaktur_coretax / res.partner              / l10n_id_pkp (boolean)         : DEL
+l10n_id_efaktur_coretax / res.partner              / l10n_id_tku (char)            : DEL
+# NOTHING TO DO: the column is left in place for database_cleanup
+---XML records in module 'l10n_id_efaktur_coretax'---
+NEW ir.access: l10n_id_efaktur_coretax.access_efaktur_document_user
+NEW ir.access: l10n_id_efaktur_coretax.access_product_code_user
+NEW ir.access: l10n_id_efaktur_coretax.access_uom_code_user
+NEW ir.access: l10n_id_efaktur_coretax.efaktur_document_multi_company
+DEL ir.model.access: l10n_id_efaktur_coretax.access_efaktur_document_user
+DEL ir.model.access: l10n_id_efaktur_coretax.access_product_code_user
+DEL ir.model.access: l10n_id_efaktur_coretax.access_uom_code_user
+DEL ir.rule: l10n_id_efaktur_coretax.efaktur_document_multi_company (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: l10n_id_efaktur_coretax.uom_uom_view_form
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: l10n_id_efaktur_coretax.product_uom_form_view_inherit_coretax
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+uom.uom: uom.product_uom_cm (noupdate switched)
+uom.uom: uom.product_uom_day (noupdate switched)
+uom.uom: uom.product_uom_dozen (noupdate switched)
+uom.uom: uom.product_uom_gram (noupdate switched)
+uom.uom: uom.product_uom_hour (noupdate switched)
+uom.uom: uom.product_uom_inch (noupdate switched)
+uom.uom: uom.product_uom_kgm (noupdate switched)
+uom.uom: uom.product_uom_litre (noupdate switched)
+uom.uom: uom.product_uom_meter (noupdate switched)
+uom.uom: uom.product_uom_square_meter (noupdate switched)
+uom.uom: uom.product_uom_ton (noupdate switched)
+uom.uom: uom.product_uom_unit (noupdate switched)
+uom.uom: uom.product_uom_yard (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

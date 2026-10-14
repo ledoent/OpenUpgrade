@@ -1,0 +1,84 @@
+---Models in module 'pos_restaurant'---
+new model pos.course
+# NOTHING TO DO: the ORM creates the table; there are no 19.0 rows to carry into a model that did not exist
+---Fields in module 'pos_restaurant'---
+pos_restaurant / pos.category             / course_id (many2one)          : NEW relation: pos.course
+# NOTHING TO DO: empty on all 13 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_restaurant / pos.config               / floor_plan_settings (json)    : NEW
+# NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_restaurant / pos.config               / iface_printbill (boolean)     : module is now 'point_of_sale' ('pos_restaurant')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+pos_restaurant / pos.config               / iface_splitbill (boolean)     : DEL
+# NOTHING TO DO: 20.0 has no bill-splitting switch on pos.config
+pos_restaurant / pos.config               / set_tip_after_payment (boolean): module is now 'point_of_sale' ('pos_restaurant')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+pos_restaurant / pos.config               / use_course_allocation (boolean): NEW
+pos_restaurant / pos.config               / use_show_items_on_course_ticket (boolean): NEW
+# NOTHING TO DO: empty on all 6 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_restaurant / pos.course               / category_ids (one2many)       : NEW relation: pos.category
+# NOTHING TO DO: 20.0 has no category_ids column on pos.course, so nothing was left behind
+pos_restaurant / pos.course               / name (char)                   : NEW required
+pos_restaurant / pos.course               / sequence (integer)            : NEW hasdefault: default
+# NOTHING TO DO: pos.course holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+pos_restaurant / restaurant.floor         / background_color (char)       : DEL
+# NOTHING TO DO: reported, not carried. 20.0 gives the floor the same Json field
+# but references neither background_color nor background_image anywhere, in
+# Python or in the front end, so there is no key to carry it into
+pos_restaurant / restaurant.floor         / background_image (binary)     : DEL attachment: True
+# NOTHING TO DO: 20.0 has no background_image column on restaurant.floor, so nothing was left behind
+pos_restaurant / restaurant.floor         / floor_background_image (binary): DEL attachment: True
+# NOTHING TO DO: 20.0 has no floor_background_image column on restaurant.floor, so nothing was left behind
+pos_restaurant / restaurant.floor         / floor_plan_layout (json)      : NEW
+# NOTHING TO DO: empty on all 5 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_restaurant / restaurant.order.course  / course_id (many2one)          : NEW relation: pos.course
+pos_restaurant / restaurant.order.course  / name (char)                   : NEW
+# NOTHING TO DO: restaurant.order.course holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+pos_restaurant / restaurant.table         / color (char)                  : DEL
+# DONE: carried into floor_plan_layout by post-migration, as a CSS value, which
+# is what 19.0 already stored
+pos_restaurant / restaurant.table         / floor_plan_layout (json)      : NEW
+# NOTHING TO DO: 20.0 filled it itself -- 25 distinct values over 27 of 27 rows, so a compute or a related field did the work
+pos_restaurant / restaurant.table         / height (float)                : DEL
+# DONE: carried into floor_plan_layout by post-migration
+pos_restaurant / restaurant.table         / parent_side (selection)       : NEW selection_keys: ['bottom', 'left', 'right', 'top']
+# NOTHING TO DO: empty on all 27 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_restaurant / restaurant.table         / position_h (float)            : DEL
+# DONE: post-migration rebuilds floor_plan_layout from all six columns. 20.0
+# replaced them with one Json field and nothing carried the floor plan
+pos_restaurant / restaurant.table         / position_v (float)            : DEL
+# DONE: carried into floor_plan_layout as 'top' by post-migration
+pos_restaurant / restaurant.table         / shape (selection)             : DEL required, selection_keys: ['round', 'square']
+pos_restaurant / restaurant.table         / width (float)                 : DEL
+# DONE: carried into floor_plan_layout by post-migration
+---XML records in module 'pos_restaurant'---
+NEW ir.access: pos_restaurant.access_pos_course
+NEW ir.access: pos_restaurant.access_pos_course_manager
+NEW ir.access: pos_restaurant.access_restaurant_floor
+NEW ir.access: pos_restaurant.access_restaurant_floor_manager
+NEW ir.access: pos_restaurant.access_restaurant_order_course
+NEW ir.access: pos_restaurant.access_restaurant_table
+NEW ir.access: pos_restaurant.access_restaurant_table_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: pos_restaurant.action_pos_course
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.model.access: pos_restaurant.access_restaurant_floor
+DEL ir.model.access: pos_restaurant.access_restaurant_floor_manager
+DEL ir.model.access: pos_restaurant.access_restaurant_order_course
+DEL ir.model.access: pos_restaurant.access_restaurant_table
+DEL ir.model.access: pos_restaurant.access_restaurant_table_manager
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.model.constraint: pos_restaurant.constraint_pos_course_name_unique
+NEW ir.ui.menu: pos_restaurant.menu_pos_course
+NEW ir.ui.view: pos_restaurant.pos_order_change_receipt
+NEW ir.ui.view: pos_restaurant.pos_order_receipt_header
+NEW ir.ui.view: pos_restaurant.pos_restaurant_pos_category_kanban_view
+NEW ir.ui.view: pos_restaurant.pos_restaurant_product_pos_category_tree_view
+NEW ir.ui.view: pos_restaurant.view_pos_category_form_inherit_course
+NEW ir.ui.view: pos_restaurant.view_pos_course_form
+NEW ir.ui.view: pos_restaurant.view_pos_course_list
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+pos.preset: pos_restaurant.pos_delivery_preset (noupdate switched)
+pos.preset: pos_restaurant.pos_takein_preset (noupdate switched)
+pos.preset: pos_restaurant.pos_takeout_preset (noupdate switched)
+resource.calendar: pos_restaurant.pos_resource_preset (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

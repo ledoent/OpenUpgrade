@@ -1,0 +1,333 @@
+---Models in module 'mrp'---
+new model mrp.finished.product.label.layout [transient]
+# NOTHING TO DO: a transient model holds no persistent data
+---Fields in module 'mrp'---
+mrp          / mrp.bom                  / consumption (selection)       : DEL required, selection_keys: ['flexible', 'strict', 'warning']
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / mrp.bom                  / continuous (boolean)          : NEW hasdefault: default
+mrp          / mrp.bom                  / note (html)                   : NEW
+# NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.bom                  / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.bom, so nothing was left behind
+mrp          / mrp.bom                  / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / mrp.bom                  / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on mrp.bom, so nothing was left behind
+mrp          / mrp.bom.byproduct        / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.bom.byproduct, so nothing was left behind
+mrp          / mrp.bom.byproduct        / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
+# NOTHING TO DO: mrp.bom.byproduct holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+mrp          / mrp.bom.line             / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.bom.line, so nothing was left behind
+mrp          / mrp.bom.line             / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: default
+mrp          / mrp.production           / consumption (selection)       : DEL required, selection_keys: ['flexible', 'strict', 'warning']
+mrp          / mrp.production           / duration (float)              : is now stored
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / mrp.production           / duration_expected (float)     : is now stored
+# NOTHING TO DO: 20.0 filled it itself -- 4 distinct values over 9 of 9 rows, so a compute or a related field did the work
+mrp          / mrp.production           / forecasted_location_id (many2one): NEW relation: stock.location
+# NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.production           / location_final_id (many2one)  : DEL relation: stock.location
+# NOTHING TO DO: the column held nothing on any of the 9 rows, so its removal carries nothing away
+mrp          / mrp.production           / note (html)                   : NEW hasdefault: compute
+# NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.production           / package_history_ids (one2many): NEW relation: stock.package.history
+# NOTHING TO DO: 20.0 has no package_history_ids column on mrp.production, so nothing was left behind
+mrp          / mrp.production           / previous_date_start (datetime): NEW
+# NOTHING TO DO: empty on all 9 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.production           / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.production, so nothing was left behind
+mrp          / mrp.production           / scrap_ids (one2many)          : DEL relation: stock.scrap
+# NOTHING TO DO: 20.0 has no scrap_ids column on mrp.production, so nothing was left behind
+mrp          / mrp.production           / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / mrp.production           / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on mrp.production, so nothing was left behind
+mrp          / mrp.routing.workcenter   / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on mrp.routing.workcenter, so nothing was left behind
+mrp          / mrp.unbuild              / lot_id (many2one)             : DEL relation: stock.lot
+# NOTHING TO DO: mrp.unbuild holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+mrp          / mrp.unbuild              / lot_ids (many2many)           : NEW relation: stock.lot
+# NOTHING TO DO: 20.0 has no lot_ids column on mrp.unbuild, so nothing was left behind
+mrp          / mrp.unbuild              / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.unbuild, so nothing was left behind
+mrp          / mrp.unbuild              / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
+# NOTHING TO DO: mrp.unbuild holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+mrp          / mrp.unbuild              / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on mrp.unbuild, so nothing was left behind
+mrp          / mrp.workcenter           / barcode (char)                : NEW
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.workcenter           / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: 20.0 has no website_message_ids column on mrp.workcenter, so nothing was left behind
+mrp          / mrp.workcenter.capacity  / product_uom_id (many2one)     : DEL relation: uom.uom, required
+# NOTHING TO DO: 20.0 has no product_uom_id column on mrp.workcenter.capacity, so nothing was left behind
+mrp          / mrp.workcenter.capacity  / uom_id (many2one)             : NEW relation: uom.uom, required, hasdefault: compute
+# NOTHING TO DO: mrp.workcenter.capacity holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+mrp          / mrp.workorder            / _order                        : _order is now 'date_start, sequence, id' ('sequence, leave_id, date_start, id')
+mrp          / mrp.workorder            / activity_ids (one2many)       : NEW relation: mail.activity
+# NOTHING TO DO: 20.0 has no activity_ids column on mrp.workorder, so nothing was left behind
+mrp          / mrp.workorder            / cost (float)                  : NEW isfunction: function, stored
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / mrp.workorder            / is_planned (boolean)          : not related anymore
+mrp          / mrp.workorder            / is_planned (boolean)          : now a function
+# NOTHING TO DO: 20.0 has no is_planned column on mrp.workorder, so nothing was left behind
+mrp          / mrp.workorder            / message_follower_ids (one2many): NEW relation: mail.followers
+# NOTHING TO DO: 20.0 has no message_follower_ids column on mrp.workorder, so nothing was left behind
+mrp          / mrp.workorder            / message_ids (one2many)        : NEW relation: mail.message
+# NOTHING TO DO: 20.0 has no message_ids column on mrp.workorder, so nothing was left behind
+mrp          / mrp.workorder            / properties (properties)       : NEW hasdefault: compute
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / mrp.workorder            / rating_ids (one2many)         : NEW relation: rating.rating
+# NOTHING TO DO: 20.0 has no rating_ids column on mrp.workorder, so nothing was left behind
+mrp          / mrp.workorder            / scrap_ids (one2many)          : DEL relation: stock.scrap
+# NOTHING TO DO: 20.0 has no scrap_ids column on mrp.workorder, so nothing was left behind
+mrp          / product.document         / attached_on_mrp (selection)   : DEL required, selection_keys: ['bom', 'hidden']
+mrp          / stock.move               / manual_consumption (boolean)  : DEL
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / stock.package.history    / production_id (many2one)      : NEW relation: mrp.production
+# NOTHING TO DO: stock.package.history holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+mrp          / stock.picking.type       / auto_confirm_production (boolean): NEW hasdefault: default
+mrp          / stock.picking.type       / done_mrp_lot_label_to_print (selection): selection_keys is now 'function' ('['pdf', 'zpl']')
+mrp          / stock.picking.type       / generated_mrp_lot_label_to_print (selection): selection_keys is now 'function' ('['pdf', 'zpl']')
+mrp          / stock.picking.type       / mrp_product_label_to_print (selection): selection_keys is now 'function' ('['pdf', 'zpl']')
+# NEEDS A VERDICT: the database cannot settle this one
+mrp          / stock.picking.type       / wo_properties_definition (properties_definition): NEW
+# NOTHING TO DO: empty on all 279 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+mrp          / stock.scrap              / bom_id (many2one)             : DEL relation: mrp.bom
+mrp          / stock.scrap              / production_id (many2one)      : DEL relation: mrp.production
+mrp          / stock.scrap              / workorder_id (many2one)       : DEL relation: mrp.workorder
+# NOTHING TO DO: stock.scrap holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+---XML records in module 'mrp'---
+NEW ir.access: mrp.access_change_production_qty
+NEW ir.access: mrp.access_mrp_bom_byproduct_manager
+NEW ir.access: mrp.access_mrp_bom_byproduct_user
+NEW ir.access: mrp.access_mrp_bom_line_manager
+NEW ir.access: mrp.access_mrp_bom_line_stockuser
+NEW ir.access: mrp.access_mrp_bom_manager
+NEW ir.access: mrp.access_mrp_bom_stockuser
+NEW ir.access: mrp.access_mrp_consumption_warning
+NEW ir.access: mrp.access_mrp_consumption_warning_line
+NEW ir.access: mrp.access_mrp_finished_product_label_layout
+NEW ir.access: mrp.access_mrp_production
+NEW ir.access: mrp.access_mrp_production_backorder
+NEW ir.access: mrp.access_mrp_production_backorder_line
+NEW ir.access: mrp.access_mrp_production_group
+NEW ir.access: mrp.access_mrp_production_serials
+NEW ir.access: mrp.access_mrp_production_split
+NEW ir.access: mrp.access_mrp_production_split_line
+NEW ir.access: mrp.access_mrp_production_split_multi
+NEW ir.access: mrp.access_mrp_production_stock_worker
+NEW ir.access: mrp.access_mrp_routing_workcenter
+NEW ir.access: mrp.access_mrp_routing_workcenter_manager
+NEW ir.access: mrp.access_mrp_unbuild
+NEW ir.access: mrp.access_mrp_workcenter
+NEW ir.access: mrp.access_mrp_workcenter_capacity_group_user
+NEW ir.access: mrp.access_mrp_workcenter_capacity_manager
+NEW ir.access: mrp.access_mrp_workcenter_manager
+NEW ir.access: mrp.access_mrp_workcenter_productivity
+NEW ir.access: mrp.access_mrp_workcenter_productivity_loss
+NEW ir.access: mrp.access_mrp_workcenter_productivity_loss_manager
+NEW ir.access: mrp.access_mrp_workcenter_productivity_loss_type
+NEW ir.access: mrp.access_mrp_workcenter_tag_group_user
+NEW ir.access: mrp.access_mrp_workcenter_tag_manager
+NEW ir.access: mrp.access_mrp_workorder_mrp_user
+NEW ir.access: mrp.access_product_group_res_partner_mrp_manager
+NEW ir.access: mrp.access_product_pricelist_item_mrp_manager
+NEW ir.access: mrp.access_product_product_user
+NEW ir.access: mrp.access_product_supplierinfo_manager
+NEW ir.access: mrp.access_product_template_user
+NEW ir.access: mrp.access_resource_calendar_attendance_mrp_user
+NEW ir.access: mrp.access_resource_calendar_manufacturinguser
+NEW ir.access: mrp.access_resource_resource
+NEW ir.access: mrp.access_resource_resource_manager
+NEW ir.access: mrp.access_stock_move_mrp_user
+NEW ir.access: mrp.access_stock_warn_insufficient_qty_unbuild
+NEW ir.access: mrp.access_uom_uom_user
+NEW ir.access: mrp.mrp_bom_byproduct_rule
+NEW ir.access: mrp.mrp_bom_line_rule
+NEW ir.access: mrp.mrp_bom_rule
+NEW ir.access: mrp.mrp_production_rule
+NEW ir.access: mrp.mrp_routing_workcenter_rule
+NEW ir.access: mrp.mrp_unbuild_rule
+NEW ir.access: mrp.mrp_workcenter_productivity
+NEW ir.access: mrp.mrp_workcenter_rule
+NEW ir.access: mrp.mrp_workorder_rule
+NEW ir.access: mrp.res_partner_rule_edit_all
+NEW ir.access: mrp.res_partner_rule_user
+NEW ir.access: mrp.resource_calendar_leaves_rule_group_user_create
+NEW ir.access: mrp.resource_calendar_leaves_rule_group_user_modify
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.actions.act_window: mrp.action_detailed_operations
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: mrp.action_mrp_production_moves (deleted domain)
+ir.actions.act_window: mrp.action_mrp_routing_time (deleted domain)
+ir.actions.act_window: mrp.action_mrp_unbuild_moves (deleted domain)
+ir.actions.act_window: mrp.action_mrp_workorder_production (deleted domain)
+ir.actions.act_window: mrp.action_mrp_workorder_production_specific (deleted domain)
+ir.actions.act_window: mrp.action_picking_tree_mrp_operation (deleted domain)
+ir.actions.act_window: mrp.action_picking_tree_mrp_operation_graph (deleted domain)
+ir.actions.act_window: mrp.action_work_orders (deleted domain)
+NEW ir.actions.act_window: mrp.mrp_bom_line_action_used_in_boms
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: mrp.mrp_production_action (deleted domain)
+ir.actions.act_window: mrp.mrp_production_action_picking_deshboard (deleted domain)
+ir.actions.act_window: mrp.mrp_routing_action (deleted domain)
+ir.actions.act_window: mrp.mrp_workcenter_productivity_report_oee (deleted domain)
+NEW ir.actions.act_window: mrp.mrp_workcenter_workorders_kanban
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.actions.act_window: mrp.mrp_workorder_workcenter_report (deleted domain)
+ir.actions.act_window: mrp.template_open_bom (deleted domain)
+ir.actions.act_window: stock.action_product_stock_view (deleted domain)
+DEL ir.actions.act_window: mrp.mrp_product_variant_action
+DEL ir.actions.client: mrp.mrp_reception_action
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.actions.report: mrp.action_report_mrp_packages
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.report: mrp.action_report_finished_product
+DEL ir.actions.report: mrp.label_manufacture_template
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.actions.server: mrp.action_mark_as_done_workorders
+NEW ir.actions.server: mrp.action_open_bom_lines
+NEW ir.actions.server: mrp.action_plan_at_date
+NEW ir.actions.server: mrp.action_plan_workorders
+NEW ir.actions.server: mrp.action_print_finished_product_pdf
+NEW ir.actions.server: mrp.action_print_finished_product_zpl
+NEW ir.actions.server: mrp.action_production_order_confirm
+NEW ir.actions.server: mrp.action_production_order_unbuild
+NEW ir.actions.server: mrp.action_unplan_workorders
+NEW ir.actions.server: mrp.mrp_production_action_reserve
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.actions.server: mrp.action_plan_with_components_availability
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+DEL ir.model.access: mrp.access_change_production_qty
+DEL ir.model.access: mrp.access_mrp_bom
+DEL ir.model.access: mrp.access_mrp_bom_byproduct_manager
+DEL ir.model.access: mrp.access_mrp_bom_byproduct_user
+DEL ir.model.access: mrp.access_mrp_bom_line
+DEL ir.model.access: mrp.access_mrp_bom_line_manager
+DEL ir.model.access: mrp.access_mrp_bom_line_stockuser
+DEL ir.model.access: mrp.access_mrp_bom_manager
+DEL ir.model.access: mrp.access_mrp_bom_stockuser
+DEL ir.model.access: mrp.access_mrp_consumption_warning
+DEL ir.model.access: mrp.access_mrp_consumption_warning_line
+DEL ir.model.access: mrp.access_mrp_document_mrp_manager
+DEL ir.model.access: mrp.access_mrp_production
+DEL ir.model.access: mrp.access_mrp_production_backorder
+DEL ir.model.access: mrp.access_mrp_production_backorder_line
+DEL ir.model.access: mrp.access_mrp_production_group
+DEL ir.model.access: mrp.access_mrp_production_manager
+DEL ir.model.access: mrp.access_mrp_production_serials
+DEL ir.model.access: mrp.access_mrp_production_split
+DEL ir.model.access: mrp.access_mrp_production_split_line
+DEL ir.model.access: mrp.access_mrp_production_split_multi
+DEL ir.model.access: mrp.access_mrp_production_stock_worker
+DEL ir.model.access: mrp.access_mrp_routing_workcenter
+DEL ir.model.access: mrp.access_mrp_routing_workcenter_manager
+DEL ir.model.access: mrp.access_mrp_unbuild
+DEL ir.model.access: mrp.access_mrp_unbuild_manager
+DEL ir.model.access: mrp.access_mrp_workcenter
+DEL ir.model.access: mrp.access_mrp_workcenter_capacity_group_user
+DEL ir.model.access: mrp.access_mrp_workcenter_capacity_manager
+DEL ir.model.access: mrp.access_mrp_workcenter_manager
+DEL ir.model.access: mrp.access_mrp_workcenter_productivity
+DEL ir.model.access: mrp.access_mrp_workcenter_productivity_loss
+DEL ir.model.access: mrp.access_mrp_workcenter_productivity_loss_manager
+DEL ir.model.access: mrp.access_mrp_workcenter_productivity_loss_type
+DEL ir.model.access: mrp.access_mrp_workcenter_tag_group_user
+DEL ir.model.access: mrp.access_mrp_workcenter_tag_manager
+DEL ir.model.access: mrp.access_mrp_workorder_mrp_manager
+DEL ir.model.access: mrp.access_mrp_workorder_mrp_user
+DEL ir.model.access: mrp.access_product_group_res_partner_mrp_manager
+DEL ir.model.access: mrp.access_product_pricelist_item_mrp_manager
+DEL ir.model.access: mrp.access_product_product_user
+DEL ir.model.access: mrp.access_product_supplierinfo_manager
+DEL ir.model.access: mrp.access_product_template_user
+DEL ir.model.access: mrp.access_res_partner
+DEL ir.model.access: mrp.access_resource_calendar_attendance_manager
+DEL ir.model.access: mrp.access_resource_calendar_attendance_mrp_user
+DEL ir.model.access: mrp.access_resource_calendar_leaves_manager
+DEL ir.model.access: mrp.access_resource_calendar_leaves_user
+DEL ir.model.access: mrp.access_resource_calendar_manufacturinguser
+DEL ir.model.access: mrp.access_resource_resource
+DEL ir.model.access: mrp.access_resource_resource_manager
+DEL ir.model.access: mrp.access_stock_move_mrp_user
+DEL ir.model.access: mrp.access_stock_warn_insufficient_qty_unbuild
+DEL ir.model.access: mrp.access_uom_uom_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: mrp.constraint_mrp_bom_line_bom_qty_zero (changed definition: is now 'False' ('CHECK (product_qty>=0)'))
+ir.model.constraint: mrp.constraint_mrp_bom_qty_positive (changed definition: is now 'False' ('check (product_qty > 0)'))
+ir.model.constraint: mrp.constraint_mrp_production_name_uniq (changed definition: is now 'False' ('unique(name, company_id)'))
+ir.model.constraint: mrp.constraint_mrp_production_qty_positive (changed definition: is now 'False' ('check (product_qty > 0)'))
+ir.model.constraint: mrp.constraint_mrp_unbuild_qty_positive (changed definition: is now 'False' ('check (product_qty > 0)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+NEW ir.model.constraint: mrp.constraint_mrp_workcenter_barcode_company_uniq
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+ir.model.constraint: mrp.constraint_mrp_workcenter_capacity_positive_capacity (changed definition: is now 'False' ('CHECK(capacity >= 0)'))
+ir.model.constraint: mrp.constraint_mrp_workcenter_capacity_workcenter_product_product_uom_unique (changed definition: is now 'False' ('UNIQUE INDEX (workcenter_id, COALESCE(product_id, 0), product_uom_id)'))
+ir.model.constraint: mrp.constraint_mrp_workcenter_tag_tag_name_unique (changed definition: is now 'False' ('unique(name)'))
+# NOTHING TO DO: a constraint the ORM applies itself; the constraint gate reports any it could not
+DEL ir.rule: mrp.mrp_bom_byproduct_rule (noupdate)
+DEL ir.rule: mrp.mrp_bom_line_rule (noupdate)
+DEL ir.rule: mrp.mrp_bom_rule (noupdate)
+DEL ir.rule: mrp.mrp_production_rule (noupdate)
+DEL ir.rule: mrp.mrp_routing_workcenter_rule (noupdate)
+DEL ir.rule: mrp.mrp_unbuild_rule (noupdate)
+DEL ir.rule: mrp.mrp_workcenter_productivity (noupdate)
+DEL ir.rule: mrp.mrp_workcenter_rule (noupdate)
+DEL ir.rule: mrp.mrp_workorder_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+DEL ir.ui.menu: mrp.product_variant_mrp
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW ir.ui.view: mrp.finished_product_4x12_label
+NEW ir.ui.view: mrp.finished_product_zpl_label
+NEW ir.ui.view: mrp.mrp_bom_line_view_list
+NEW ir.ui.view: mrp.mrp_bom_line_view_list_exploded_components
+NEW ir.ui.view: mrp.mrp_bom_line_view_pivot
+NEW ir.ui.view: mrp.mrp_bom_line_view_search
+NEW ir.ui.view: mrp.mrp_production_card_view
+NEW ir.ui.view: mrp.mrp_production_to_plan
+NEW ir.ui.view: mrp.mrp_production_workorder_to_plan_list
+NEW ir.ui.view: mrp.mrp_production_workorder_tree_view_backorders
+NEW ir.ui.view: mrp.report_mrp_packages
+NEW ir.ui.view: mrp.view_scrap_move_form_inherit_mrp
+NEW ir.ui.view: mrp.view_stock_move_line_detailed_operation_tree
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: mrp.label_production_view
+DEL ir.ui.view: mrp.label_production_view_pdf
+DEL ir.ui.view: mrp.mrp_product_product_search_view
+DEL ir.ui.view: mrp.mrp_unbuild_form_view_simplified
+DEL ir.ui.view: mrp.product_document_form
+DEL ir.ui.view: mrp.stock_scrap_search_view_inherit_mrp
+DEL ir.ui.view: mrp.stock_scrap_view_form2_mrp_inherit_mrp
+DEL ir.ui.view: mrp.stock_scrap_view_form_mrp_inherit_mrp
+DEL ir.ui.view: mrp.view_stock_move_operations_finished
+DEL ir.ui.view: mrp.view_stock_move_operations_raw
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW mail.message.subtype: mrp.mt_mo_state
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL mail.message.subtype: mrp.mrp_mo_in_cancelled (noupdate)
+DEL mail.message.subtype: mrp.mrp_mo_in_confirmed (noupdate)
+DEL mail.message.subtype: mrp.mrp_mo_in_done (noupdate)
+DEL mail.message.subtype: mrp.mrp_mo_in_progress (noupdate)
+DEL mail.message.subtype: mrp.mrp_mo_in_to_close (noupdate)
+# NOTHING TO DO: left alone. _process_end only removes a stale row whose noupdate is false, and writing an orphan cleanup is the anti-pattern upstream rejected in #5630-5632
+mrp.workcenter.productivity.loss: mrp.block_reason0 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason1 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason2 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason4 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason5 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason6 (noupdate switched)
+mrp.workcenter.productivity.loss: mrp.block_reason7 (noupdate switched)
+mrp.workcenter.productivity.loss.type: mrp.category_availability (noupdate switched)
+mrp.workcenter.productivity.loss.type: mrp.category_performance (noupdate switched)
+mrp.workcenter.productivity.loss.type: mrp.category_productive (noupdate switched)
+mrp.workcenter.productivity.loss.type: mrp.category_quality (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+DEL res.groups: mrp.group_mrp_reception_report
+DEL res.groups: mrp.group_mrp_workorder_dependencies
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW resource.calendar: mrp.mrp_workcenter_calendar
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+stock.route: mrp.route_warehouse0_manufacture (noupdate switched)
+stock.warehouse: stock.warehouse0 (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

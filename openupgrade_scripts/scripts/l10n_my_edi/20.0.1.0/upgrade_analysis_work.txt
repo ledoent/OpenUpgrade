@@ -1,0 +1,44 @@
+---Models in module 'l10n_my_edi'---
+---Fields in module 'l10n_my_edi'---
+l10n_my_edi  / account_edi_proxy_client.user / proxy_type (False)            : selection_keys added: [pdp] (most likely nothing to do)
+# NOTHING TO DO: keys were added, the existing values stay valid
+l10n_my_edi  / myinvois.document        / is_consolidated_invoice (boolean): NEW
+l10n_my_edi  / myinvois.document        / is_debit_note (boolean)       : NEW
+l10n_my_edi  / myinvois.document        / is_superseded (boolean)       : NEW
+# NOTHING TO DO: empty is the right value for existing records
+l10n_my_edi  / myinvois.document        / journal_id (many2one)         : NEW relation: account.journal, required
+l10n_my_edi  / myinvois.document        / move_type (selection)         : NEW required, selection_keys: ['in_invoice', 'in_refund', 'out_invoice', 'out_refund']
+# NOTHING TO DO: the NOT NULL applied cleanly on the seed -- the constraint gate
+# reports none outstanding -- so the model is either new or the rows carry a value
+l10n_my_edi  / myinvois.document        / website_message_ids (one2many): DEL relation: mail.message
+# NOTHING TO DO: a one2many has no column, so nothing is left behind
+l10n_my_edi  / res.company              / l10n_my_edi_is_sole_proprietor (boolean): NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'l10n_my_edi'---
+NEW ir.access: l10n_my_edi.access_l10n_my_edi_industry_classification_invoice
+NEW ir.access: l10n_my_edi.access_l10n_my_edi_industry_classification_manager
+NEW ir.access: l10n_my_edi.access_l10n_my_edi_industry_classification_readonly
+NEW ir.access: l10n_my_edi.access_myinvois_consolidate_invoice_wizard_user
+NEW ir.access: l10n_my_edi.access_myinvois_document_invoice
+NEW ir.access: l10n_my_edi.access_myinvois_document_readonly
+NEW ir.access: l10n_my_edi.access_myinvois_document_status_update_wizard_invoice
+NEW ir.access: l10n_my_edi.myinvois_document_comp_rule
+DEL ir.model.access: l10n_my_edi.access_l10n_my_edi_industry_classification_invoice
+DEL ir.model.access: l10n_my_edi.access_l10n_my_edi_industry_classification_manager
+DEL ir.model.access: l10n_my_edi.access_l10n_my_edi_industry_classification_readonly
+DEL ir.model.access: l10n_my_edi.access_myinvois_consolidate_invoice_wizard_user
+DEL ir.model.access: l10n_my_edi.access_myinvois_document_invoice
+DEL ir.model.access: l10n_my_edi.access_myinvois_document_readonly
+DEL ir.model.access: l10n_my_edi.access_myinvois_document_status_update_wizard_invoice
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: l10n_my_edi.constraint_account_edi_proxy_client_user_unique_identification_l10n_my_edi (changed definition: is now 'False' ('UNIQUE INDEX (edi_identification, proxy_type, edi_mode) WHERE (active AND proxy_type = 'l10n_my_edi')'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it
+DEL ir.rule: l10n_my_edi.myinvois_document_comp_rule (noupdate)
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: l10n_my_edi.account_journal_dashboard_kanban_view_inherit_l10n_my_myinvois
+NEW ir.ui.view: l10n_my_edi.myinvois_document_search_view
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW res.partner: l10n_my_edi.general_public [renamed from l10n_my_edi_pos module]
+# NOTHING TO DO: the record changes owning module, which apriori declares and
+# base's update_module_names performs -- it re-points every ir_model_data row
+# rather than recreating the record, so the ids and the data survive

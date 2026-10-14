@@ -1,0 +1,63 @@
+---Models in module 'payment_stripe'---
+---Fields in module 'payment_stripe'---
+---XML records in module 'payment_stripe'---
+DEL ir.ui.view: payment_stripe.no_pms_available_warning
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+NEW payment.method: payment_stripe.payment_method_ach_direct_debit
+NEW payment.method: payment_stripe.payment_method_acss_direct_debit
+NEW payment.method: payment_stripe.payment_method_affirm
+NEW payment.method: payment_stripe.payment_method_afterpay
+NEW payment.method: payment_stripe.payment_method_alipay
+NEW payment.method: payment_stripe.payment_method_alma
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_stripe.payment_method_amazon_pay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_stripe.payment_method_amex
+NEW payment.method: payment_stripe.payment_method_apple_pay
+NEW payment.method: payment_stripe.payment_method_bacs_direct_debit
+NEW payment.method: payment_stripe.payment_method_bancontact
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_stripe.payment_method_becs_direct_debit [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_stripe.payment_method_boleto
+NEW payment.method: payment_stripe.payment_method_card
+NEW payment.method: payment_stripe.payment_method_cartes_bancaires
+NEW payment.method: payment_stripe.payment_method_cash_app_pay
+NEW payment.method: payment_stripe.payment_method_clearpay
+NEW payment.method: payment_stripe.payment_method_diners
+NEW payment.method: payment_stripe.payment_method_discover
+NEW payment.method: payment_stripe.payment_method_eps
+NEW payment.method: payment_stripe.payment_method_fpx
+NEW payment.method: payment_stripe.payment_method_google_pay
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_stripe.payment_method_grabpay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_stripe.payment_method_ideal
+NEW payment.method: payment_stripe.payment_method_ideal_brand
+NEW payment.method: payment_stripe.payment_method_jcb
+NEW payment.method: payment_stripe.payment_method_klarna
+NEW payment.method: payment_stripe.payment_method_mastercard
+NEW payment.method: payment_stripe.payment_method_mobile_pay
+NEW payment.method: payment_stripe.payment_method_multibanco
+NEW payment.method: payment_stripe.payment_method_p24
+NEW payment.method: payment_stripe.payment_method_paynow
+NEW payment.method: payment_stripe.payment_method_paypal
+NEW payment.method: payment_stripe.payment_method_pix
+NEW payment.method: payment_stripe.payment_method_promptpay
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+NEW payment.method: payment_stripe.payment_method_revolut_pay [renamed from payment module] (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW payment.method: payment_stripe.payment_method_satispay
+NEW payment.method: payment_stripe.payment_method_sepa_direct_debit
+NEW payment.method: payment_stripe.payment_method_swish
+NEW payment.method: payment_stripe.payment_method_twint
+NEW payment.method: payment_stripe.payment_method_unionpay
+NEW payment.method: payment_stripe.payment_method_unknown
+NEW payment.method: payment_stripe.payment_method_upi
+NEW payment.method: payment_stripe.payment_method_visa
+NEW payment.method: payment_stripe.payment_method_wechat_pay
+NEW payment.method: payment_stripe.payment_method_wero_brand
+NEW payment.method: payment_stripe.payment_method_zip
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+payment.provider: payment.payment_provider_stripe (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

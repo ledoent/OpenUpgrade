@@ -1,0 +1,51 @@
+---Models in module 'pos_self_order'---
+---Fields in module 'pos_self_order'---
+pos_self_order / pos.category             / pos_config_ids (many2many)    : module is now 'point_of_sale' ('pos_self_order')
+# NOTHING TO DO: the field only changed owning module, the column is the same
+pos_self_order / pos.config               / self_ordering_primary_color (char): NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+pos_self_order / pos.config               / self_ordering_service_mode (selection): selection_keys added: [dynamic_qr] (most likely nothing to do)
+# NOTHING TO DO: keys were added to the selection, so every stored value stays valid
+pos_self_order / pos.preset               / delivery_distance_unit (selection): NEW selection_keys: ['km', 'mi'], hasdefault: default
+pos_self_order / pos.preset               / delivery_from_address (char)  : NEW isfunction: function, stored
+# NEEDS A VERDICT: the database cannot settle this one
+pos_self_order / pos.preset               / delivery_from_city (char)     : NEW
+pos_self_order / pos.preset               / delivery_from_country_id (many2one): NEW relation: res.country
+pos_self_order / pos.preset               / delivery_from_latitude (float): NEW
+pos_self_order / pos.preset               / delivery_from_longitude (float): NEW
+pos_self_order / pos.preset               / delivery_from_state_id (many2one): NEW relation: res.country.state
+pos_self_order / pos.preset               / delivery_from_street (char)   : NEW
+pos_self_order / pos.preset               / delivery_from_zip (char)      : NEW
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_self_order / pos.preset               / delivery_max_distance_km (float): NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+pos_self_order / pos.preset               / delivery_product_id (many2one): NEW relation: product.product, hasdefault: default
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_self_order / pos.preset               / delivery_product_price (float): NEW hasdefault: default
+# NEEDS A VERDICT: the database cannot settle this one
+pos_self_order / pos.preset               / free_delivery_min_amount (float): NEW
+# NOTHING TO DO: empty on all 3 rows -- nothing claimed to fill it, so a NULL is what 19.0 knew
+pos_self_order / pos.snooze               / type (False)                  : NEW selection_keys: ['product', 'self-ordering'], mode: modify
+# NOTHING TO DO: pos.snooze holds no rows carried from 19.0, so a default applies at creation and there is nothing to carry
+---XML records in module 'pos_self_order'---
+NEW ir.access: pos_self_order.access_pos_self_order_custom_link_manager
+NEW ir.access: pos_self_order.access_pos_self_order_custom_link_user
+DEL ir.model.access: pos_self_order.access_pos_self_order_custom_link_manager
+DEL ir.model.access: pos_self_order.access_pos_self_order_custom_link_user
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+NEW ir.ui.view: pos_self_order.DynamicQrReceipt
+NEW ir.ui.view: pos_self_order.pos_config_view_form_inherit_pos_self_order
+NEW ir.ui.view: pos_self_order.pos_order_change_receipt
+NEW ir.ui.view: pos_self_order.pos_order_receipt_header
+NEW ir.ui.view: pos_self_order.view_pos_preset_tree
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+DEL ir.ui.view: pos_self_order.pos_self_view_pos_session_form
+# NOTHING TO DO: the record is not noupdate, so the module update removes it
+mail.template: pos_self_order.delivery_email_template (noupdate switched)
+mail.template: pos_self_order.takeout_email_template (noupdate switched)
+pos.preset: pos_restaurant.pos_delivery_preset (noupdate switched)
+pos.preset: pos_restaurant.pos_takein_preset (noupdate switched)
+pos.preset: pos_restaurant.pos_takeout_preset (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW product.template: pos_self_order.product_delivery_template
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

@@ -1,0 +1,5 @@
+---Models in module 'pos_sale_stock'---
+---Fields in module 'pos_sale_stock'---
+---XML records in module 'pos_sale_stock'---
+NEW ir.ui.view: pos_sale_stock.message_body
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

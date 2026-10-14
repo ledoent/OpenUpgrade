@@ -1,0 +1,26 @@
+---Models in module 'l10n_tw_edi_ecpay_pos'---
+---Fields in module 'l10n_tw_edi_ecpay_pos'---
+l10n_tw_edi_ecpay_pos / pos.order                / ecpay_error (boolean)         : NEW hasdefault: default
+# NOTHING TO DO: a new field whose default is falsy -- False, or an empty
+# list -- so a NULL left on an existing row already means what the default
+# would have written. The one flagged field whose default names a record,
+# pos.config.default_product_id, has a script instead
+l10n_tw_edi_ecpay_pos / pos.order                / iis_create_date (datetime)    : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / iis_number (char)             : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / iis_random_number (char)      : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / iis_tax_amount (float)        : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / invoice_month (char)          : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / l10n_tw_edi_ecpay_seller_identifier (char): NEW
+l10n_tw_edi_ecpay_pos / pos.order                / l10n_tw_edi_invoice_amount (float): NEW
+l10n_tw_edi_ecpay_pos / pos.order                / pos_barcode (char)            : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / qrcode_left (char)            : NEW
+l10n_tw_edi_ecpay_pos / pos.order                / qrcode_right (char)           : NEW
+# NOTHING TO DO: empty is the right value for existing records
+---XML records in module 'l10n_tw_edi_ecpay_pos'---
+NEW ir.ui.view: l10n_tw_edi_ecpay_pos.ecpay_certificate_receipt
+NEW ir.ui.view: l10n_tw_edi_ecpay_pos.ecpay_transaction_receipt
+NEW ir.ui.view: l10n_tw_edi_ecpay_pos.pos_order_receipt_header
+NEW ir.ui.view: l10n_tw_edi_ecpay_pos.pos_order_receipt_style
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
+res.partner: l10n_tw_edi_ecpay_pos.ecpay_default_walk_in_customer (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same

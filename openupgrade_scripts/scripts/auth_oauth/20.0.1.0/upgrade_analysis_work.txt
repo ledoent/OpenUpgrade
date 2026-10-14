@@ -1,0 +1,16 @@
+---Models in module 'auth_oauth'---
+---Fields in module 'auth_oauth'---
+auth_oauth   / auth.oauth.provider      / icon (char)                   : NEW hasdefault: default
+# NOTHING TO DO: the default is 'login', NOT a falsy value, so all 3 providers
+# came out holding it rather than a NULL. It names a Material Symbols glyph for
+# the login button, and 19.0 had no icon field to carry
+---XML records in module 'auth_oauth'---
+auth.oauth.provider: auth_oauth.provider_facebook (noupdate switched)
+auth.oauth.provider: auth_oauth.provider_google (noupdate switched)
+auth.oauth.provider: auth_oauth.provider_openerp (noupdate switched)
+# NOTHING TO DO: only the noupdate flag changed, the definition is the same
+NEW ir.access: auth_oauth.access_auth_oauth_provider
+DEL ir.model.access: auth_oauth.access_auth_oauth_provider
+# NOTHING TO DO: base folds ir.model.access and ir.rule into ir.access, keeping the xml_ids
+ir.model.constraint: auth_oauth.constraint_res_users_uniq_users_oauth_provider_oauth_uid (changed definition: is now 'False' ('unique(oauth_provider_id, oauth_uid)'))
+# NOTHING TO DO: the record is not noupdate, so the module update rewrites it

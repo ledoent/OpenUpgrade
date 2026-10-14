@@ -1,0 +1,5 @@
+---Models in module 'l10n_ee'---
+---Fields in module 'l10n_ee'---
+---XML records in module 'l10n_ee'---
+NEW account.report: l10n_ee.kmd_inf_tax_report
+# NOTHING TO DO: the record is not noupdate, so the module update creates it

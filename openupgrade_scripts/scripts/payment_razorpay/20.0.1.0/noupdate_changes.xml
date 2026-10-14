@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <record id="payment_method_emi_india" model="payment.method">
+    <field name="supported_country_ids" eval="[Command.set([ref('base.in')])]"/>
+    <field name="supported_currency_ids" eval="[Command.set([ref('base.INR')])]"/>
+    <field name="provider_id" ref="payment.payment_provider_razorpay"/>
+  </record>
+  <record id="payment_method_netbanking" model="payment.method">
+    <field name="supported_country_ids" eval="[Command.set([ref('base.in')])]"/>
+    <field name="supported_currency_ids" eval="[Command.set([ref('base.INR')])]"/>
+    <field name="provider_id" ref="payment.payment_provider_razorpay"/>
+  </record>
+  <record id="payment_method_paylater_india" model="payment.method">
+    <field name="supported_country_ids" eval="[Command.set([ref('base.in')])]"/>
+    <field name="supported_currency_ids" eval="[Command.set([ref('base.INR')])]"/>
+    <field name="provider_id" ref="payment.payment_provider_razorpay"/>
+  </record>
+  <record id="payment_method_rupay" model="payment.method">
+    <field name="primary_payment_method_id" eval="ref('payment_razorpay.payment_method_card')"/>
+    <field name="provider_id" ref="payment.payment_provider_razorpay"/>
+  </record>
+</odoo>

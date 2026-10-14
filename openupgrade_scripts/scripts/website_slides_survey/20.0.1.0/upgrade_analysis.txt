@@ -1,0 +1,23 @@
+---Models in module 'website_slides_survey'---
+---Fields in module 'website_slides_survey'---
+---XML records in module 'website_slides_survey'---
+NEW ir.access: website_slides_survey.survey_question_answer_slide_channel_officer
+NEW ir.access: website_slides_survey.survey_question_rule_slide_channel_officer
+NEW ir.access: website_slides_survey.survey_rule_slide_channel_officer
+NEW ir.access: website_slides_survey.survey_user_input_line_rule_slide_channel_officer
+NEW ir.access: website_slides_survey.survey_user_input_rule_slide_channel_officer
+ir.actions.act_window: website_slides_survey.slide_slide_action_certification (deleted domain)
+ir.actions.act_window: website_slides_survey.survey_survey_action_slides (deleted domain)
+DEL ir.model.access: website_slides_survey.access_survey_question_answer_slides_officer
+DEL ir.model.access: website_slides_survey.access_survey_question_slides_officer
+DEL ir.model.access: website_slides_survey.access_survey_slides_officer
+DEL ir.model.access: website_slides_survey.access_survey_user_input_line_slides_officer
+DEL ir.model.access: website_slides_survey.access_survey_user_input_slides_officer
+ir.model.constraint: website_slides_survey.constraint_slide_slide_check_certification_preview (changed definition: is now 'False' ('CHECK(slide_category != 'certification' OR is_preview = False)'))
+ir.model.constraint: website_slides_survey.constraint_slide_slide_check_survey_id (changed definition: is now 'False' ('CHECK(slide_category != 'certification' OR survey_id IS NOT NULL)'))
+DEL ir.rule: website_slides_survey.survey_question_answer_slide_channel_officer (noupdate)
+DEL ir.rule: website_slides_survey.survey_question_rule_slide_channel_officer (noupdate)
+DEL ir.rule: website_slides_survey.survey_rule_slide_channel_officer (noupdate)
+DEL ir.rule: website_slides_survey.survey_user_input_line_rule_slide_channel_officer (noupdate)
+DEL ir.rule: website_slides_survey.survey_user_input_rule_slide_channel_officer (noupdate)
+mail.template: website_slides_survey.mail_template_user_input_certification_failed (noupdate switched)

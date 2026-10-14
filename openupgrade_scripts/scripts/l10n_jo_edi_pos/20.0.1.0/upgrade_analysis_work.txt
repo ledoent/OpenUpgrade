@@ -1,0 +1,6 @@
+---Models in module 'l10n_jo_edi_pos'---
+---Fields in module 'l10n_jo_edi_pos'---
+---XML records in module 'l10n_jo_edi_pos'---
+NEW ir.ui.view: l10n_jo_edi_pos.pos_order_receipt_footer
+NEW ir.ui.view: l10n_jo_edi_pos.pos_order_receipt_header
+# NOTHING TO DO: the record is not noupdate, so the module update creates it
