@@ -41,4 +41,42 @@ parent_action1.copy(
         ],
     }
 )
+
+# Search-view fixtures for the 19.0 RNG attribute strip helper.
+# `expand=` on <group>/<field> and `string="Group By"` on <group>
+# were valid in 18.0 but rejected by 19.0's stricter RelaxNG schema.
+env["ir.ui.view"].create(
+    {
+        "name": "test search group_expand",
+        "model": "res.partner",
+        "type": "search",
+        "arch": """
+            <search>
+                <field name="name"/>
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Country"
+                        name="country"
+                        context="{'group_by': 'country_id'}"
+                    />
+                </group>
+            </search>
+        """,
+    }
+)
+env["ir.ui.view"].create(
+    {
+        "name": "test search field_expand",
+        "model": "res.partner",
+        "type": "search",
+        "arch": """
+            <search>
+                <field name="name"/>
+                <searchpanel>
+                    <field name="country_id" expand="1" select="multi"/>
+                </searchpanel>
+            </search>
+        """,
+    }
+)
 env.cr.commit()
